@@ -2,33 +2,10 @@
 
 Java 21, Spring Boot 3.5.16, Maven Wrapper 3.9.9. Kiến trúc monolith phân lớp: Controller → Service → Repository → SQL Server. Entity chỉ dùng cho persistence; request/response dùng DTO.
 
-## Kế hoạch triển khai cho hai BE
-
-Đọc [hợp đồng nghiệp vụ](swp/AI/docs/team/PROJECT_CONTRACT.md) và
-[backlog 16 luồng](swp/AI/docs/team/BACKLOG.md) trước khi làm feature tiếp theo.
-BE1 (`nhana123`) dùng [skill commercial](swp/AI/skills/equitransit-be1-commercial/SKILL.md);
-BE2 (chưa gán tài khoản) dùng [skill operations](swp/AI/skills/equitransit-be2-operations/SKILL.md).
-[Danh sách GitHub Issue](swp/AI/docs/team/github-issues.json) giữ phân công và URL thật.
-Đây là kế hoạch; các API đã triển khai hiện được liệt kê bên dưới.
-
-## Requirement và schema đã đối chiếu
-
-- [SRS EquiTransit](swp/AI/docs/requirements/EQUITRANSIT_REQUIREMENTS.md) thống nhất
-  scope cá nhân, một ngựa/order và 16 flow; nêu rõ nguồn Figma và giới hạn đọc live.
-- [Schema sau migration 002](swp/AI/docs/database-schema.md) và
-  [báo cáo thay đổi/kiểm tra](swp/AI/docs/database-figma-alignment.md).
-- Thành viên đã có schema nghiệp vụ đầy đủ và migration 001 chạy
-  `database/migrations/002_align_figma_without_organization.sql` trên EquiTransit.
-  Không dùng EquiTransit_AuthTest tối giản cho migration này. Thử trên bản sao
-  riêng với `tools/prepare-figma-migration-test.ps1` và
-  `tools/test-figma-migration.sql` trước khi triển khai vào DB đang dùng.
-- 002 không thêm Organization và không seed rate/policy demo. Backend hiện
-  vẫn chỉ có các API được liệt kê dưới đây; có bảng không đồng nghĩa có endpoint.
-
 ## Database và nguồn nghiệp vụ
 
 - Database thật: `EquiTransit`, server `DESKTOP-9VRARFD`, TCP 1433; dùng Windows Authentication ở profile `local`.
-- Mapping lấy từ `swp/AI/docs/database-schema.md` và metadata live: `Role`, `User`, `Customer` giữ nguyên tên, độ dài, Unicode và nullable.
+- Mapping lấy từ metadata SQL Server live: `Role`, `User`, `Customer` giữ nguyên tên, độ dài, Unicode và nullable.
 - Đọc plugin `SWP-RE/manifest.json`, `code.js` và catalogue `english-screens.js`. A01 là sign-in theo vai trò; A02 là đăng ký khách cá nhân; A03 yêu cầu email verification/recovery; C17 là hồ sơ cá nhân. Catalogue không phải một kết nối trực tiếp đến Figma đang mở.
 - Public registration không có trường role. Staff accounts không được tạo từ API đăng ký khách.
 
@@ -104,7 +81,6 @@ Recovery: gửi email tới forgot-password, lấy token trong email mới, rồ
 
 ## Migration bổ sung
 
-Nền phân quyền dùng chung: [F01 review và service contracts](swp/AI/docs/auth-review.md).
 `CurrentActorService` xác định UserID/CustomerID/StaffID từ JWT và database;
 `DomainAccessPolicy` kiểm role/ownership/assignment key. Profile service đã
 được bảo vệ bằng method security. StaffProfile hiện chỉ được đọc để xác định
