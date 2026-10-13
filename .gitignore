@@ -1,0 +1,12 @@
+target/
+out/
+.idea/
+*.iml
+.local/
+.env
+.env.*
+!.env.example
+*.p12
+*.pfx
+*.key
+*.log
