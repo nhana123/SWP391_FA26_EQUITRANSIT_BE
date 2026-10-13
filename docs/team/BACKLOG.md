@@ -4,6 +4,11 @@
 
 Đọc [hợp đồng nghiệp vụ](PROJECT_CONTRACT.md) trước; [issues.json](issues.json) giữ toàn bộ acceptance criteria, [github-issues.json](github-issues.json) giữ số/URL thật sau publish.
 
+Baseline schema đã được sửa theo [SRS](../requirements/EQUITRANSIT_REQUIREMENTS.md)
+và migration 002; các đoạn đề xuất schema cũ trong issues.json/GitHub cần đọc
+cùng §7 PROJECT_CONTRACT, không thêm lại cột đã tồn tại. F01 đã merge qua PR #17;
+trạng thái hoàn thành những issue khác vẫn cần API/tests/review theo Done.
+
 ## Phân công
 
 | Flow | Kết quả | Owner | Points | Phụ thuộc |
@@ -43,7 +48,7 @@ Points là độ phức tạp tương đối cho team điều chỉnh, không ph
 
 ## Coverage database live
 
-Kiểm ngày 2026-10-13: 51 bảng tổng, 50 bảng nghiệp vụ và sysdiagrams; 73 FK không disabled/untrusted. Mỗi bảng có một owner chính dưới đây; consumer gọi typed service facade, không bypass validation qua repository của owner khác.
+Kiểm sau migration 002 ngày 2026-10-13: 57 bảng tổng, 55 bảng nghiệp vụ; SchemaMigrationHistory và sysdiagrams là kỹ thuật; 114 FK constraints không disabled/untrusted. Mỗi bảng có một owner chính dưới đây; consumer gọi typed service facade, không bypass validation qua repository của owner khác.
 
 | Bảng | Flow chính | Owner |
 |---|---|---|
@@ -89,6 +94,11 @@ Kiểm ngày 2026-10-13: 51 bảng tổng, 50 bảng nghiệp vụ và sysdiagra
 | `StallAssignment` | F10 | BE2 |
 | `StallChoice` | F05 | BE1 |
 | `StallEquipment` | F09 | BE2 |
+| `Supplier` | F15 (F09 consumer) | BE1 |
+| `DocumentTypeCatalog` | F08 | BE2 |
+| `StallFitPolicy` | F09 (F05 consumer) | BE2 |
+| `QuotePaymentSchedule` | F06/F07 | BE1 |
+| `OrderChangeRequest` | F03 (F13 consumer) | BE1 |
 | `SupplierOffer` | F06 | BE1 |
 | `TransportOrder` | F03 | BE1 |
 | `TransportOrderDetail` | F03 | BE1 |

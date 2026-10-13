@@ -1,7 +1,7 @@
 {
   "reviewed_at": "2026-10-13",
   "database": "DESKTOP-9VRARFD / EquiTransit",
-  "note": "Local files reviewed; not a live Figma inspection. Hashes identify reviewed versions, not priority.",
+  "note": "Full export dated 2026-10-10 supplied by user; live Figma metadata 2026-10-13 and design context/screenshots C03, C17, BOOK02; not a complete live visual inspection. SQL schema refreshed after migration 002.",
   "sources": [
     {
       "path": "REQUIREMENTS.docx",
@@ -49,7 +49,22 @@
     },
     {
       "path": "EQUITRANSIT_DB_LIVE_SCHEMA.json",
-      "sha256": "17c48f165727dc7c0075042eab7247e73ad622fc83aca765466c025f9eebcdcd"
+      "sha256": "8a9d98af4574e5295b6424e502bc291f4a205408487eb82573825f3b5b0c6601"
     }
-  ]
+  ],
+  "figma_alignment": {
+    "file_key": "SGnLGpXxE6Ut0iV8rSoNQe",
+    "exported_at": "2026-10-10T14:28:05.54Z",
+    "export_sha256": "22aa9e2bf9be9ed2f651d4687b83cedc53aacc034295e99cf5011e3e0083193a",
+    "live_context_nodes": [
+      "103:16687",
+      "103:18013",
+      "206:329"
+    ],
+    "business_tables": 55,
+    "business_columns": 594,
+    "foreign_key_constraints": 114,
+    "requirements": "docs/requirements/EQUITRANSIT_REQUIREMENTS.md",
+    "migration": "002_align_figma_without_organization.sql"
+  }
 }

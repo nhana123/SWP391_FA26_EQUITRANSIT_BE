@@ -1,15 +1,16 @@
 # Database EquiTransit — DESKTOP-9VRARFD
 
-Tài liệu xuất từ metadata trực tiếp của SQL Server ngày **2026-10-12**. Chỉ mô tả cấu trúc; không chứa dữ liệu khách hàng, mật khẩu hoặc nội dung bản ghi.
+Tài liệu xuất từ metadata trực tiếp của SQL Server ngày **2026-10-13**, sau migration 002. Chỉ mô tả cấu trúc; không chứa dữ liệu khách hàng, mật khẩu hoặc nội dung bản ghi.
 
 | Thuộc tính | Giá trị |
 |---|---|
 | Server | `DESKTOP-9VRARFD` |
 | Database | `EquiTransit` |
-| Bảng nghiệp vụ | 50 |
-| Cột nghiệp vụ | 400 |
-| Bảng phụ SSMS | 1 |
-| Khóa ngoại | 73 |
+| Bảng nghiệp vụ | 55 |
+| Cột nghiệp vụ | 594 |
+| Bảng kỹ thuật (sysdiagrams, SchemaMigrationHistory) | 2 |
+| Ràng buộc khóa ngoại | 114 |
+| Ánh xạ cột khóa ngoại | 123 |
 | Khóa ngoại bị tắt hoặc chưa được SQL Server xác thực | 0 |
 
 ## Cách đọc
@@ -25,56 +26,62 @@ Tài liệu xuất từ metadata trực tiếp của SQL Server ngày **2026-10-
 
 | Bảng | Số cột | Mục đích |
 |---|---:|---|
-| [dbo.ActualCost](#dboactualcost) | 7 | Chi phí thực tế của kế hoạch hoặc chặng. |
+| [dbo.ActualCost](#dboactualcost) | 10 | Chi phí thực tế của kế hoạch hoặc chặng. |
 | [dbo.AuditEvent](#dboauditevent) | 7 | Nhật ký thao tác hệ thống. |
 | [dbo.AuthenticationToken](#dboauthenticationtoken) | 7 | Token xác minh email/khôi phục mật khẩu: lưu hash, hạn dùng và thời điểm tiêu thụ; bổ sung cho flow tài khoản. |
-| [dbo.AuthorityProcedure](#dboauthorityprocedure) | 8 | Thủ tục với cơ quan chức năng. |
-| [dbo.ComplianceClearance](#dbocomplianceclearance) | 6 | Kết quả xác nhận tuân thủ theo giai đoạn. |
-| [dbo.ComplianceRuleVersion](#dbocomplianceruleversion) | 11 | Phiên bản quy định tuân thủ áp dụng cho tuyến. |
-| [dbo.Customer](#dbocustomer) | 5 | Hồ sơ khách hàng. |
-| [dbo.DocumentRequirement](#dbodocumentrequirement) | 8 | Yêu cầu hồ sơ cho phiên bản đơn. |
+| [dbo.AuthorityProcedure](#dboauthorityprocedure) | 13 | Thủ tục với cơ quan chức năng. |
+| [dbo.ComplianceClearance](#dbocomplianceclearance) | 8 | Kết quả xác nhận tuân thủ theo giai đoạn. |
+| [dbo.ComplianceRuleVersion](#dbocomplianceruleversion) | 13 | Phiên bản quy định tuân thủ áp dụng cho tuyến. |
+| [dbo.Customer](#dbocustomer) | 6 | Hồ sơ khách hàng. |
+| [dbo.DocumentRequirement](#dbodocumentrequirement) | 13 | Yêu cầu hồ sơ cho phiên bản đơn. |
 | [dbo.DocumentReview](#dbodocumentreview) | 6 | Kết quả kiểm tra giấy tờ đã nộp. |
 | [dbo.DocumentSubmission](#dbodocumentsubmission) | 5 | Giấy tờ nộp để đáp ứng yêu cầu hồ sơ. |
-| [dbo.DocumentVersion](#dbodocumentversion) | 9 | Các phiên bản file giấy tờ. |
-| [dbo.FleetVehicle](#dbofleetvehicle) | 6 | Danh mục xe vận chuyển. |
-| [dbo.FlightReservation](#dboflightreservation) | 8 | Đặt chỗ vận chuyển hàng không. |
-| [dbo.Horse](#dbohorse) | 13 | Hồ sơ ngựa thuộc khách hàng. |
+| [dbo.DocumentTypeCatalog](#dbodocumenttypecatalog) | 4 | Danh mục loại giấy tờ để yêu cầu và hồ sơ dùng chung mã. |
+| [dbo.DocumentVersion](#dbodocumentversion) | 13 | Các phiên bản file giấy tờ. |
+| [dbo.FleetVehicle](#dbofleetvehicle) | 11 | Danh mục xe vận chuyển. |
+| [dbo.FlightReservation](#dboflightreservation) | 13 | Đặt chỗ vận chuyển hàng không. |
+| [dbo.Horse](#dbohorse) | 19 | Hồ sơ ngựa thuộc khách hàng. |
 | [dbo.HorseDocument](#dbohorsedocument) | 4 | Danh mục giấy tờ của ngựa. |
-| [dbo.HorseReceipt](#dbohorsereceipt) | 7 | Ghi nhận tiếp nhận ngựa. |
-| [dbo.HorseWelfareLog](#dbohorsewelfarelog) | 9 | Nhật ký theo dõi sức khỏe và chăm sóc ngựa. |
-| [dbo.IncidentReport](#dboincidentreport) | 8 | Báo cáo sự cố. |
+| [dbo.HorseReceipt](#dbohorsereceipt) | 12 | Ghi nhận tiếp nhận ngựa. |
+| [dbo.HorseWelfareLog](#dbohorsewelfarelog) | 13 | Nhật ký theo dõi sức khỏe và chăm sóc ngựa. |
+| [dbo.IncidentReport](#dboincidentreport) | 16 | Báo cáo sự cố. |
 | [dbo.InsuranceChoice](#dboinsurancechoice) | 6 | Lựa chọn bảo hiểm và giá trị khai báo. |
-| [dbo.InsurancePolicy](#dboinsurancepolicy) | 8 | Hợp đồng bảo hiểm và bằng chứng. |
-| [dbo.LegMilestoneLog](#dbolegmilestonelog) | 9 | Nhật ký mốc tiến độ của chặng. |
+| [dbo.InsurancePolicy](#dboinsurancepolicy) | 11 | Hợp đồng bảo hiểm và bằng chứng. |
+| [dbo.LegMilestoneLog](#dbolegmilestonelog) | 15 | Nhật ký mốc tiến độ của chặng. |
 | [dbo.Notification](#dbonotification) | 7 | Thông báo gửi tài khoản. |
-| [dbo.OperationalAdjustment](#dbooperationaladjustment) | 10 | Đề xuất và phê duyệt điều chỉnh vận hành. |
+| [dbo.OperationalAdjustment](#dbooperationaladjustment) | 15 | Đề xuất và phê duyệt điều chỉnh vận hành. |
 | [dbo.OrderAssignment](#dboorderassignment) | 6 | Phân công nhân viên phụ trách đơn. |
+| [dbo.OrderChangeRequest](#dboorderchangerequest) | 13 | Yêu cầu thay đổi/hủy và kết quả phản hồi; không tự ghi đè hành trình đang chạy. |
 | [dbo.OrderDecision](#dboorderdecision) | 6 | Quyết định của nhân viên đối với phiên bản yêu cầu. |
 | [dbo.OrderRevision](#dboorderrevision) | 6 | Các phiên bản yêu cầu đã gửi. |
-| [dbo.OrderServiceChoice](#dboorderservicechoice) | 6 | Dịch vụ được chọn cho từng phiên bản yêu cầu. |
+| [dbo.OrderServiceChoice](#dboorderservicechoice) | 10 | Dịch vụ được chọn cho từng phiên bản yêu cầu. |
 | [dbo.PaymentAllocation](#dbopaymentallocation) | 5 | Phân bổ giao dịch cho yêu cầu thanh toán. |
-| [dbo.PaymentReport](#dbopaymentreport) | 7 | Khách báo đã thanh toán và gửi bằng chứng. |
-| [dbo.PaymentRequest](#dbopaymentrequest) | 8 | Yêu cầu thanh toán cho báo giá. |
-| [dbo.PaymentTransaction](#dbopaymenttransaction) | 9 | Giao dịch tiền thực nhận và đối soát. |
+| [dbo.PaymentReport](#dbopaymentreport) | 9 | Khách báo đã thanh toán và gửi bằng chứng. |
+| [dbo.PaymentRequest](#dbopaymentrequest) | 9 | Yêu cầu thanh toán cho báo giá. |
+| [dbo.PaymentTransaction](#dbopaymenttransaction) | 12 | Giao dịch tiền thực nhận và đối soát. |
 | [dbo.QuarantineChoice](#dboquarantinechoice) | 6 | Lựa chọn gói cách ly và số ngày được xác nhận. |
-| [dbo.QuarantineReservation](#dboquarantinereservation) | 7 | Đặt chỗ tại cơ sở cách ly. |
-| [dbo.Quote](#dboquote) | 13 | Báo giá tổng thể gửi khách. |
+| [dbo.QuarantineReservation](#dboquarantinereservation) | 13 | Đặt chỗ tại cơ sở cách ly. |
+| [dbo.Quote](#dboquote) | 22 | Báo giá tổng thể gửi khách. |
 | [dbo.QuoteItem](#dboquoteitem) | 12 | Các khoản chi tiết của báo giá. |
-| [dbo.Refund](#dborefund) | 6 | Hoàn tiền theo khoản phân bổ. |
+| [dbo.QuotePaymentSchedule](#dboquotepaymentschedule) | 7 | Lịch nghĩa vụ thanh toán gắn với báo giá. |
+| [dbo.Refund](#dborefund) | 12 | Hoàn tiền theo khoản phân bổ. |
 | [dbo.Role](#dborole) | 3 | Danh mục vai trò tài khoản. |
+| [dbo.SchemaMigrationHistory](#dboschemamigrationhistory) | 3 | Lịch sử migration kỹ thuật; không phải dữ liệu nghiệp vụ. |
 | [dbo.ServiceTariff](#dboservicetariff) | 11 | Đơn giá dịch vụ và thời gian hiệu lực. |
 | [dbo.StaffProfile](#dbostaffprofile) | 5 | Hồ sơ nhân viên. |
-| [dbo.StallAssignment](#dbostallassignment) | 10 | Bố trí stall cho chặng. |
+| [dbo.StallAssignment](#dbostallassignment) | 14 | Bố trí stall cho chặng. |
 | [dbo.StallChoice](#dbostallchoice) | 5 | Lựa chọn air stall. |
-| [dbo.StallEquipment](#dbostallequipment) | 6 | Danh mục stall thực tế và kích thước. |
-| [dbo.SupplierOffer](#dbosupplieroffer) | 13 | Báo giá đầu vào từ đối tác. |
+| [dbo.StallEquipment](#dbostallequipment) | 12 | Danh mục stall thực tế và kích thước. |
+| [dbo.StallFitPolicy](#dbostallfitpolicy) | 16 | Chính sách giới hạn cân nặng/kích thước có nguồn, phiên bản và phê duyệt. |
+| [dbo.Supplier](#dbosupplier) | 8 | Đối tác cung cấp dịch vụ; không phải tài khoản khách hàng tổ chức. |
+| [dbo.SupplierOffer](#dbosupplieroffer) | 16 | Báo giá đầu vào từ đối tác. |
 | [dbo.sysdiagrams](#dbosysdiagrams) | 5 | Bảng hỗ trợ lưu sơ đồ trong SQL Server Management Studio; không phải bảng nghiệp vụ. |
-| [dbo.TransportOrder](#dbotransportorder) | 14 | Thông tin hiện tại của đơn vận chuyển. |
+| [dbo.TransportOrder](#dbotransportorder) | 30 | Thông tin hiện tại của đơn vận chuyển. |
 | [dbo.TransportOrderDetail](#dbotransportorderdetail) | 10 | Ngựa của đơn và thông tin snapshot. |
-| [dbo.TransportPlan](#dbotransportplan) | 13 | Kế hoạch vận chuyển và điều kiện xuất phát. |
-| [dbo.TripAssignment](#dbotripassignment) | 7 | Phân công nhân viên cho chặng. |
-| [dbo.TripHandover](#dbotriphandover) | 13 | Biên bản bàn giao ngựa. |
-| [dbo.TripLeg](#dbotripleg) | 13 | Từng chặng trong kế hoạch vận chuyển. |
+| [dbo.TransportPlan](#dbotransportplan) | 15 | Kế hoạch vận chuyển và điều kiện xuất phát. |
+| [dbo.TripAssignment](#dbotripassignment) | 9 | Phân công nhân viên cho chặng. |
+| [dbo.TripHandover](#dbotriphandover) | 19 | Biên bản bàn giao ngựa. |
+| [dbo.TripLeg](#dbotripleg) | 20 | Từng chặng trong kế hoạch vận chuyển. |
 | [dbo.User](#dbouser) | 6 | Tài khoản đăng nhập và vai trò. |
 
 ## Cấu trúc từng bảng
@@ -92,6 +99,9 @@ Chi phí thực tế của kế hoạch hoặc chặng.
 | `Amount` | `DECIMAL(18,2)` | Không | Không | — | — |
 | `Currency` | `VARCHAR(3)` | Không | Không | — | — |
 | `IncurredAt` | `DATETIME2(0)` | Không | Không | — | — |
+| `Description` | `NVARCHAR(1000)` | Có | Không | — | — |
+| `RecordedBy` | `BIGINT` | Có | Không | FK | — |
+| `EvidenceFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
@@ -99,6 +109,9 @@ Chi phí thực tế của kế hoạch hoặc chặng.
 |---|---|---|---|---|---|
 | `FK_ActualCost_LegID` | `LegID` | [dbo.TripLeg](#dbotripleg).`LegID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_ActualCost_PlanID` | `PlanID` | [dbo.TransportPlan](#dbotransportplan).`PlanID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_ActualCost_LegID` | `LegID` | [dbo.TripLeg](#dbotripleg).`LegID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_ActualCost_LegID` | `PlanID` | [dbo.TripLeg](#dbotripleg).`PlanID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_ActualCost_RecordedBy` | `RecordedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
 
@@ -202,12 +215,18 @@ Thủ tục với cơ quan chức năng.
 | `ApprovalStatus` | `VARCHAR(50)` | Không | Không | — | — |
 | `EvidenceFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
 | `DecidedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `PhaseCode` | `VARCHAR(50)` | Có | Không | — | — |
+| `AuthorityContact` | `NVARCHAR(500)` | Có | Không | — | — |
+| `HoldReason` | `NVARCHAR(2000)` | Có | Không | — | — |
+| `ExpiresAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `RecordedBy` | `BIGINT` | Có | Không | FK | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
 | `FK_AuthorityProcedure_RevisionID` | `RevisionID` | [dbo.OrderRevision](#dboorderrevision).`RevisionID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_AuthorityProcedure_RecordedBy` | `RecordedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
 
@@ -236,6 +255,8 @@ Kết quả xác nhận tuân thủ theo giai đoạn.
 | `PhaseCode` | `VARCHAR(50)` | Không | Không | — | — |
 | `Status` | `VARCHAR(50)` | Không | Không | — | — |
 | `CheckedAt` | `DATETIME2(0)` | Không | Không | — | `(sysutcdatetime())` |
+| `ExpiresAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `AssessmentNotes` | `NVARCHAR(2000)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
@@ -271,16 +292,20 @@ Phiên bản quy định tuân thủ áp dụng cho tuyến.
 | `VersionNo` | `INT` | Không | Không | UNIQUE tổ hợp UQ_ComplianceRuleVersion_Version | — |
 | `OriginCountryCode` | `VARCHAR(2)` | Không | Không | — | — |
 | `DestinationCountryCode` | `VARCHAR(2)` | Không | Không | — | — |
-| `DocumentType` | `VARCHAR(50)` | Không | Không | — | — |
+| `DocumentType` | `VARCHAR(50)` | Không | Không | FK | — |
 | `PhaseCode` | `VARCHAR(50)` | Không | Không | — | — |
 | `SourceURL` | `NVARCHAR(2048)` | Không | Không | — | — |
 | `ReviewedAt` | `DATETIME2(0)` | Có | Không | — | — |
 | `EffectiveFrom` | `DATETIME2(0)` | Không | Không | — | — |
 | `EffectiveTo` | `DATETIME2(0)` | Có | Không | — | — |
+| `TransitCountryCode` | `VARCHAR(2)` | Có | Không | — | — |
+| `RuleDescription` | `NVARCHAR(2000)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
-Không có.
+| Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
+|---|---|---|---|---|---|
+| `FK_Figma_ComplianceRuleVersion_DocumentType` | `DocumentType` | [dbo.DocumentTypeCatalog](#dbodocumenttypecatalog).`TypeCode` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
 
@@ -309,6 +334,7 @@ Hồ sơ khách hàng.
 | `FullName` | `NVARCHAR(150)` | Không | Không | — | — |
 | `Phone` | `VARCHAR(30)` | Có | Không | — | — |
 | `Address` | `NVARCHAR(500)` | Có | Không | — | — |
+| `EmailNotificationsEnabled` | `BIT` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
@@ -319,7 +345,10 @@ Hồ sơ khách hàng.
 **Các bảng tham chiếu đến bảng này**
 
 - [dbo.Horse](#dbohorse).`CustomerID` → `CustomerID`.
+- [dbo.OperationalAdjustment](#dbooperationaladjustment).`RespondedByCustomerID` → `CustomerID`.
+- [dbo.Quote](#dboquote).`AcceptedByCustomerID` → `CustomerID`.
 - [dbo.TransportOrder](#dbotransportorder).`CustomerID` → `CustomerID`.
+- [dbo.TripHandover](#dbotriphandover).`RespondedByCustomerID` → `CustomerID`.
 
 **Index và ràng buộc duy nhất**
 
@@ -341,11 +370,16 @@ Yêu cầu hồ sơ cho phiên bản đơn.
 | `RequirementID` | `BIGINT` | Không | Có | PK | — |
 | `RevisionID` | `BIGINT` | Không | Không | FK | — |
 | `RuleID` | `BIGINT` | Không | Không | FK | — |
-| `DocumentType` | `VARCHAR(50)` | Không | Không | — | — |
+| `DocumentType` | `VARCHAR(50)` | Không | Không | FK | — |
 | `PhaseCode` | `VARCHAR(50)` | Không | Không | — | — |
 | `IsMandatory` | `BIT` | Không | Không | — | — |
 | `DueAt` | `DATETIME2(0)` | Có | Không | — | — |
 | `Status` | `VARCHAR(50)` | Không | Không | — | — |
+| `Instructions` | `NVARCHAR(2000)` | Có | Không | — | — |
+| `ScopeCode` | `VARCHAR(20)` | Có | Không | — | — |
+| `HorseID` | `BIGINT` | Có | Không | FK | — |
+| `ValidityConditionsJSON` | `NVARCHAR(MAX)` | Có | Không | — | — |
+| `CaseJustification` | `NVARCHAR(2000)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
@@ -353,6 +387,8 @@ Yêu cầu hồ sơ cho phiên bản đơn.
 |---|---|---|---|---|---|
 | `FK_DocumentRequirement_RevisionID` | `RevisionID` | [dbo.OrderRevision](#dboorderrevision).`RevisionID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_DocumentRequirement_RuleID` | `RuleID` | [dbo.ComplianceRuleVersion](#dbocomplianceruleversion).`RuleID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_DocumentRequirement_DocumentType` | `DocumentType` | [dbo.DocumentTypeCatalog](#dbodocumenttypecatalog).`TypeCode` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_DocumentRequirement_HorseID` | `HorseID` | [dbo.Horse](#dbohorse).`HorseID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
 
@@ -368,7 +404,8 @@ Yêu cầu hồ sơ cho phiên bản đơn.
 
 **CHECK constraints**
 
-Không có.
+- `CK_Figma_DocumentRequirement_ValidityConditionsJSON`: `([ValidityConditionsJSON] IS NULL OR isjson([ValidityConditionsJSON])=(1))`. Bật: Có; đã xác thực: Có.
+- `CK_Figma_DocumentRequirement_Scope`: `([ScopeCode] IS NULL OR [ScopeCode]='HORSE' AND [HorseID] IS NOT NULL OR [ScopeCode]='SHIPMENT')`. Bật: Có; đã xác thực: Có.
 
 ### dbo.DocumentReview
 
@@ -441,6 +478,37 @@ Giấy tờ nộp để đáp ứng yêu cầu hồ sơ.
 
 Không có.
 
+### dbo.DocumentTypeCatalog
+
+Danh mục loại giấy tờ để yêu cầu và hồ sơ dùng chung mã.
+
+| Cột | Kiểu dữ liệu | NULL | Identity | Khóa / index duy nhất | Giá trị mặc định |
+|---|---|---|---|---|---|
+| `TypeCode` | `VARCHAR(50)` | Không | Không | PK | — |
+| `DisplayName` | `NVARCHAR(200)` | Không | Không | — | — |
+| `Description` | `NVARCHAR(1000)` | Có | Không | — | — |
+| `IsActive` | `BIT` | Không | Không | — | `((1))` |
+
+**Khóa ngoại của bảng**
+
+Không có.
+
+**Các bảng tham chiếu đến bảng này**
+
+- [dbo.ComplianceRuleVersion](#dbocomplianceruleversion).`DocumentType` → `TypeCode`.
+- [dbo.DocumentRequirement](#dbodocumentrequirement).`DocumentType` → `TypeCode`.
+- [dbo.HorseDocument](#dbohorsedocument).`DocumentType` → `TypeCode`.
+
+**Index và ràng buộc duy nhất**
+
+| Tên | Loại | Cột khóa | Cột INCLUDE | Điều kiện lọc |
+|---|---|---|---|---|
+| `PK_DocumentTypeCatalog` | PRIMARY KEY | TypeCode | — | — |
+
+**CHECK constraints**
+
+- `CK_DocumentTypeCatalog_Code`: `(len(ltrim(rtrim([TypeCode])))>(0))`. Bật: Có; đã xác thực: Có.
+
 ### dbo.DocumentVersion
 
 Các phiên bản file giấy tờ.
@@ -456,12 +524,17 @@ Các phiên bản file giấy tờ.
 | `IssuedDate` | `DATE` | Có | Không | — | — |
 | `ExpiryDate` | `DATE` | Có | Không | — | — |
 | `UploadedAt` | `DATETIME2(0)` | Không | Không | — | `(sysutcdatetime())` |
+| `UploadedBy` | `BIGINT` | Có | Không | FK | — |
+| `OriginalFileName` | `NVARCHAR(255)` | Có | Không | — | — |
+| `ContentType` | `VARCHAR(100)` | Có | Không | — | — |
+| `FileSizeBytes` | `BIGINT` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
 | `FK_DocumentVersion_DocumentID` | `DocumentID` | [dbo.HorseDocument](#dbohorsedocument).`DocumentID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_DocumentVersion_UploadedBy` | `UploadedBy` | [dbo.User](#dbouser).`UserID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
 
@@ -478,6 +551,7 @@ Các phiên bản file giấy tờ.
 
 - `CK_DocumentVersion_VersionNo`: `([VersionNo]>(0))`. Bật: Có; đã xác thực: Có.
 - `CK_DocumentVersion_ExpiryDate_Range`: `([ExpiryDate] IS NULL OR [IssuedDate] IS NOT NULL AND [ExpiryDate]>=[IssuedDate])`. Bật: Có; đã xác thực: Có.
+- `CK_Figma_DocumentVersion_FileSizeBytes`: `([FileSizeBytes]>(0))`. Bật: Có; đã xác thực: Có.
 
 ### dbo.FleetVehicle
 
@@ -491,10 +565,17 @@ Danh mục xe vận chuyển.
 | `HorseCapacity` | `INT` | Không | Không | — | — |
 | `ClimateSystemType` | `VARCHAR(50)` | Không | Không | — | — |
 | `OperationalStatus` | `VARCHAR(50)` | Không | Không | — | — |
+| `OwnerSupplierID` | `BIGINT` | Có | Không | FK | — |
+| `MaintenanceFrom` | `DATETIME2(0)` | Có | Không | — | — |
+| `MaintenanceTo` | `DATETIME2(0)` | Có | Không | — | — |
+| `DocumentExpiresAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `AssetNotes` | `NVARCHAR(2000)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
-Không có.
+| Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
+|---|---|---|---|---|---|
+| `FK_Figma_FleetVehicle_OwnerSupplierID` | `OwnerSupplierID` | [dbo.Supplier](#dbosupplier).`SupplierID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
 
@@ -510,6 +591,7 @@ Không có.
 
 **CHECK constraints**
 
+- `CK_Figma_FleetVehicle_MaintenanceDates`: `([MaintenanceTo] IS NULL OR [MaintenanceFrom] IS NOT NULL AND [MaintenanceTo]>=[MaintenanceFrom])`. Bật: Có; đã xác thực: Có.
 - `CK_FleetVehicle_HorseCapacity`: `([HorseCapacity]>(0))`. Bật: Có; đã xác thực: Có.
 
 ### dbo.FlightReservation
@@ -526,11 +608,17 @@ Không có.
 | `ReservationReference` | `VARCHAR(150)` | Có | Không | — | — |
 | `Status` | `VARCHAR(50)` | Không | Không | — | — |
 | `ConfirmedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `EvidenceFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
+| `ExpiresAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `ConfirmedBy` | `BIGINT` | Có | Không | FK | — |
+| `SupplierContact` | `NVARCHAR(500)` | Có | Không | — | — |
+| `UsableCapacitySlots` | `DECIMAL(5,1)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_FlightReservation_ConfirmedBy` | `ConfirmedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_FlightReservation_LegID` | `LegID` | [dbo.TripLeg](#dbotripleg).`LegID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_FlightReservation_OfferID` | `OfferID` | [dbo.SupplierOffer](#dbosupplieroffer).`OfferID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
@@ -548,7 +636,7 @@ Không có.
 
 **CHECK constraints**
 
-Không có.
+- `CK_Figma_FlightReservation_UsableCapacitySlots`: `([UsableCapacitySlots]>(0))`. Bật: Có; đã xác thực: Có.
 
 ### dbo.Horse
 
@@ -569,6 +657,12 @@ Hồ sơ ngựa thuộc khách hàng.
 | `BodyWidthCm` | `DECIMAL(6,2)` | Có | Không | — | — |
 | `MeasuredAt` | `DATETIME2(0)` | Có | Không | — | — |
 | `SpecialCareNotes` | `NVARCHAR(1000)` | Có | Không | — | — |
+| `HandlingNotes` | `NVARCHAR(1000)` | Có | Không | — | — |
+| `FeedWaterRequirements` | `NVARCHAR(1000)` | Có | Không | — | — |
+| `StallPreferences` | `NVARCHAR(1000)` | Có | Không | — | — |
+| `VeterinaryInstructions` | `NVARCHAR(2000)` | Có | Không | — | — |
+| `VeterinaryInstructionSource` | `NVARCHAR(1000)` | Có | Không | — | — |
+| `RecordVersion` | `TIMESTAMP` | Không | Không | — | — |
 
 **Khóa ngoại của bảng**
 
@@ -578,6 +672,7 @@ Hồ sơ ngựa thuộc khách hàng.
 
 **Các bảng tham chiếu đến bảng này**
 
+- [dbo.DocumentRequirement](#dbodocumentrequirement).`HorseID` → `HorseID`.
 - [dbo.HorseDocument](#dbohorsedocument).`HorseID` → `HorseID`.
 - [dbo.TransportOrderDetail](#dbotransportorderdetail).`HorseID` → `HorseID`.
 
@@ -603,13 +698,14 @@ Danh mục giấy tờ của ngựa.
 |---|---|---|---|---|---|
 | `DocumentID` | `BIGINT` | Không | Có | PK | — |
 | `HorseID` | `BIGINT` | Không | Không | FK | — |
-| `DocumentType` | `VARCHAR(50)` | Không | Không | — | — |
+| `DocumentType` | `VARCHAR(50)` | Không | Không | FK | — |
 | `CreatedAt` | `DATETIME2(0)` | Không | Không | — | `(sysutcdatetime())` |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_HorseDocument_DocumentType` | `DocumentType` | [dbo.DocumentTypeCatalog](#dbodocumenttypecatalog).`TypeCode` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_HorseDocument_HorseID` | `HorseID` | [dbo.Horse](#dbohorse).`HorseID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
@@ -640,11 +736,18 @@ Ghi nhận tiếp nhận ngựa.
 | `ConditionNotes` | `NVARCHAR(2000)` | Có | Không | — | — |
 | `ReceiptStatus` | `VARCHAR(50)` | Không | Không | — | — |
 | `ReceivedAt` | `DATETIME2(0)` | Không | Không | — | — |
+| `LegID` | `BIGINT` | Có | Không | FK | — |
+| `ObservedPassportNumber` | `VARCHAR(50)` | Có | Không | — | — |
+| `IdentityCheckResult` | `VARCHAR(20)` | Có | Không | — | — |
+| `EvidenceFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
+| `LocationDescription` | `NVARCHAR(500)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_HorseReceipt_LegID` | `LegID` | [dbo.TripLeg](#dbotripleg).`LegID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_HorseReceipt_LegID` | `PlanID` | [dbo.TripLeg](#dbotripleg).`PlanID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_HorseReceipt_PlanID` | `PlanID` | [dbo.TransportPlan](#dbotransportplan).`PlanID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_HorseReceipt_ReceivedBy` | `ReceivedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
@@ -662,7 +765,7 @@ Không có.
 
 **CHECK constraints**
 
-Không có.
+- `CK_Figma_HorseReceipt_Identity`: `([IdentityCheckResult]='MISMATCHED' OR [IdentityCheckResult]='MATCHED' OR [IdentityCheckResult]='PENDING')`. Bật: Có; đã xác thực: Có.
 
 ### dbo.HorseWelfareLog
 
@@ -670,8 +773,8 @@ Nhật ký theo dõi sức khỏe và chăm sóc ngựa.
 
 | Cột | Kiểu dữ liệu | NULL | Identity | Khóa / index duy nhất | Giá trị mặc định |
 |---|---|---|---|---|---|
-| `WelfareLogID` | `BIGINT` | Không | Có | PK | — |
-| `LegID` | `BIGINT` | Không | Không | FK | — |
+| `WelfareLogID` | `BIGINT` | Không | Có | PK; UNIQUE tổ hợp UQ_Figma_HorseWelfareLog_Parent | — |
+| `LegID` | `BIGINT` | Không | Không | UNIQUE tổ hợp UQ_Figma_HorseWelfareLog_Parent; FK | — |
 | `RecordedBy` | `BIGINT` | Không | Không | FK | — |
 | `CheckTime` | `DATETIME2(0)` | Không | Không | — | — |
 | `HealthStatus` | `VARCHAR(50)` | Không | Không | — | — |
@@ -679,17 +782,24 @@ Nhật ký theo dõi sức khỏe và chăm sóc ngựa.
 | `WaterIntakeLiters` | `DECIMAL(8,2)` | Có | Không | — | — |
 | `BehaviorNotes` | `NVARCHAR(2000)` | Có | Không | — | — |
 | `PhotoFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
+| `FeedAmountKg` | `DECIMAL(8,2)` | Có | Không | — | — |
+| `CareNotes` | `NVARCHAR(2000)` | Có | Không | — | — |
+| `InstructionFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
+| `SupersedesLogID` | `BIGINT` | Có | Không | FK | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_HorseWelfareLog_SupersedesLogID` | `SupersedesLogID` | [dbo.HorseWelfareLog](#dbohorsewelfarelog).`WelfareLogID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_HorseWelfareLog_SupersedesLogID` | `LegID` | [dbo.HorseWelfareLog](#dbohorsewelfarelog).`LegID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_HorseWelfareLog_LegID` | `LegID` | [dbo.TripLeg](#dbotripleg).`LegID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_HorseWelfareLog_RecordedBy` | `RecordedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
 
-Không có.
+- [dbo.HorseWelfareLog](#dbohorsewelfarelog).`SupersedesLogID` → `WelfareLogID`.
+- [dbo.HorseWelfareLog](#dbohorsewelfarelog).`LegID` → `LegID`.
 
 **Index và ràng buộc duy nhất**
 
@@ -698,10 +808,13 @@ Không có.
 | `PK_HorseWelfareLog` | PRIMARY KEY | WelfareLogID | — | — |
 | `IX_HorseWelfareLog_LegID` | INDEX | LegID | — | — |
 | `IX_HorseWelfareLog_RecordedBy` | INDEX | RecordedBy | — | — |
+| `UQ_Figma_HorseWelfareLog_Parent` | UNIQUE | WelfareLogID, LegID | — | — |
 
 **CHECK constraints**
 
 - `CK_HorseWelfareLog_WaterIntakeLiters`: `([WaterIntakeLiters]>=(0))`. Bật: Có; đã xác thực: Có.
+- `CK_Figma_HorseWelfareLog_FeedAmountKg`: `([FeedAmountKg]>=(0))`. Bật: Có; đã xác thực: Có.
+- `CK_Figma_HorseWelfareLog_Supersedes`: `([SupersedesLogID] IS NULL OR [SupersedesLogID]<>[WelfareLogID])`. Bật: Có; đã xác thực: Có.
 
 ### dbo.IncidentReport
 
@@ -717,11 +830,21 @@ Báo cáo sự cố.
 | `IncidentTime` | `DATETIME2(0)` | Không | Không | — | — |
 | `Description` | `NVARCHAR(2000)` | Không | Không | — | — |
 | `Status` | `VARCHAR(50)` | Không | Không | — | — |
+| `ImmediateActionNotes` | `NVARCHAR(2000)` | Có | Không | — | — |
+| `EmergencyContact` | `NVARCHAR(500)` | Có | Không | — | — |
+| `AcknowledgedBy` | `BIGINT` | Có | Không | FK | — |
+| `AcknowledgedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `ResolvedBy` | `BIGINT` | Có | Không | FK | — |
+| `ResolvedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `ResolutionNotes` | `NVARCHAR(2000)` | Có | Không | — | — |
+| `EvidenceFilesJSON` | `NVARCHAR(MAX)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_IncidentReport_AcknowledgedBy` | `AcknowledgedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_IncidentReport_ResolvedBy` | `ResolvedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_IncidentReport_LegID` | `LegID` | [dbo.TripLeg](#dbotripleg).`LegID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_IncidentReport_ReportedBy` | `ReportedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
@@ -739,7 +862,7 @@ Báo cáo sự cố.
 
 **CHECK constraints**
 
-Không có.
+- `CK_Figma_IncidentReport_EvidenceFilesJSON`: `([EvidenceFilesJSON] IS NULL OR isjson([EvidenceFilesJSON])=(1))`. Bật: Có; đã xác thực: Có.
 
 ### dbo.InsuranceChoice
 
@@ -792,11 +915,15 @@ Hợp đồng bảo hiểm và bằng chứng.
 | `CoverageFrom` | `DATETIME2(0)` | Không | Không | — | — |
 | `CoverageTo` | `DATETIME2(0)` | Không | Không | — | — |
 | `Status` | `VARCHAR(50)` | Không | Không | — | — |
+| `VerifiedBy` | `BIGINT` | Có | Không | FK | — |
+| `VerifiedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `PolicyTerms` | `NVARCHAR(MAX)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_InsurancePolicy_VerifiedBy` | `VerifiedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_InsurancePolicy_InsuranceChoiceID` | `InsuranceChoiceID` | [dbo.InsuranceChoice](#dboinsurancechoice).`InsuranceChoiceID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
@@ -829,6 +956,12 @@ Nhật ký mốc tiến độ của chặng.
 | `Latitude` | `DECIMAL(9,6)` | Có | Không | — | — |
 | `Longitude` | `DECIMAL(9,6)` | Có | Không | — | — |
 | `Notes` | `NVARCHAR(2000)` | Có | Không | — | — |
+| `SourceCode` | `VARCHAR(30)` | Có | Không | — | — |
+| `SourceReference` | `NVARCHAR(500)` | Có | Không | — | — |
+| `LocationDescription` | `NVARCHAR(500)` | Có | Không | — | — |
+| `EstimatedArrivalAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `DelayReason` | `NVARCHAR(1000)` | Có | Không | — | — |
+| `EvidenceFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
@@ -907,11 +1040,18 @@ Không có.
 | `ApprovalStatus` | `VARCHAR(50)` | Không | Không | — | — |
 | `ProposedAt` | `DATETIME2(0)` | Không | Không | — | `(sysutcdatetime())` |
 | `DecidedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `ChangeRequestID` | `BIGINT` | Có | Không | FK | — |
+| `CustomerDecision` | `VARCHAR(20)` | Có | Không | — | — |
+| `RespondedByCustomerID` | `BIGINT` | Có | Không | FK | — |
+| `CustomerRespondedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `CustomerResponseNotes` | `NVARCHAR(2000)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_OperationalAdjustment_ChangeRequestID` | `ChangeRequestID` | [dbo.OrderChangeRequest](#dboorderchangerequest).`ChangeRequestID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_OperationalAdjustment_RespondedByCustomerID` | `RespondedByCustomerID` | [dbo.Customer](#dbocustomer).`CustomerID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_OperationalAdjustment_ApprovedBy` | `ApprovedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_OperationalAdjustment_IncidentID` | `IncidentID` | [dbo.IncidentReport](#dboincidentreport).`IncidentID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_OperationalAdjustment_PlanID` | `PlanID` | [dbo.TransportPlan](#dbotransportplan).`PlanID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
@@ -935,6 +1075,7 @@ Không có.
 
 - `CK_OperationalAdjustment_ProposedChanges_JSON`: `(isjson([ProposedChanges])=(1))`. Bật: Có; đã xác thực: Có.
 - `CK_OperationalAdjustment_AdditionalCostEstimate`: `([AdditionalCostEstimate]>=(0))`. Bật: Có; đã xác thực: Có.
+- `CK_Figma_OperationalAdjustment_CustomerDecision`: `([CustomerDecision]='REJECTED' OR [CustomerDecision]='ACCEPTED' OR [CustomerDecision]='PENDING')`. Bật: Có; đã xác thực: Có.
 
 ### dbo.OrderAssignment
 
@@ -969,6 +1110,51 @@ Không có.
 **CHECK constraints**
 
 - `CK_OrderAssignment_Dates`: `([EndedAt] IS NULL OR [EndedAt]>=[AssignedAt])`. Bật: Có; đã xác thực: Có.
+
+### dbo.OrderChangeRequest
+
+Yêu cầu thay đổi/hủy và kết quả phản hồi; không tự ghi đè hành trình đang chạy.
+
+| Cột | Kiểu dữ liệu | NULL | Identity | Khóa / index duy nhất | Giá trị mặc định |
+|---|---|---|---|---|---|
+| `ChangeRequestID` | `BIGINT` | Không | Có | PK | — |
+| `OrderID` | `BIGINT` | Không | Không | FK | — |
+| `BaseRevisionID` | `BIGINT` | Có | Không | FK | — |
+| `RequestedBy` | `BIGINT` | Không | Không | FK | — |
+| `ChangeType` | `VARCHAR(30)` | Không | Không | — | — |
+| `Reason` | `NVARCHAR(2000)` | Không | Không | — | — |
+| `RequestedChangesJSON` | `NVARCHAR(MAX)` | Không | Không | — | — |
+| `AttachmentFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
+| `Status` | `VARCHAR(30)` | Không | Không | — | — |
+| `CreatedAt` | `DATETIME2(0)` | Không | Không | — | `(sysutcdatetime())` |
+| `RespondedBy` | `BIGINT` | Có | Không | FK | — |
+| `RespondedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `ResponseReason` | `NVARCHAR(2000)` | Có | Không | — | — |
+
+**Khóa ngoại của bảng**
+
+| Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
+|---|---|---|---|---|---|
+| `FK_Figma_OrderChangeRequest_BaseRevisionID` | `OrderID` | [dbo.OrderRevision](#dboorderrevision).`OrderID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_OrderChangeRequest_BaseRevisionID` | `BaseRevisionID` | [dbo.OrderRevision](#dboorderrevision).`RevisionID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_OrderChangeRequest_OrderID` | `OrderID` | [dbo.TransportOrder](#dbotransportorder).`OrderID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_OrderChangeRequest_RequestedBy` | `RequestedBy` | [dbo.User](#dbouser).`UserID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_OrderChangeRequest_RespondedBy` | `RespondedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+
+**Các bảng tham chiếu đến bảng này**
+
+- [dbo.OperationalAdjustment](#dbooperationaladjustment).`ChangeRequestID` → `ChangeRequestID`.
+
+**Index và ràng buộc duy nhất**
+
+| Tên | Loại | Cột khóa | Cột INCLUDE | Điều kiện lọc |
+|---|---|---|---|---|
+| `PK_OrderChangeRequest` | PRIMARY KEY | ChangeRequestID | — | — |
+
+**CHECK constraints**
+
+- `CK_OrderChangeRequest_JSON`: `(isjson([RequestedChangesJSON])=(1))`. Bật: Có; đã xác thực: Có.
+- `CK_OrderChangeRequest_Reason`: `(len(ltrim(rtrim([Reason])))>(0))`. Bật: Có; đã xác thực: Có.
 
 ### dbo.OrderDecision
 
@@ -1010,8 +1196,8 @@ Các phiên bản yêu cầu đã gửi.
 
 | Cột | Kiểu dữ liệu | NULL | Identity | Khóa / index duy nhất | Giá trị mặc định |
 |---|---|---|---|---|---|
-| `RevisionID` | `BIGINT` | Không | Có | PK | — |
-| `OrderID` | `BIGINT` | Không | Không | UNIQUE tổ hợp UQ_OrderRevision_Order_RevisionNo; FK | — |
+| `RevisionID` | `BIGINT` | Không | Có | PK; UNIQUE tổ hợp UQ_Figma_OrderRevision_Parent | — |
+| `OrderID` | `BIGINT` | Không | Không | UNIQUE tổ hợp UQ_OrderRevision_Order_RevisionNo; UNIQUE tổ hợp UQ_Figma_OrderRevision_Parent; FK | — |
 | `RevisionNo` | `INT` | Không | Không | UNIQUE tổ hợp UQ_OrderRevision_Order_RevisionNo | — |
 | `OrderSnapshot` | `NVARCHAR(MAX)` | Không | Không | — | — |
 | `ChangeReason` | `NVARCHAR(500)` | Có | Không | — | — |
@@ -1028,10 +1214,16 @@ Các phiên bản yêu cầu đã gửi.
 - [dbo.AuthorityProcedure](#dboauthorityprocedure).`RevisionID` → `RevisionID`.
 - [dbo.ComplianceClearance](#dbocomplianceclearance).`RevisionID` → `RevisionID`.
 - [dbo.DocumentRequirement](#dbodocumentrequirement).`RevisionID` → `RevisionID`.
+- [dbo.OrderChangeRequest](#dboorderchangerequest).`OrderID` → `OrderID`.
+- [dbo.OrderChangeRequest](#dboorderchangerequest).`BaseRevisionID` → `RevisionID`.
 - [dbo.OrderDecision](#dboorderdecision).`RevisionID` → `RevisionID`.
 - [dbo.OrderServiceChoice](#dboorderservicechoice).`RevisionID` → `RevisionID`.
 - [dbo.Quote](#dboquote).`RevisionID` → `RevisionID`.
 - [dbo.SupplierOffer](#dbosupplieroffer).`RevisionID` → `RevisionID`.
+- [dbo.TransportOrder](#dbotransportorder).`CurrentRevisionID` → `RevisionID`.
+- [dbo.TransportOrder](#dbotransportorder).`OrderID` → `OrderID`.
+- [dbo.TransportPlan](#dbotransportplan).`OrderID` → `OrderID`.
+- [dbo.TransportPlan](#dbotransportplan).`RevisionID` → `RevisionID`.
 - [dbo.TransportPlan](#dbotransportplan).`RevisionID` → `RevisionID`.
 
 **Index và ràng buộc duy nhất**
@@ -1040,6 +1232,7 @@ Các phiên bản yêu cầu đã gửi.
 |---|---|---|---|---|
 | `PK_OrderRevision` | PRIMARY KEY | RevisionID | — | — |
 | `UQ_OrderRevision_Order_RevisionNo` | UNIQUE | OrderID, RevisionNo | — | — |
+| `UQ_Figma_OrderRevision_Parent` | UNIQUE | RevisionID, OrderID | — | — |
 
 **CHECK constraints**
 
@@ -1058,6 +1251,10 @@ Dịch vụ được chọn cho từng phiên bản yêu cầu.
 | `OptionCode` | `VARCHAR(50)` | Không | Không | — | — |
 | `ArrangedBy` | `VARCHAR(20)` | Không | Không | — | — |
 | `ChosenAt` | `DATETIME2(0)` | Không | Không | — | `(sysutcdatetime())` |
+| `SelectionInputsJSON` | `NVARCHAR(MAX)` | Có | Không | — | — |
+| `ProviderName` | `NVARCHAR(200)` | Có | Không | — | — |
+| `ProviderContact` | `NVARCHAR(500)` | Có | Không | — | — |
+| `EvidenceFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
@@ -1080,6 +1277,7 @@ Dịch vụ được chọn cho từng phiên bản yêu cầu.
 
 **CHECK constraints**
 
+- `CK_Figma_OrderServiceChoice_SelectionInputsJSON`: `([SelectionInputsJSON] IS NULL OR isjson([SelectionInputsJSON])=(1))`. Bật: Có; đã xác thực: Có.
 - `CK_OrderServiceChoice_ArrangedBy`: `([ArrangedBy]='CUSTOMER' OR [ArrangedBy]='EQUITRANSIT')`. Bật: Có; đã xác thực: Có.
 
 ### dbo.PaymentAllocation
@@ -1130,6 +1328,8 @@ Khách báo đã thanh toán và gửi bằng chứng.
 | `ProofFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
 | `CustomerReportedAt` | `DATETIME2(0)` | Không | Không | — | `(sysutcdatetime())` |
 | `Status` | `VARCHAR(50)` | Không | Không | — | — |
+| `TransferredAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `ReportedCurrency` | `VARCHAR(3)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
@@ -1166,11 +1366,14 @@ Yêu cầu thanh toán cho báo giá.
 | `Currency` | `VARCHAR(3)` | Không | Không | — | — |
 | `DueAt` | `DATETIME2(0)` | Có | Không | — | — |
 | `Status` | `VARCHAR(50)` | Không | Không | — | — |
+| `ScheduleID` | `BIGINT` | Có | Không | FK | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_PaymentRequest_ScheduleID` | `ScheduleID` | [dbo.QuotePaymentSchedule](#dboquotepaymentschedule).`ScheduleID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_PaymentRequest_ScheduleID` | `QuoteID` | [dbo.QuotePaymentSchedule](#dboquotepaymentschedule).`QuoteID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_PaymentRequest_QuoteID` | `QuoteID` | [dbo.Quote](#dboquote).`QuoteID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
@@ -1205,6 +1408,9 @@ Giao dịch tiền thực nhận và đối soát.
 | `PostedAt` | `DATETIME2(0)` | Không | Không | — | — |
 | `ReconciledAt` | `DATETIME2(0)` | Có | Không | — | — |
 | `Status` | `VARCHAR(50)` | Không | Không | — | — |
+| `VerificationSource` | `NVARCHAR(500)` | Có | Không | — | — |
+| `EvidenceFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
+| `InternalNotes` | `NVARCHAR(2000)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
@@ -1277,11 +1483,19 @@ Lựa chọn gói cách ly và số ngày được xác nhận.
 | `StartsAt` | `DATETIME2(0)` | Không | Không | — | — |
 | `EndsAt` | `DATETIME2(0)` | Không | Không | — | — |
 | `Status` | `VARCHAR(50)` | Không | Không | — | — |
+| `SupplierID` | `BIGINT` | Có | Không | FK | — |
+| `EvidenceFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
+| `ConfirmedBy` | `BIGINT` | Có | Không | FK | — |
+| `ConfirmedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `ExpiresAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `FacilityContact` | `NVARCHAR(500)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_QuarantineReservation_ConfirmedBy` | `ConfirmedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_QuarantineReservation_SupplierID` | `SupplierID` | [dbo.Supplier](#dbosupplier).`SupplierID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_QuarantineReservation_QuarantineChoiceID` | `QuarantineChoiceID` | [dbo.QuarantineChoice](#dboquarantinechoice).`QuarantineChoiceID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
@@ -1305,8 +1519,8 @@ Báo giá tổng thể gửi khách.
 
 | Cột | Kiểu dữ liệu | NULL | Identity | Khóa / index duy nhất | Giá trị mặc định |
 |---|---|---|---|---|---|
-| `QuoteID` | `BIGINT` | Không | Có | PK | — |
-| `RevisionID` | `BIGINT` | Không | Không | UNIQUE tổ hợp UQ_Quote_Revision_Version; FK | — |
+| `QuoteID` | `BIGINT` | Không | Có | PK; UNIQUE tổ hợp UQ_Figma_Quote_Parent | — |
+| `RevisionID` | `BIGINT` | Không | Không | UNIQUE tổ hợp UQ_Quote_Revision_Version; UNIQUE tổ hợp UQ_Figma_Quote_Parent; FK | — |
 | `ApprovedBy` | `BIGINT` | Có | Không | FK | — |
 | `QuoteNumber` | `VARCHAR(30)` | Không | Không | UNIQUE UQ_Quote_QuoteNumber | — |
 | `VersionNo` | `INT` | Không | Không | UNIQUE tổ hợp UQ_Quote_Revision_Version | `((1))` |
@@ -1318,11 +1532,23 @@ Báo giá tổng thể gửi khách.
 | `ValidUntil` | `DATETIME2(0)` | Có | Không | — | — |
 | `AcceptedAt` | `DATETIME2(0)` | Có | Không | — | — |
 | `CreatedAt` | `DATETIME2(0)` | Không | Không | — | `(sysutcdatetime())` |
+| `PreparedBy` | `BIGINT` | Có | Không | FK | — |
+| `SubmittedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `IssuedBy` | `BIGINT` | Có | Không | FK | — |
+| `AcceptedByCustomerID` | `BIGINT` | Có | Không | FK | — |
+| `TermsVersion` | `VARCHAR(50)` | Có | Không | — | — |
+| `TermsText` | `NVARCHAR(MAX)` | Có | Không | — | — |
+| `CancellationTerms` | `NVARCHAR(MAX)` | Có | Không | — | — |
+| `TermsFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
+| `ReviewFeedback` | `NVARCHAR(2000)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_Quote_AcceptedByCustomerID` | `AcceptedByCustomerID` | [dbo.Customer](#dbocustomer).`CustomerID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_Quote_IssuedBy` | `IssuedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_Quote_PreparedBy` | `PreparedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_Quote_ApprovedBy` | `ApprovedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_Quote_Revision` | `RevisionID` | [dbo.OrderRevision](#dboorderrevision).`RevisionID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
@@ -1330,6 +1556,9 @@ Báo giá tổng thể gửi khách.
 
 - [dbo.PaymentRequest](#dbopaymentrequest).`QuoteID` → `QuoteID`.
 - [dbo.QuoteItem](#dboquoteitem).`QuoteID` → `QuoteID`.
+- [dbo.QuotePaymentSchedule](#dboquotepaymentschedule).`QuoteID` → `QuoteID`.
+- [dbo.TransportPlan](#dbotransportplan).`AcceptedQuoteID` → `QuoteID`.
+- [dbo.TransportPlan](#dbotransportplan).`RevisionID` → `RevisionID`.
 
 **Index và ràng buộc duy nhất**
 
@@ -1338,6 +1567,7 @@ Báo giá tổng thể gửi khách.
 | `PK_Quote` | PRIMARY KEY | QuoteID | — | — |
 | `UQ_Quote_Revision_Version` | UNIQUE | RevisionID, VersionNo | — | — |
 | `UQ_Quote_QuoteNumber` | UNIQUE | QuoteNumber | — | — |
+| `UQ_Figma_Quote_Parent` | UNIQUE | QuoteID, RevisionID | — | — |
 
 **CHECK constraints**
 
@@ -1395,6 +1625,44 @@ Không có.
 - `CK_QuoteItem_Amount`: `([Amount]>=(0))`. Bật: Có; đã xác thực: Có.
 - `CK_QuoteItem_CalculationInputs_JSON`: `([CalculationInputs] IS NULL OR isjson([CalculationInputs])=(1))`. Bật: Có; đã xác thực: Có.
 
+### dbo.QuotePaymentSchedule
+
+Lịch nghĩa vụ thanh toán gắn với báo giá.
+
+| Cột | Kiểu dữ liệu | NULL | Identity | Khóa / index duy nhất | Giá trị mặc định |
+|---|---|---|---|---|---|
+| `ScheduleID` | `BIGINT` | Không | Có | PK; UNIQUE tổ hợp UQ_QuotePaymentSchedule_Parent | — |
+| `QuoteID` | `BIGINT` | Không | Không | UNIQUE tổ hợp UQ_QuotePaymentSchedule_Parent; UNIQUE tổ hợp UQ_QuotePaymentSchedule_Sequence; FK | — |
+| `SequenceNo` | `INT` | Không | Không | UNIQUE tổ hợp UQ_QuotePaymentSchedule_Sequence | — |
+| `PaymentStage` | `VARCHAR(50)` | Không | Không | — | — |
+| `AmountDue` | `DECIMAL(18,2)` | Không | Không | — | — |
+| `Currency` | `VARCHAR(3)` | Không | Không | — | — |
+| `DueAt` | `DATETIME2(0)` | Có | Không | — | — |
+
+**Khóa ngoại của bảng**
+
+| Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
+|---|---|---|---|---|---|
+| `FK_Figma_QuotePaymentSchedule_QuoteID` | `QuoteID` | [dbo.Quote](#dboquote).`QuoteID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+
+**Các bảng tham chiếu đến bảng này**
+
+- [dbo.PaymentRequest](#dbopaymentrequest).`ScheduleID` → `ScheduleID`.
+- [dbo.PaymentRequest](#dbopaymentrequest).`QuoteID` → `QuoteID`.
+
+**Index và ràng buộc duy nhất**
+
+| Tên | Loại | Cột khóa | Cột INCLUDE | Điều kiện lọc |
+|---|---|---|---|---|
+| `PK_QuotePaymentSchedule` | PRIMARY KEY | ScheduleID | — | — |
+| `UQ_QuotePaymentSchedule_Parent` | UNIQUE | ScheduleID, QuoteID | — | — |
+| `UQ_QuotePaymentSchedule_Sequence` | UNIQUE | QuoteID, SequenceNo | — | — |
+
+**CHECK constraints**
+
+- `CK_QuotePaymentSchedule_Sequence`: `([SequenceNo]>(0))`. Bật: Có; đã xác thực: Có.
+- `CK_QuotePaymentSchedule_Amount`: `([AmountDue]>(0))`. Bật: Có; đã xác thực: Có.
+
 ### dbo.Refund
 
 Hoàn tiền theo khoản phân bổ.
@@ -1407,11 +1675,19 @@ Hoàn tiền theo khoản phân bổ.
 | `Reason` | `NVARCHAR(2000)` | Không | Không | — | — |
 | `Status` | `VARCHAR(50)` | Không | Không | — | — |
 | `RefundedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `RequestedBy` | `BIGINT` | Có | Không | FK | — |
+| `RequestedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `ApprovedBy` | `BIGINT` | Có | Không | FK | — |
+| `ApprovedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `BankRefundReference` | `VARCHAR(150)` | Có | Không | — | — |
+| `ProofFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_Refund_ApprovedBy` | `ApprovedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_Refund_RequestedBy` | `RequestedBy` | [dbo.User](#dbouser).`UserID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_Refund_AllocationID` | `AllocationID` | [dbo.PaymentAllocation](#dbopaymentallocation).`AllocationID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
@@ -1453,6 +1729,34 @@ Không có.
 |---|---|---|---|---|
 | `PK_Role` | PRIMARY KEY | RoleID | — | — |
 | `UQ_Role_RoleCode` | UNIQUE | RoleCode | — | — |
+
+**CHECK constraints**
+
+Không có.
+
+### dbo.SchemaMigrationHistory
+
+Lịch sử migration kỹ thuật; không phải dữ liệu nghiệp vụ.
+
+| Cột | Kiểu dữ liệu | NULL | Identity | Khóa / index duy nhất | Giá trị mặc định |
+|---|---|---|---|---|---|
+| `MigrationID` | `VARCHAR(100)` | Không | Không | PK | — |
+| `AppliedAt` | `DATETIME2(0)` | Không | Không | — | `(sysutcdatetime())` |
+| `AppliedBy` | `NVARCHAR(128)` | Không | Không | — | `(suser_sname())` |
+
+**Khóa ngoại của bảng**
+
+Không có.
+
+**Các bảng tham chiếu đến bảng này**
+
+Không có.
+
+**Index và ràng buộc duy nhất**
+
+| Tên | Loại | Cột khóa | Cột INCLUDE | Điều kiện lọc |
+|---|---|---|---|---|
+| `PK_SchemaMigrationHistory` | PRIMARY KEY | MigrationID | — | — |
 
 **CHECK constraints**
 
@@ -1518,19 +1822,31 @@ Hồ sơ nhân viên.
 
 **Các bảng tham chiếu đến bảng này**
 
+- [dbo.ActualCost](#dboactualcost).`RecordedBy` → `StaffID`.
+- [dbo.AuthorityProcedure](#dboauthorityprocedure).`RecordedBy` → `StaffID`.
 - [dbo.ComplianceClearance](#dbocomplianceclearance).`SpecialistID` → `StaffID`.
 - [dbo.DocumentReview](#dbodocumentreview).`ReviewedBy` → `StaffID`.
+- [dbo.FlightReservation](#dboflightreservation).`ConfirmedBy` → `StaffID`.
 - [dbo.HorseReceipt](#dbohorsereceipt).`ReceivedBy` → `StaffID`.
 - [dbo.HorseWelfareLog](#dbohorsewelfarelog).`RecordedBy` → `StaffID`.
+- [dbo.IncidentReport](#dboincidentreport).`AcknowledgedBy` → `StaffID`.
+- [dbo.IncidentReport](#dboincidentreport).`ResolvedBy` → `StaffID`.
 - [dbo.IncidentReport](#dboincidentreport).`ReportedBy` → `StaffID`.
+- [dbo.InsurancePolicy](#dboinsurancepolicy).`VerifiedBy` → `StaffID`.
 - [dbo.LegMilestoneLog](#dbolegmilestonelog).`ReportedBy` → `StaffID`.
 - [dbo.OperationalAdjustment](#dbooperationaladjustment).`ApprovedBy` → `StaffID`.
 - [dbo.OperationalAdjustment](#dbooperationaladjustment).`ProposedBy` → `StaffID`.
 - [dbo.OrderAssignment](#dboorderassignment).`StaffID` → `StaffID`.
+- [dbo.OrderChangeRequest](#dboorderchangerequest).`RespondedBy` → `StaffID`.
 - [dbo.OrderDecision](#dboorderdecision).`ManagerID` → `StaffID`.
 - [dbo.PaymentTransaction](#dbopaymenttransaction).`ReconciledBy` → `StaffID`.
 - [dbo.QuarantineChoice](#dboquarantinechoice).`ConfirmedBy` → `StaffID`.
+- [dbo.QuarantineReservation](#dboquarantinereservation).`ConfirmedBy` → `StaffID`.
+- [dbo.Quote](#dboquote).`IssuedBy` → `StaffID`.
+- [dbo.Quote](#dboquote).`PreparedBy` → `StaffID`.
 - [dbo.Quote](#dboquote).`ApprovedBy` → `StaffID`.
+- [dbo.Refund](#dborefund).`ApprovedBy` → `StaffID`.
+- [dbo.StallFitPolicy](#dbostallfitpolicy).`ReviewedBy` → `StaffID`.
 - [dbo.TransportPlan](#dbotransportplan).`CreatedBy` → `StaffID`.
 - [dbo.TransportPlan](#dbotransportplan).`DepartureAuthorizedBy` → `StaffID`.
 - [dbo.TripAssignment](#dbotripassignment).`StaffID` → `StaffID`.
@@ -1563,6 +1879,10 @@ Bố trí stall cho chặng.
 | `AssignedFrom` | `DATETIME2(0)` | Có | Không | — | — |
 | `AssignedTo` | `DATETIME2(0)` | Có | Không | — | — |
 | `Status` | `VARCHAR(50)` | Không | Không | — | — |
+| `PositionDescription` | `NVARCHAR(500)` | Có | Không | — | — |
+| `CarrierApprovalFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
+| `CarrierApprovedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `CarrierContact` | `NVARCHAR(500)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
@@ -1634,14 +1954,23 @@ Danh mục stall thực tế và kích thước.
 | `InternalHeightCm` | `DECIMAL(8,2)` | Không | Không | — | — |
 | `InternalWidthCm` | `DECIMAL(8,2)` | Không | Không | — | — |
 | `EquipmentStatus` | `VARCHAR(50)` | Không | Không | — | — |
+| `OwnerSupplierID` | `BIGINT` | Có | Không | FK | — |
+| `WeightLimitKg` | `DECIMAL(8,2)` | Có | Không | — | — |
+| `MaintenanceFrom` | `DATETIME2(0)` | Có | Không | — | — |
+| `MaintenanceTo` | `DATETIME2(0)` | Có | Không | — | — |
+| `DocumentExpiresAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `AssetNotes` | `NVARCHAR(2000)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
-Không có.
+| Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
+|---|---|---|---|---|---|
+| `FK_Figma_StallEquipment_OwnerSupplierID` | `OwnerSupplierID` | [dbo.Supplier](#dbosupplier).`SupplierID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
 
 - [dbo.StallAssignment](#dbostallassignment).`StallID` → `StallID`.
+- [dbo.StallFitPolicy](#dbostallfitpolicy).`StallID` → `StallID`.
 
 **Index và ràng buộc duy nhất**
 
@@ -1652,7 +1981,99 @@ Không có.
 
 **CHECK constraints**
 
+- `CK_Figma_StallEquipment_WeightLimitKg`: `([WeightLimitKg]>(0))`. Bật: Có; đã xác thực: Có.
+- `CK_Figma_StallEquipment_MaintenanceDates`: `([MaintenanceTo] IS NULL OR [MaintenanceFrom] IS NOT NULL AND [MaintenanceTo]>=[MaintenanceFrom])`. Bật: Có; đã xác thực: Có.
 - `CK_StallEquipment_CapacitySlots`: `([CapacitySlots]>(0))`. Bật: Có; đã xác thực: Có.
+
+### dbo.StallFitPolicy
+
+Chính sách giới hạn cân nặng/kích thước có nguồn, phiên bản và phê duyệt.
+
+| Cột | Kiểu dữ liệu | NULL | Identity | Khóa / index duy nhất | Giá trị mặc định |
+|---|---|---|---|---|---|
+| `PolicyID` | `BIGINT` | Không | Có | PK | — |
+| `PolicyCode` | `VARCHAR(50)` | Không | Không | UNIQUE tổ hợp UQ_StallFitPolicy_Version | — |
+| `VersionNo` | `INT` | Không | Không | UNIQUE tổ hợp UQ_StallFitPolicy_Version | — |
+| `StallID` | `BIGINT` | Có | Không | FK | — |
+| `CarrierSupplierID` | `BIGINT` | Có | Không | FK | — |
+| `SlotQuantity` | `DECIMAL(5,1)` | Không | Không | — | — |
+| `MaxWeightKg` | `DECIMAL(8,2)` | Có | Không | — | — |
+| `MaxHeightCm` | `DECIMAL(8,2)` | Có | Không | — | — |
+| `MaxWidthCm` | `DECIMAL(8,2)` | Có | Không | — | — |
+| `EffectiveFrom` | `DATETIME2(0)` | Không | Không | — | — |
+| `EffectiveTo` | `DATETIME2(0)` | Có | Không | — | — |
+| `SourceURL` | `NVARCHAR(2048)` | Có | Không | — | — |
+| `SourceFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
+| `ReviewedBy` | `BIGINT` | Có | Không | FK | — |
+| `ReviewedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `Status` | `VARCHAR(20)` | Không | Không | — | — |
+
+**Khóa ngoại của bảng**
+
+| Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
+|---|---|---|---|---|---|
+| `FK_Figma_StallFitPolicy_CarrierSupplierID` | `CarrierSupplierID` | [dbo.Supplier](#dbosupplier).`SupplierID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_StallFitPolicy_ReviewedBy` | `ReviewedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_StallFitPolicy_StallID` | `StallID` | [dbo.StallEquipment](#dbostallequipment).`StallID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+
+**Các bảng tham chiếu đến bảng này**
+
+Không có.
+
+**Index và ràng buộc duy nhất**
+
+| Tên | Loại | Cột khóa | Cột INCLUDE | Điều kiện lọc |
+|---|---|---|---|---|
+| `PK_StallFitPolicy` | PRIMARY KEY | PolicyID | — | — |
+| `UQ_StallFitPolicy_Version` | UNIQUE | PolicyCode, VersionNo | — | — |
+
+**CHECK constraints**
+
+- `CK_StallFitPolicy_Version`: `([VersionNo]>(0))`. Bật: Có; đã xác thực: Có.
+- `CK_StallFitPolicy_Slots`: `([SlotQuantity]=(3.0) OR [SlotQuantity]=(1.5) OR [SlotQuantity]=(1.0))`. Bật: Có; đã xác thực: Có.
+- `CK_StallFitPolicy_Dimensions`: `([MaxWeightKg]>(0) AND [MaxHeightCm]>(0) AND [MaxWidthCm]>(0))`. Bật: Có; đã xác thực: Có.
+- `CK_StallFitPolicy_Dates`: `([EffectiveTo] IS NULL OR [EffectiveTo]>[EffectiveFrom])`. Bật: Có; đã xác thực: Có.
+- `CK_StallFitPolicy_Status`: `([Status]='INACTIVE' OR [Status]='APPROVED' OR [Status]='DRAFT')`. Bật: Có; đã xác thực: Có.
+- `CK_StallFitPolicy_Approval`: `([Status]<>'APPROVED' OR [ReviewedBy] IS NOT NULL AND [ReviewedAt] IS NOT NULL AND [MaxWeightKg] IS NOT NULL AND [MaxHeightCm] IS NOT NULL AND [MaxWidthCm] IS NOT NULL AND ([SourceURL] IS NOT NULL OR [SourceFileKey] IS NOT NULL))`. Bật: Có; đã xác thực: Có.
+
+### dbo.Supplier
+
+Đối tác cung cấp dịch vụ; không phải tài khoản khách hàng tổ chức.
+
+| Cột | Kiểu dữ liệu | NULL | Identity | Khóa / index duy nhất | Giá trị mặc định |
+|---|---|---|---|---|---|
+| `SupplierID` | `BIGINT` | Không | Có | PK | — |
+| `Name` | `NVARCHAR(200)` | Không | Không | — | — |
+| `ContactName` | `NVARCHAR(150)` | Có | Không | — | — |
+| `Email` | `VARCHAR(255)` | Có | Không | — | — |
+| `Phone` | `VARCHAR(30)` | Có | Không | — | — |
+| `ServicesOfferedJSON` | `NVARCHAR(MAX)` | Có | Không | — | — |
+| `IsActive` | `BIT` | Không | Không | — | `((1))` |
+| `CreatedAt` | `DATETIME2(0)` | Không | Không | — | `(sysutcdatetime())` |
+
+**Khóa ngoại của bảng**
+
+Không có.
+
+**Các bảng tham chiếu đến bảng này**
+
+- [dbo.FleetVehicle](#dbofleetvehicle).`OwnerSupplierID` → `SupplierID`.
+- [dbo.QuarantineReservation](#dboquarantinereservation).`SupplierID` → `SupplierID`.
+- [dbo.StallEquipment](#dbostallequipment).`OwnerSupplierID` → `SupplierID`.
+- [dbo.StallFitPolicy](#dbostallfitpolicy).`CarrierSupplierID` → `SupplierID`.
+- [dbo.SupplierOffer](#dbosupplieroffer).`SupplierID` → `SupplierID`.
+- [dbo.TripLeg](#dbotripleg).`SupplierID` → `SupplierID`.
+
+**Index và ràng buộc duy nhất**
+
+| Tên | Loại | Cột khóa | Cột INCLUDE | Điều kiện lọc |
+|---|---|---|---|---|
+| `PK_Supplier` | PRIMARY KEY | SupplierID | — | — |
+
+**CHECK constraints**
+
+- `CK_Supplier_Name`: `(len(ltrim(rtrim([Name])))>(0))`. Bật: Có; đã xác thực: Có.
+- `CK_Supplier_ServicesJSON`: `([ServicesOfferedJSON] IS NULL OR isjson([ServicesOfferedJSON])=(1))`. Bật: Có; đã xác thực: Có.
 
 ### dbo.SupplierOffer
 
@@ -1673,11 +2094,15 @@ Báo giá đầu vào từ đối tác.
 | `IncludedCharges` | `NVARCHAR(MAX)` | Có | Không | — | — |
 | `ValidUntil` | `DATETIME2(0)` | Không | Không | — | — |
 | `Status` | `VARCHAR(20)` | Không | Không | — | `('RECEIVED')` |
+| `SupplierID` | `BIGINT` | Có | Không | FK | — |
+| `EvidenceFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
+| `SourceContact` | `NVARCHAR(500)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_SupplierOffer_SupplierID` | `SupplierID` | [dbo.Supplier](#dbosupplier).`SupplierID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_SupplierOffer_Revision` | `RevisionID` | [dbo.OrderRevision](#dboorderrevision).`RevisionID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
@@ -1735,7 +2160,7 @@ Thông tin hiện tại của đơn vận chuyển.
 
 | Cột | Kiểu dữ liệu | NULL | Identity | Khóa / index duy nhất | Giá trị mặc định |
 |---|---|---|---|---|---|
-| `OrderID` | `BIGINT` | Không | Có | PK | — |
+| `OrderID` | `BIGINT` | Không | Có | PK; FK | — |
 | `CustomerID` | `BIGINT` | Không | Không | FK | — |
 | `OrderNumber` | `VARCHAR(30)` | Không | Không | UNIQUE UQ_TransportOrder_OrderNumber | — |
 | `OriginCountryCode` | `VARCHAR(2)` | Có | Không | — | — |
@@ -1749,17 +2174,38 @@ Thông tin hiện tại của đơn vận chuyển.
 | `Currency` | `VARCHAR(3)` | Không | Không | — | `('USD')` |
 | `OrderStatus` | `VARCHAR(30)` | Không | Không | — | `('DRAFT')` |
 | `CreatedAt` | `DATETIME2(0)` | Không | Không | — | `(sysutcdatetime())` |
+| `PreferredDepartureAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `DateFlexibilityNotes` | `NVARCHAR(500)` | Có | Không | — | — |
+| `ReceiverName` | `NVARCHAR(150)` | Có | Không | — | — |
+| `ReceiverPhone` | `VARCHAR(30)` | Có | Không | — | — |
+| `ReceiverEmail` | `VARCHAR(255)` | Có | Không | — | — |
+| `ReceiverAuthority` | `NVARCHAR(500)` | Có | Không | — | — |
+| `ImportType` | `VARCHAR(20)` | Có | Không | — | — |
+| `EventName` | `NVARCHAR(200)` | Có | Không | — | — |
+| `EventVenue` | `NVARCHAR(300)` | Có | Không | — | — |
+| `EventTimezone` | `VARCHAR(100)` | Có | Không | — | — |
+| `TransitAirportsJSON` | `NVARCHAR(MAX)` | Có | Không | — | — |
+| `DraftPayloadJSON` | `NVARCHAR(MAX)` | Có | Không | — | — |
+| `UpdatedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `CurrentRevisionID` | `BIGINT` | Có | Không | FK | — |
+| `CurrentPlanID` | `BIGINT` | Có | Không | FK | — |
+| `RecordVersion` | `TIMESTAMP` | Không | Không | — | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_TransportOrder_CurrentPlanID` | `OrderID` | [dbo.TransportPlan](#dbotransportplan).`OrderID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_TransportOrder_CurrentPlanID` | `CurrentPlanID` | [dbo.TransportPlan](#dbotransportplan).`PlanID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_TransportOrder_CurrentRevisionID` | `CurrentRevisionID` | [dbo.OrderRevision](#dboorderrevision).`RevisionID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_TransportOrder_CurrentRevisionID` | `OrderID` | [dbo.OrderRevision](#dboorderrevision).`OrderID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_TransportOrder_Customer` | `CustomerID` | [dbo.Customer](#dbocustomer).`CustomerID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
 
 - [dbo.Notification](#dbonotification).`OrderID` → `OrderID`.
 - [dbo.OrderAssignment](#dboorderassignment).`OrderID` → `OrderID`.
+- [dbo.OrderChangeRequest](#dboorderchangerequest).`OrderID` → `OrderID`.
 - [dbo.OrderRevision](#dboorderrevision).`OrderID` → `OrderID`.
 - [dbo.TransportOrderDetail](#dbotransportorderdetail).`OrderID` → `OrderID`.
 
@@ -1772,7 +2218,9 @@ Thông tin hiện tại của đơn vận chuyển.
 
 **CHECK constraints**
 
-Không có.
+- `CK_Figma_TransportOrder_TransitAirportsJSON`: `([TransitAirportsJSON] IS NULL OR isjson([TransitAirportsJSON])=(1))`. Bật: Có; đã xác thực: Có.
+- `CK_Figma_TransportOrder_DraftPayloadJSON`: `([DraftPayloadJSON] IS NULL OR isjson([DraftPayloadJSON])=(1))`. Bật: Có; đã xác thực: Có.
+- `CK_Figma_TransportOrder_ImportType`: `([ImportType]='NEEDS_ADVICE' OR [ImportType]='PERMANENT' OR [ImportType]='TEMPORARY')`. Bật: Có; đã xác thực: Có.
 
 ### dbo.TransportOrderDetail
 
@@ -1822,7 +2270,7 @@ Kế hoạch vận chuyển và điều kiện xuất phát.
 
 | Cột | Kiểu dữ liệu | NULL | Identity | Khóa / index duy nhất | Giá trị mặc định |
 |---|---|---|---|---|---|
-| `PlanID` | `BIGINT` | Không | Có | PK | — |
+| `PlanID` | `BIGINT` | Không | Có | PK; UNIQUE tổ hợp UQ_Figma_TransportPlan_Parent | — |
 | `RevisionID` | `BIGINT` | Không | Không | UNIQUE tổ hợp UQ_TransportPlan_Version; FK | — |
 | `CreatedBy` | `BIGINT` | Không | Không | FK | — |
 | `DepartureAuthorizedBy` | `BIGINT` | Có | Không | FK | — |
@@ -1835,11 +2283,17 @@ Kế hoạch vận chuyển và điều kiện xuất phát.
 | `GatesCheckedAt` | `DATETIME2(0)` | Có | Không | — | — |
 | `DepartureAuthorizedAt` | `DATETIME2(0)` | Có | Không | — | — |
 | `PlanStatus` | `VARCHAR(50)` | Không | Không | — | — |
+| `OrderID` | `BIGINT` | Không | Không | UNIQUE tổ hợp UQ_Figma_TransportPlan_Parent; FK | — |
+| `AcceptedQuoteID` | `BIGINT` | Có | Không | FK | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_TransportPlan_AcceptedQuoteID` | `AcceptedQuoteID` | [dbo.Quote](#dboquote).`QuoteID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_TransportPlan_AcceptedQuoteID` | `RevisionID` | [dbo.Quote](#dboquote).`RevisionID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_TransportPlan_RevisionID` | `OrderID` | [dbo.OrderRevision](#dboorderrevision).`OrderID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
+| `FK_Figma_TransportPlan_RevisionID` | `RevisionID` | [dbo.OrderRevision](#dboorderrevision).`RevisionID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_TransportPlan_CreatedBy` | `CreatedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_TransportPlan_DepartureAuthorizedBy` | `DepartureAuthorizedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_TransportPlan_RevisionID` | `RevisionID` | [dbo.OrderRevision](#dboorderrevision).`RevisionID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
@@ -1849,6 +2303,8 @@ Kế hoạch vận chuyển và điều kiện xuất phát.
 - [dbo.ActualCost](#dboactualcost).`PlanID` → `PlanID`.
 - [dbo.HorseReceipt](#dbohorsereceipt).`PlanID` → `PlanID`.
 - [dbo.OperationalAdjustment](#dbooperationaladjustment).`PlanID` → `PlanID`.
+- [dbo.TransportOrder](#dbotransportorder).`OrderID` → `OrderID`.
+- [dbo.TransportOrder](#dbotransportorder).`CurrentPlanID` → `PlanID`.
 - [dbo.TripLeg](#dbotripleg).`PlanID` → `PlanID`.
 
 **Index và ràng buộc duy nhất**
@@ -1859,6 +2315,7 @@ Kế hoạch vận chuyển và điều kiện xuất phát.
 | `UQ_TransportPlan_Version` | UNIQUE | RevisionID, VersionNo | — | — |
 | `IX_TransportPlan_CreatedBy` | INDEX | CreatedBy | — | — |
 | `IX_TransportPlan_DepartureAuthorizedBy` | INDEX | DepartureAuthorizedBy | — | — |
+| `UQ_Figma_TransportPlan_Parent` | UNIQUE | PlanID, OrderID | — | — |
 
 **CHECK constraints**
 
@@ -1878,6 +2335,8 @@ Phân công nhân viên cho chặng.
 | `AssignedFrom` | `DATETIME2(0)` | Có | Không | — | — |
 | `AssignedTo` | `DATETIME2(0)` | Có | Không | — | — |
 | `Status` | `VARCHAR(50)` | Không | Không | — | — |
+| `BufferMinutes` | `INT` | Có | Không | — | — |
+| `ConflictNotes` | `NVARCHAR(1000)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
@@ -1900,6 +2359,7 @@ Không có.
 
 **CHECK constraints**
 
+- `CK_Figma_TripAssignment_BufferMinutes`: `([BufferMinutes]>=(0))`. Bật: Có; đã xác thực: Có.
 - `CK_TripAssignment_AssignedTo_Range`: `([AssignedTo] IS NULL OR [AssignedFrom] IS NOT NULL AND [AssignedTo]>=[AssignedFrom])`. Bật: Có; đã xác thực: Có.
 
 ### dbo.TripHandover
@@ -1921,11 +2381,18 @@ Biên bản bàn giao ngựa.
 | `ExceptionNotes` | `NVARCHAR(2000)` | Có | Không | — | — |
 | `PhotoFileKey` | `NVARCHAR(1024)` | Có | Không | — | — |
 | `CustomerConfirmedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `LocationDescription` | `NVARCHAR(500)` | Có | Không | — | — |
+| `CustomerDecision` | `VARCHAR(20)` | Có | Không | — | — |
+| `CustomerFeedback` | `NVARCHAR(2000)` | Có | Không | — | — |
+| `CustomerRespondedAt` | `DATETIME2(0)` | Có | Không | — | — |
+| `RespondedByCustomerID` | `BIGINT` | Có | Không | FK | — |
+| `EvidenceFilesJSON` | `NVARCHAR(MAX)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_TripHandover_RespondedByCustomerID` | `RespondedByCustomerID` | [dbo.Customer](#dbocustomer).`CustomerID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_TripHandover_LegID` | `LegID` | [dbo.TripLeg](#dbotripleg).`LegID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_TripHandover_RecordedBy` | `RecordedBy` | [dbo.StaffProfile](#dbostaffprofile).`StaffID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
@@ -1943,7 +2410,8 @@ Không có.
 
 **CHECK constraints**
 
-Không có.
+- `CK_Figma_TripHandover_EvidenceFilesJSON`: `([EvidenceFilesJSON] IS NULL OR isjson([EvidenceFilesJSON])=(1))`. Bật: Có; đã xác thực: Có.
+- `CK_Figma_TripHandover_CustomerDecision`: `([CustomerDecision]='NOT_DELIVERED' OR [CustomerDecision]='EXCEPTION' OR [CustomerDecision]='ACCEPTED')`. Bật: Có; đã xác thực: Có.
 
 ### dbo.TripLeg
 
@@ -1951,8 +2419,8 @@ Từng chặng trong kế hoạch vận chuyển.
 
 | Cột | Kiểu dữ liệu | NULL | Identity | Khóa / index duy nhất | Giá trị mặc định |
 |---|---|---|---|---|---|
-| `LegID` | `BIGINT` | Không | Có | PK | — |
-| `PlanID` | `BIGINT` | Không | Không | UNIQUE tổ hợp UQ_TripLeg_Sequence; FK | — |
+| `LegID` | `BIGINT` | Không | Có | PK; UNIQUE tổ hợp UQ_Figma_TripLeg_Parent | — |
+| `PlanID` | `BIGINT` | Không | Không | UNIQUE tổ hợp UQ_TripLeg_Sequence; UNIQUE tổ hợp UQ_Figma_TripLeg_Parent; FK | — |
 | `VehicleID` | `BIGINT` | Có | Không | FK | — |
 | `SequenceNo` | `INT` | Không | Không | UNIQUE tổ hợp UQ_TripLeg_Sequence | — |
 | `TransportMode` | `VARCHAR(50)` | Không | Không | — | — |
@@ -1964,18 +2432,30 @@ Từng chặng trong kế hoạch vận chuyển.
 | `ActualDeparture` | `DATETIME2(0)` | Có | Không | — | — |
 | `ActualArrival` | `DATETIME2(0)` | Có | Không | — | — |
 | `LegStatus` | `VARCHAR(50)` | Không | Không | — | — |
+| `StartTimezone` | `VARCHAR(100)` | Có | Không | — | — |
+| `EndTimezone` | `VARCHAR(100)` | Có | Không | — | — |
+| `SupplierID` | `BIGINT` | Có | Không | FK | — |
+| `PlannedFlightNumber` | `VARCHAR(50)` | Có | Không | — | — |
+| `ConnectionBufferMinutes` | `INT` | Có | Không | — | — |
+| `RestDurationMinutes` | `INT` | Có | Không | — | — |
+| `CareInstructions` | `NVARCHAR(2000)` | Có | Không | — | — |
 
 **Khóa ngoại của bảng**
 
 | Tên constraint | Cột | Tham chiếu | ON DELETE | ON UPDATE | Bật / đã xác thực |
 |---|---|---|---|---|---|
+| `FK_Figma_TripLeg_SupplierID` | `SupplierID` | [dbo.Supplier](#dbosupplier).`SupplierID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_TripLeg_PlanID` | `PlanID` | [dbo.TransportPlan](#dbotransportplan).`PlanID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 | `FK_TripLeg_VehicleID` | `VehicleID` | [dbo.FleetVehicle](#dbofleetvehicle).`VehicleID` | `NO_ACTION` | `NO_ACTION` | Có / Có |
 
 **Các bảng tham chiếu đến bảng này**
 
 - [dbo.ActualCost](#dboactualcost).`LegID` → `LegID`.
+- [dbo.ActualCost](#dboactualcost).`LegID` → `LegID`.
+- [dbo.ActualCost](#dboactualcost).`PlanID` → `PlanID`.
 - [dbo.FlightReservation](#dboflightreservation).`LegID` → `LegID`.
+- [dbo.HorseReceipt](#dbohorsereceipt).`LegID` → `LegID`.
+- [dbo.HorseReceipt](#dbohorsereceipt).`PlanID` → `PlanID`.
 - [dbo.HorseWelfareLog](#dbohorsewelfarelog).`LegID` → `LegID`.
 - [dbo.IncidentReport](#dboincidentreport).`LegID` → `LegID`.
 - [dbo.LegMilestoneLog](#dbolegmilestonelog).`LegID` → `LegID`.
@@ -1990,9 +2470,12 @@ Từng chặng trong kế hoạch vận chuyển.
 | `PK_TripLeg` | PRIMARY KEY | LegID | — | — |
 | `UQ_TripLeg_Sequence` | UNIQUE | PlanID, SequenceNo | — | — |
 | `IX_TripLeg_VehicleID` | INDEX | VehicleID | — | — |
+| `UQ_Figma_TripLeg_Parent` | UNIQUE | LegID, PlanID | — | — |
 
 **CHECK constraints**
 
+- `CK_Figma_TripLeg_ConnectionBufferMinutes`: `([ConnectionBufferMinutes]>=(0))`. Bật: Có; đã xác thực: Có.
+- `CK_Figma_TripLeg_RestDurationMinutes`: `([RestDurationMinutes]>=(0))`. Bật: Có; đã xác thực: Có.
 - `CK_TripLeg_SequenceNo`: `([SequenceNo]>(0))`. Bật: Có; đã xác thực: Có.
 - `CK_TripLeg_DistanceKm`: `([DistanceKm]>=(0))`. Bật: Có; đã xác thực: Có.
 - `CK_TripLeg_PlannedArrival_Range`: `([PlannedArrival] IS NULL OR [PlannedDeparture] IS NOT NULL AND [PlannedArrival]>=[PlannedDeparture])`. Bật: Có; đã xác thực: Có.
@@ -2022,7 +2505,10 @@ Tài khoản đăng nhập và vai trò.
 - [dbo.AuditEvent](#dboauditevent).`UserID` → `UserID`.
 - [dbo.AuthenticationToken](#dboauthenticationtoken).`UserID` → `UserID`.
 - [dbo.Customer](#dbocustomer).`UserID` → `UserID`.
+- [dbo.DocumentVersion](#dbodocumentversion).`UploadedBy` → `UserID`.
 - [dbo.Notification](#dbonotification).`UserID` → `UserID`.
+- [dbo.OrderChangeRequest](#dboorderchangerequest).`RequestedBy` → `UserID`.
+- [dbo.Refund](#dborefund).`RequestedBy` → `UserID`.
 - [dbo.StaffProfile](#dbostaffprofile).`UserID` → `UserID`.
 
 **Index và ràng buộc duy nhất**

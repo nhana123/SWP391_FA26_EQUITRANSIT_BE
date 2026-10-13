@@ -6,7 +6,7 @@ Ngày thống nhất: 2026-10-13. Repo: `nhana123/SWP391_FA26_EQUITRANSIT_BE`. N
 
 ## 1. Nguồn và cách giải quyết mâu thuẫn
 
-Thứ tự quyết định: yêu cầu mới nhất của người dùng → hợp đồng đã thống nhất này → đặc tả booking cập nhật và model plugin → màn actor của English Workflow → tài liệu cũ. Database live quyết định tên/kiểu/khóa đang tồn tại; nếu thiếu dữ liệu để đáp ứng nghiệp vụ thì đề xuất migration, không bỏ yêu cầu hoặc bịa cột.
+Thứ tự quyết định: yêu cầu mới nhất của người dùng → docs/requirements/EQUITRANSIT_REQUIREMENTS.md → hợp đồng đã thống nhất này → đặc tả booking cập nhật và model plugin → màn actor của English Workflow → tài liệu cũ. Database live quyết định tên/kiểu/khóa đang tồn tại; nếu thiếu dữ liệu để đáp ứng nghiệp vụ thì đề xuất migration, không bỏ yêu cầu hoặc bịa cột.
 
 Đã đối chiếu nguồn local:
 
@@ -90,24 +90,33 @@ Show all charges chỉ mở danh sách các dòng hiện có, không tạo phí 
 - Handover airport/quarantine không hoàn tất order. Final delivery cần release và kết quả/acknowledgement đúng người nhận. Operational completion tách financial closure; không coi chờ im lặng là customer accept.
 - Driver không phê duyệt y tế, giấy phép hoặc tiền. Cấp cứu liên hệ hỗ trợ và bảo vệ ngựa trước, không chờ nút duyệt chi phí; thu thêm cần revision/consent sau đó.
 
-## 7. Khoảng trống schema phải giải quyết ở issue liên quan
+## 7. Schema sau đối chiếu Figma
 
-Không thực hiện migration trong đợt lập kế hoạch này. Các hướng sau là đề xuất kỹ thuật cần được người phụ trách flow hoàn thiện và review trong PR.
+Migration 002 đã áp dụng vào EquiTransit ngày 13/10/2026 sau backup verified
+và chạy trên test copy. Hiện có 55 bảng nghiệp vụ, 594 cột, 114 FK constraints;
+SchemaMigrationHistory và sysdiagrams là bảng kỹ thuật. Không có Organization.
+Đọc [SRS](../requirements/EQUITRANSIT_REQUIREMENTS.md),
+[schema](../database-schema.md) và [báo cáo alignment](../database-figma-alignment.md).
 
-| Gap | Flow / owner | Cách xử lý cần làm rõ |
+| Phần đã bổ sung | Flow / owner | Hướng sử dụng |
 |---|---|---|
-| Draft chưa có nơi lưu service choices vì OrderRevision.SubmittedAt bắt buộc | F03/F05 BE1 | Đề xuất DraftPayload JSON trên TransportOrder hoặc persistence draft tương đương; không tạo fake submitted revision |
-| Groom days, boarding nights, care preferences chưa có cột trong OrderServiceChoice | F05 BE1 | SelectionInputs JSON có schema theo ServiceCode hoặc bảng con thực sự cần; không nhét vào SpecialNeeds |
-| Desired pickup, receiver/contact, request purpose chưa đầy đủ | F03 BE1 | Xác định trường query được cần cột; thông tin snapshot khác có thể nằm JSON có contract; UTC/timezone rõ |
-| Quote thiếu prepared/submitted metadata, điều khoản và lịch đặt cọc | F06/F07 BE1 | Snapshot terms/payment schedule; lịch thu được đồng ý phải có nguồn trước khi sinh PaymentRequest |
-| QuoteItem không có NULL quantity/rate, không có parent-included field riêng | F05/F06 BE1 | Pending chỉ ở estimate DTO/selection, không ghi 0 giả; snapshot CalculationInputs có includedInItemId hợp lệ hoặc migration rõ |
-| QuarantineChoice.RequiredDays CHECK > 0 nhưng UI có NOT_REQUIRED = 0 | F05/F08 BE1+BE2 | Phân biệt NOT_REQUIRED với UNKNOWN và không insert 0 vi phạm CHECK; migration applicability nếu cần, giữ lịch sử lựa chọn |
-| Fit limits/load/carrier policy thiếu trong Horse/StallEquipment | F05/F09 BE1+BE2 | Policy có nguồn/config và giới hạn equipment, không hard-code fixture làm chuẩn hãng |
-| TransportPlan chưa tham chiếu Quote được accept | F06/F10/F11 BE2 chủ trì, BE1 review | Đề xuất AcceptedQuoteID và quy tắc cùng revision, cùng order; chọn một plan hiện hành |
-| Source/evidence và expiry của reservation/procedure chưa đủ mọi màn | F08/F10 BE2 | Bổ sung tối thiểu khi AC cần; file key không là public URL không kiểm quyền |
-| Thông tin approve/evidence của refund và proof ngân hàng chưa đầy đủ | F07 BE1 | Metadata hoặc liên kết audit/file được định nghĩa, không claim TRANSFERRED không chứng cứ |
-| Cancellation, customer change consent, incident acknowledgement chưa có bảng chuyên biệt | F13/F14 BE2 + BE1 | Dùng OperationalAdjustment/OrderRevision/Quote/AuditEvent khi đủ; migration khi thiếu, không tạo ChangeRequest giả không tồn tại |
-| Archive status/optimistic version ở một số entity chưa có | F02/F09/F15 | Không xóa hồ sơ có lịch sử; thêm cột/version nếu flow cần với backfill/check rõ |
+| DraftPayloadJSON, receiver/scheduling/event/transit, CurrentRevisionID và RecordVersion | F03 BE1 | Lưu draft; snapshot submit; kiểm optimistic concurrency |
+| Horse handling/feed/stall/veterinary và RecordVersion | F02 BE1 | Hồ sơ theo C03; không tự thêm archive ngựa chưa chốt |
+| SelectionInputsJSON/provider/evidence | F05 BE1 | Contract theo ServiceCode; không nhét mọi lựa chọn vào SpecialNeeds |
+| Quote terms/prepared/submitted/issued/accepted metadata và QuotePaymentSchedule | F06/F07 BE1 | Lịch thu gắn quote; PaymentRequest.ScheduleID cùng quote |
+| Supplier, DocumentTypeCatalog, StallFitPolicy | F15 BE1; F08/F09 BE2 | Danh mục có nguồn; không seed ngưỡng demo hoặc legal rule giả |
+| Plan.OrderID/AcceptedQuoteID và CurrentPlanID | F10 BE2 + F06 BE1 | Cùng order/revision; quote có acceptance; plan nháp được chưa có quote |
+| Expiry/source/evidence/confirm metadata | F08/F10 BE2 | Kiểm hiệu lực tại hành động; file access có quyền |
+| OrderChangeRequest, adjustment consent, incident acknowledgement, handover response | F03/F13/F14 | Khách yêu cầu thay đổi; không ghi đè chuyến đang chạy |
+| Refund approvals/bank proof; receipt leg/identity, welfare replacement, actual cost evidence | F07 BE1; F11–F14 BE2 | Giữ bằng chứng và liên kết đúng parent |
+
+Không đề xuất lại các cột đã bổ sung. Những việc vẫn cần làm tại service:
+state transitions, ownership/assignment, immutable snapshots, tính tổng tiền,
+chống overlap, consent và invalidation/recheck gate. QuoteItem chưa biết
+quantity/rate phải nằm estimate DTO; không tạo 0 giả. NOT_REQUIRED không insert
+QuarantineChoice.RequiredDays=0 trái CHECK; lưu applicability trong assessment
+và snapshot. Policy/tariff/terms/config thật cần chủ dự án cung cấp trước vận hành.
+Migration không triển khai các API mới và không tự chứng minh các flow đã Done.
 
 ## 8. Phối hợp Java và API
 

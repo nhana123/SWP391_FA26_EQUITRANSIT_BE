@@ -11,6 +11,20 @@ BE2 (chưa gán tài khoản) dùng [skill operations](skills/equitransit-be2-op
 [Danh sách GitHub Issue](docs/team/github-issues.json) giữ phân công và URL thật.
 Đây là kế hoạch; các API đã triển khai hiện được liệt kê bên dưới.
 
+## Requirement và schema đã đối chiếu
+
+- [SRS EquiTransit](docs/requirements/EQUITRANSIT_REQUIREMENTS.md) thống nhất
+  scope cá nhân, một ngựa/order và 16 flow; nêu rõ nguồn Figma và giới hạn đọc live.
+- [Schema sau migration 002](docs/database-schema.md) và
+  [báo cáo thay đổi/kiểm tra](docs/database-figma-alignment.md).
+- Thành viên đã có schema nghiệp vụ đầy đủ và migration 001 chạy
+  `database/migrations/002_align_figma_without_organization.sql` trên EquiTransit.
+  Không dùng EquiTransit_AuthTest tối giản cho migration này. Thử trên bản sao
+  riêng với `tools/prepare-figma-migration-test.ps1` và
+  `tools/test-figma-migration.sql` trước khi triển khai vào DB đang dùng.
+- 002 không thêm Organization và không seed rate/policy demo. Backend hiện
+  vẫn chỉ có các API được liệt kê dưới đây; có bảng không đồng nghĩa có endpoint.
+
 ## Database và nguồn nghiệp vụ
 
 - Database thật: `EquiTransit`, server `DESKTOP-9VRARFD`, TCP 1433; dùng Windows Authentication ở profile `local`.
