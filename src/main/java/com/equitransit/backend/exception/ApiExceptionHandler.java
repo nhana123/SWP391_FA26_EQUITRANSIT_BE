@@ -16,6 +16,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -27,6 +29,28 @@ public class ApiExceptionHandler {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ApiExceptionHandler.class);
+
+    /**
+     * Returns a safe response for service-level authorization failures.
+     * @param error the denied access
+     * @return the forbidden response
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(
+            AccessDeniedException error) {
+        return response(HttpStatus.FORBIDDEN, "Access is denied.");
+    }
+
+    /**
+     * Returns a safe response when a current domain identity is unavailable.
+     * @param error the unavailable authentication
+     * @return the unauthorized response
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<Map<String, Object>> handleAuthentication(
+            AuthenticationException error) {
+        return response(HttpStatus.UNAUTHORIZED, "Authentication required.");
+    }
 
     /**
      * Handles an expected business error.

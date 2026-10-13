@@ -90,6 +90,12 @@ Recovery: gửi email tới forgot-password, lấy token trong email mới, rồ
 
 ## Migration bổ sung
 
+Nền phân quyền dùng chung: [F01 review và service contracts](docs/auth-review.md).
+`CurrentActorService` xác định UserID/CustomerID/StaffID từ JWT và database;
+`DomainAccessPolicy` kiểm role/ownership/assignment key. Profile service đã
+được bảo vệ bằng method security. StaffProfile hiện chỉ được đọc để xác định
+identity, chưa có API quản trị staff.
+
 `database/migrations/001_authentication_token.sql` tạo một bảng mới `AuthenticationToken` để đáp ứng A03. Chỉ lưu hash token, purpose, hạn dùng và thời điểm dùng; raw token chỉ nằm trong email. Không sửa cột hoặc dữ liệu hiện có của 49 bảng nghiệp vụ.
 
 Chạy migration một lần trước khi khởi động trên database chưa có bảng này. Script có guard để chạy lại an toàn. Hibernate dùng **validate**, không dùng update/create trên database thật.

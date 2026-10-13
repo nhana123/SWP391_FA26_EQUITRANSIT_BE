@@ -22,6 +22,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.method.configuration.
+        EnableMethodSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,6 +42,7 @@ import com.equitransit.backend.security.LiveJwtConverter;
 
 /** Configures stateless bearer authentication and exact-origin CORS. */
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private static final int MIN_KEY_BYTES = 32;

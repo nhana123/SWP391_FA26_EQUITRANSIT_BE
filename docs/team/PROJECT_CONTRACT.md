@@ -77,7 +77,7 @@ Show all charges chỉ mở danh sách các dòng hiện có, không tạo phí 
 - User giữ ACTIVE/INACTIVE/LOCKED; không đổi sang PENDING_VERIFICATION vì sẽ vi phạm CHECK hiện tại. Auth baseline dùng INACTIVE + token để xác minh và không tự kích hoạt lại người đã bị admin ngừng sử dụng.
 - Với các status còn VARCHAR không có CHECK: issue phải định nghĩa enum/state transitions, actor và điều kiện trước khi tạo endpoint; không nhận status tùy ý từ client.
 - Customer lọc theo ownership từ token subject. StaffID là StaffProfile.StaffID, không phải UserID. Specialist/Coordinator/Driver chỉ case/leg được phân công; Manager được xem phạm vi điều hành.
-- Chưa có @EnableMethodSecurity trong baseline: BE1 bổ sung/rà soát khi mở staff/domain APIs. Không mặc định @PreAuthorize đã có tác dụng. Cần kiểm quyền bằng cả role và ownership/assignment, không chỉ ẩn nút UI.
+- F01 bổ sung @EnableMethodSecurity, CurrentActorService và DomainAccessPolicy; xem docs/auth-review.md. Mỗi flow mới phải kiểm quyền bằng cả role và ownership/assignment, không chỉ ẩn nút UI. Primitive so khớp StaffID không thay lookup assignment đang hiệu lực ở F04/F10.
 
 ## 6. Gate, thanh toán và bằng chứng
 

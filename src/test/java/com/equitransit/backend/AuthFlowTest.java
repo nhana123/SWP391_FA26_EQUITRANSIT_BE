@@ -9,7 +9,15 @@ package com.equitransit.backend;
 
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.Instant;
 import java.util.Map;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -22,6 +30,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.event.ApplicationEvents;
@@ -64,6 +77,8 @@ public class AuthFlowTest {
     private static final String PASSWORD = "ExamplePassword123!";
     private static final String NEW_PASSWORD = "ChangedPassword456!";
 
+    private boolean isolatedDatabase;
+
     @Autowired
     private MockMvc mvc;
     @Autowired
@@ -79,6 +94,8 @@ public class AuthFlowTest {
     @Autowired
     private PasswordEncoder passwords;
     @Autowired
+    private JwtEncoder encoder;
+    @Autowired
     private ApplicationEvents events;
     @Autowired
     private DataSource dataSource;
@@ -90,15 +107,18 @@ public class AuthFlowTest {
     @BeforeEach
     public void prepare() throws Exception {
         String url;
+        String database;
         AccountRole role;
 
+        isolatedDatabase = false;
         try (var connection = dataSource.getConnection()) {
             url = connection.getMetaData().getURL();
+            database = connection.getCatalog();
         }
-        assertThat(url).satisfiesAnyOf(
-                value -> assertThat(value).contains("mem:auth"),
-                value -> assertThat(value)
-                        .contains("databaseName=EquiTransit_AuthTest"));
+        assertThat(url.split(";")[0].equals("jdbc:h2:mem:auth")
+                || (url.startsWith("jdbc:sqlserver:")
+                        && "EquiTransit_AuthTest".equals(database))).isTrue();
+        isolatedDatabase = true;
         reset(customers);
         clean();
         if (roles.findByRoleCode("CUSTOMER").isEmpty()) {
@@ -111,6 +131,9 @@ public class AuthFlowTest {
     /** Removes only the isolated authentication fixtures. */
     @AfterEach
     public void clean() {
+        if (!isolatedDatabase) {
+            return;
+        }
         tokens.deleteAll();
         customers.deleteAll();
         users.deleteAll();
@@ -206,8 +229,8 @@ public class AuthFlowTest {
         register(EMAIL, PASSWORD).andExpect(status().isCreated());
         raw = latestToken();
         token = tokens.findByTokenHash(TokenTools.hash(raw)).orElseThrow();
-        token.setCreatedAt(LocalDateTime.now().minusDays(2));
-        token.setExpiresAt(LocalDateTime.now().minusDays(1));
+        token.setCreatedAt(LocalDateTime.now(ZoneOffset.UTC).minusDays(2));
+        token.setExpiresAt(LocalDateTime.now(ZoneOffset.UTC).minusDays(1));
         tokens.saveAndFlush(token);
         verify(raw).andExpect(status().isBadRequest());
         postJson("/api/auth/resend-verification", Map.of("email", EMAIL))
@@ -324,6 +347,173 @@ public class AuthFlowTest {
                 .header("Authorization", "Bearer " + access))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("email").value(EMAIL));
+    }
+
+    /**
+     * Gives unknown accounts and wrong passwords the same login failure.
+     * @throws Exception if request execution fails
+     */
+    @Test
+    public void loginFailureDoesNotRevealWhetherAnAccountExists()
+            throws Exception {
+        String unknown = postJson("/api/auth/login", Map.of("email", EMAIL,
+                "password", PASSWORD)).andExpect(status().isUnauthorized())
+                .andReturn().getResponse().getContentAsString();
+        String wrong;
+
+        register(EMAIL, PASSWORD).andExpect(status().isCreated());
+        verify(latestToken()).andExpect(status().isOk());
+        wrong = postJson("/api/auth/login", Map.of("email", EMAIL,
+                "password", NEW_PASSWORD)).andExpect(status().isUnauthorized())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(wrong).isEqualTo(unknown);
+    }
+
+    /**
+     * Keeps locked accounts inactive even with an unused verification link.
+     * @throws Exception if request execution fails
+     */
+    @Test
+    public void verificationCannotUnlockAnAccount() throws Exception {
+        String raw;
+        UserAccount user;
+
+        register(EMAIL, PASSWORD).andExpect(status().isCreated());
+        raw = latestToken();
+        user = users.findByEmailIgnoreCase(EMAIL).orElseThrow();
+        user.setStatus("LOCKED");
+        users.saveAndFlush(user);
+        verify(raw).andExpect(status().isBadRequest());
+        assertThat(users.findById(user.getUserId()).orElseThrow().getStatus())
+                .isEqualTo("LOCKED");
+        assertThat(tokens.findByTokenHash(TokenTools.hash(raw))
+                .orElseThrow().getUsedAt()).isNull();
+    }
+
+    /**
+     * Leaves the password unchanged when a reset token has expired.
+     * @throws Exception if request execution fails
+     */
+    @Test
+    public void expiredResetTokenCannotChangePassword() throws Exception {
+        String raw;
+        AuthenticationToken token;
+
+        register(EMAIL, PASSWORD).andExpect(status().isCreated());
+        verify(latestToken()).andExpect(status().isOk());
+        postJson("/api/auth/forgot-password", Map.of("email", EMAIL))
+                .andExpect(status().isAccepted());
+        raw = latestToken();
+        token = tokens.findByTokenHash(TokenTools.hash(raw)).orElseThrow();
+        token.setCreatedAt(LocalDateTime.now(ZoneOffset.UTC).minusHours(2));
+        token.setExpiresAt(LocalDateTime.now(ZoneOffset.UTC).minusHours(1));
+        tokens.saveAndFlush(token);
+        postJson("/api/auth/reset-password", Map.of("token", raw,
+                "password", NEW_PASSWORD, "confirmPassword", NEW_PASSWORD))
+                .andExpect(status().isBadRequest());
+        assertThat(login(EMAIL, PASSWORD)).isNotBlank();
+        assertThat(tokens.findByTokenHash(TokenTools.hash(raw))
+                .orElseThrow().getUsedAt()).isNull();
+    }
+
+    /**
+     * Allows exactly one of two simultaneous verification attempts.
+     * @throws Exception if request execution or synchronization fails
+     */
+    @Test
+    public void concurrentVerificationConsumesTheTokenOnlyOnce()
+            throws Exception {
+        String raw;
+        List<Integer> statuses;
+
+        register(EMAIL, PASSWORD).andExpect(status().isCreated());
+        raw = latestToken();
+        statuses = race(() -> verify(raw).andReturn()
+                .getResponse().getStatus());
+        assertThat(statuses).containsExactlyInAnyOrder(200, 400);
+        assertThat(tokens.findByTokenHash(TokenTools.hash(raw))
+                .orElseThrow().getUsedAt()).isNotNull();
+        assertThat(users.findByEmailIgnoreCase(EMAIL).orElseThrow().getStatus())
+                .isEqualTo("ACTIVE");
+    }
+
+    /**
+     * Allows exactly one of two simultaneous password-reset attempts.
+     * @throws Exception if request execution or synchronization fails
+     */
+    @Test
+    public void concurrentResetConsumesTheTokenOnlyOnce() throws Exception {
+        Map<String, String> input;
+        String raw;
+        List<Integer> statuses;
+
+        register(EMAIL, PASSWORD).andExpect(status().isCreated());
+        verify(latestToken()).andExpect(status().isOk());
+        postJson("/api/auth/forgot-password", Map.of("email", EMAIL))
+                .andExpect(status().isAccepted());
+        raw = latestToken();
+        input = Map.of("token", raw, "password", NEW_PASSWORD,
+                "confirmPassword", NEW_PASSWORD);
+        statuses = race(() -> postJson("/api/auth/reset-password", input)
+                .andReturn().getResponse().getStatus());
+        assertThat(statuses).containsExactlyInAnyOrder(200, 400);
+        assertThat(tokens.findByTokenHash(TokenTools.hash(raw))
+                .orElseThrow().getUsedAt()).isNotNull();
+        assertThat(login(EMAIL, NEW_PASSWORD)).isNotBlank();
+    }
+
+    /**
+     * Rejects a correctly signed access token after its expiration.
+     * @throws Exception if request execution fails
+     */
+    @Test
+    public void expiredAccessTokenCannotReadProfile() throws Exception {
+        UserAccount user;
+        JwtClaimsSet claims;
+        String access;
+        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
+
+        register(EMAIL, PASSWORD).andExpect(status().isCreated());
+        verify(latestToken()).andExpect(status().isOk());
+        user = users.findByEmailIgnoreCase(EMAIL).orElseThrow();
+        claims = JwtClaimsSet.builder().issuer("equitransit")
+                .subject(user.getUserId().toString())
+                .issuedAt(Instant.now().minusSeconds(600))
+                .expiresAt(Instant.now().minusSeconds(300))
+                .claim("purpose", "ACCESS")
+                .claim("credential", TokenTools.hash(user.getPasswordHash()))
+                .build();
+        access = encoder.encode(JwtEncoderParameters.from(header, claims))
+                .getTokenValue();
+        mvc.perform(get("/api/customers/me")
+                .header("Authorization", "Bearer " + access))
+                .andExpect(status().isUnauthorized());
+    }
+
+    private List<Integer> race(Callable<Integer> operation) throws Exception {
+        CountDownLatch ready = new CountDownLatch(2);
+        CountDownLatch start = new CountDownLatch(1);
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        Callable<Integer> attempt = () -> {
+            ready.countDown();
+            if (!start.await(5, TimeUnit.SECONDS)) {
+                throw new IllegalStateException("Concurrent start timed out.");
+            }
+            return operation.call();
+        };
+        var first = executor.submit(attempt);
+        var second = executor.submit(attempt);
+
+        try {
+            assertThat(ready.await(5, TimeUnit.SECONDS)).isTrue();
+            start.countDown();
+            return List.of(first.get(20, TimeUnit.SECONDS),
+                    second.get(20, TimeUnit.SECONDS));
+        } finally {
+            start.countDown();
+            executor.shutdownNow();
+            assertThat(executor.awaitTermination(5, TimeUnit.SECONDS)).isTrue();
+        }
     }
 
     private ResultActions register(
