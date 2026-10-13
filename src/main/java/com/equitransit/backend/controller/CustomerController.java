@@ -15,11 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.equitransit.backend.dto.response.CustomerResponse;
 import com.equitransit.backend.service.CustomerService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 
 /** Exposes the personal profile represented by Figma C17. */
 @RestController
 @RequestMapping("/api/customers")
+@SecurityRequirement(name = "bearerAuth")
 public class CustomerController {
 
     private final CustomerService customers;

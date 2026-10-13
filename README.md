@@ -37,6 +37,13 @@ JWT key cục bộ được sinh ngẫu nhiên, giữ ở `.local/`, không đư
 
 ## Các API
 
+Swagger UI: `http://127.0.0.1:8080/swagger-ui.html` sau khi chạy backend.
+OpenAPI JSON: `http://127.0.0.1:8080/v3/api-docs`.
+FE dùng **Try it out** để gọi login, copy `accessToken`, nhấn **Authorize**
+và dán token (không thêm chữ Bearer), rồi gọi `/api/customers/me`.
+API auth là public; profile vẫn yêu cầu CUSTOMER JWT. Swagger mô tả API
+đã có trong source, không tạo API booking hoặc các flow chưa triển khai.
+
 | Method | URL | Quyền | Kết quả |
 |---|---|---|---|
 | GET | `/api/health` | Public | Liveness |
