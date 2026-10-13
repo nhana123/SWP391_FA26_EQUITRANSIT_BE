@@ -2,6 +2,15 @@
 
 Java 21, Spring Boot 3.5.16, Maven Wrapper 3.9.9. Kiến trúc monolith phân lớp: Controller → Service → Repository → SQL Server. Entity chỉ dùng cho persistence; request/response dùng DTO.
 
+## Kế hoạch triển khai cho hai BE
+
+Đọc [hợp đồng nghiệp vụ](docs/team/PROJECT_CONTRACT.md) và
+[backlog 16 luồng](docs/team/BACKLOG.md) trước khi làm feature tiếp theo.
+BE1 (`nhana123`) dùng [skill commercial](skills/equitransit-be1-commercial/SKILL.md);
+BE2 (chưa gán tài khoản) dùng [skill operations](skills/equitransit-be2-operations/SKILL.md).
+[Danh sách GitHub Issue](docs/team/github-issues.json) giữ phân công và URL thật.
+Đây là kế hoạch; các API đã triển khai hiện được liệt kê bên dưới.
+
 ## Database và nguồn nghiệp vụ
 
 - Database thật: `EquiTransit`, server `DESKTOP-9VRARFD`, TCP 1433; dùng Windows Authentication ở profile `local`.

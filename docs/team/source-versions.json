@@ -1,0 +1,55 @@
+{
+  "reviewed_at": "2026-10-13",
+  "database": "DESKTOP-9VRARFD / EquiTransit",
+  "note": "Local files reviewed; not a live Figma inspection. Hashes identify reviewed versions, not priority.",
+  "sources": [
+    {
+      "path": "REQUIREMENTS.docx",
+      "sha256": "d8cb57b70c4fe21797e87f20017c5477cbe2e4566e0a7a74113b36f835c46fdb"
+    },
+    {
+      "path": "CHECKPOINT_1_EquiTransit.docx",
+      "sha256": "a25584f6c3c32dd0a9c300959b038921c5c804ef1c792511add0bd3cd25adc61"
+    },
+    {
+      "path": "REQUIREMENT_NGHIEP_VU_EQUITRANSIT_VI.md",
+      "sha256": "142f78c63e870fc4a306c29138d71729e724e784416fabb0c83d84b0c3658142"
+    },
+    {
+      "path": "SRS_EQUITRANSIT_CHO_SO_DO.md",
+      "sha256": "b41ea03bd2afabf40a4bde3f352682e4cb757604292d3c263e8a9d6c4f4fafa3"
+    },
+    {
+      "path": "BOOKING_CHI_PHI_8_NHOM.md",
+      "sha256": "e9a833614989f29bae002b5a281bac9e2bf747b9d9c23f382311c69a1ecf19d7"
+    },
+    {
+      "path": "SWP-RE/booking-model.js",
+      "sha256": "2fb63a47fcbd416694301780342b80f5b7489c977c99dbb0727e42ec73147ea9"
+    },
+    {
+      "path": "SWP-RE/english-screens.js",
+      "sha256": "3a5dd0b31984ede17ea920a06d4a9d25390b5e60138028d686b721f54d417a09"
+    },
+    {
+      "path": "SWP-RE/manifest.json",
+      "sha256": "23dc4596b9b353775a23a7b74e4494fafffd3c28c1e532adb12053873a1ccd3e"
+    },
+    {
+      "path": "SWP-RE/code.js",
+      "sha256": "241c66f71703f4908fc2cae432b729e6453db60d363b3d62eef96c8da8a858ba"
+    },
+    {
+      "path": "SWP-RE/PRICING_DESIGN.md",
+      "sha256": "4a70ce0b5d08c93516bdb5283c7e6437db4346329a2ceea1f80802d845a91743"
+    },
+    {
+      "path": "Oracle Java Coding Standards.pdf",
+      "sha256": "24eb3e091e9d283517d02101bd0c736a39876cd9245af8fabc1a3a1ce5737285"
+    },
+    {
+      "path": "EQUITRANSIT_DB_LIVE_SCHEMA.json",
+      "sha256": "17c48f165727dc7c0075042eab7247e73ad622fc83aca765466c025f9eebcdcd"
+    }
+  ]
+}
