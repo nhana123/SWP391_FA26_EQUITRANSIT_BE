@@ -37,6 +37,13 @@ JWT key cục bộ được sinh ngẫu nhiên, giữ ở `.local/`, không đư
 
 ## Các API
 
+Swagger UI: `http://127.0.0.1:8080/swagger-ui.html` sau khi chạy backend.
+OpenAPI JSON: `http://127.0.0.1:8080/v3/api-docs`.
+FE dùng **Try it out** để gọi login, copy `accessToken`, nhấn **Authorize**
+và dán token (không thêm chữ Bearer), rồi gọi `/api/customers/me`.
+API auth là public; profile vẫn yêu cầu CUSTOMER JWT. Swagger mô tả API
+đã có trong source, không tạo API booking hoặc các flow chưa triển khai.
+
 | Method | URL | Quyền | Kết quả |
 |---|---|---|---|
 | GET | `/api/health` | Public | Liveness |
@@ -82,6 +89,12 @@ Gọi `/api/customers/me` với header `Authorization: Bearer <accessToken>`. Ac
 Recovery: gửi email tới forgot-password, lấy token trong email mới, rồi POST reset-password với `token`, `password`, `confirmPassword`. Token xác minh có hạn 24 giờ; token reset 30 phút; chỉ dùng một lần. Resend xóa token chưa dùng cũ, giữ lịch sử token đã tiêu thụ. Tài khoản đã xác minh rồi bị admin đổi sang INACTIVE không tự kích hoạt lại qua resend.
 
 ## Migration bổ sung
+
+Nền phân quyền dùng chung: [F01 review và service contracts](docs/auth-review.md).
+`CurrentActorService` xác định UserID/CustomerID/StaffID từ JWT và database;
+`DomainAccessPolicy` kiểm role/ownership/assignment key. Profile service đã
+được bảo vệ bằng method security. StaffProfile hiện chỉ được đọc để xác định
+identity, chưa có API quản trị staff.
 
 `database/migrations/001_authentication_token.sql` tạo một bảng mới `AuthenticationToken` để đáp ứng A03. Chỉ lưu hash token, purpose, hạn dùng và thời điểm dùng; raw token chỉ nằm trong email. Không sửa cột hoặc dữ liệu hiện có của 49 bảng nghiệp vụ.
 

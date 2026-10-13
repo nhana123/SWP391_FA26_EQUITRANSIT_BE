@@ -30,3 +30,11 @@ IF OBJECT_ID(N'dbo.Customer', N'U') IS NULL
         Phone VARCHAR(30) NULL,
         Address NVARCHAR(500) NULL
     );
+IF OBJECT_ID(N'dbo.StaffProfile', N'U') IS NULL
+    CREATE TABLE dbo.StaffProfile (
+        StaffID BIGINT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        UserID BIGINT NOT NULL UNIQUE REFERENCES dbo.[User](UserID),
+        FullName NVARCHAR(150) NOT NULL,
+        Phone VARCHAR(30) NULL,
+        LicenseNumber VARCHAR(50) NULL
+    );

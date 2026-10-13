@@ -8,18 +8,18 @@
 package com.equitransit.backend.controller;
 
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.equitransit.backend.dto.response.CustomerResponse;
 import com.equitransit.backend.service.CustomerService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 
 /** Exposes the personal profile represented by Figma C17. */
 @RestController
 @RequestMapping("/api/customers")
+@SecurityRequirement(name = "bearerAuth")
 public class CustomerController {
 
     private final CustomerService customers;
@@ -34,11 +34,10 @@ public class CustomerController {
 
     /**
      * Returns the signed-in customer's profile.
-     * @param jwt the validated access token
      * @return the profile belonging to the token subject
      */
     @GetMapping("/me")
-    public CustomerResponse me(@AuthenticationPrincipal Jwt jwt) {
-        return customers.getCurrentCustomer(Long.valueOf(jwt.getSubject()));
+    public CustomerResponse me() {
+        return customers.getCurrentCustomer();
     }
 }
