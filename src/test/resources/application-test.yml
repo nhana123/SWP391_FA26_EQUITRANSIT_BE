@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: ${EQ_TEST_DB_URL:jdbc:h2:mem:auth;MODE=MSSQLServer;DB_CLOSE_DELAY=-1;INIT=CREATE SCHEMA IF NOT EXISTS dbo}
+    username: ${EQ_TEST_DB_USERNAME:sa}
+    password: ${EQ_TEST_DB_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: ${EQ_TEST_DDL:create-drop}
+  mail:
+    host: localhost
+app:
+  jwt:
+    secret: dGVzdC1vbmx5LWtleS1mb3ItZXF1aXRyYW5zaXQtYXV0aC10ZXN0cw==
+  mail:
+    mode: file
+    outbox: target/test-outbox
+  auth-rate-limit: 1000
