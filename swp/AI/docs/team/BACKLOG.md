@@ -110,6 +110,6 @@ Kiểm sau migration 002 ngày 2026-10-13: 57 bảng tổng, 55 bảng nghiệp 
 
 ## Cách giao việc cho AI
 
-BE1 đọc `skills/equitransit-be1-commercial/SKILL.md`; BE2 đọc `skills/equitransit-be2-operations/SKILL.md`. Cung cấp Issue cụ thể, nhánh và phạm vi hành động. Skill không tự giao toàn bộ backlog hay tự chạy migrations vào database thật. Hai skill dùng cùng PROJECT_CONTRACT để tránh hai AI định nghĩa khác nghiệp vụ.
+BE1 đọc `swp/AI/skills/equitransit-be1-commercial/SKILL.md`; BE2 đọc `swp/AI/skills/equitransit-be2-operations/SKILL.md`. Cung cấp Issue cụ thể, nhánh và phạm vi hành động. Skill không tự giao toàn bộ backlog hay tự chạy migrations vào database thật. Hai skill dùng cùng PROJECT_CONTRACT để tránh hai AI định nghĩa khác nghiệp vụ.
 
 Khi biết username BE2, gán những Issue có label be2; không cần tạo lại Issue. Hai người review chéo PR vào dev. Main chỉ nhận phiên bản được team chấp thuận.

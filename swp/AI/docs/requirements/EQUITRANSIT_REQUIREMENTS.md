@@ -361,7 +361,7 @@ hai ngựa/order và phí demo cố định trong thiết kế cũ không thay s
 
 ## 10. Baseline triển khai và Definition of Done
 
-Migration [002](../../database/migrations/002_align_figma_without_organization.sql)
+Migration [002](../../../../database/migrations/002_align_figma_without_organization.sql)
 đã được áp dụng trên DB hiện tại ngày 13/10 sau backup COPY_ONLY/CHECKSUM,
 VERIFYONLY, restore test riêng, chạy lặp migration và tests cấu trúc rollback.
 Giữ nguyên bảng/cột/ràng buộc cũ; thêm 146 cột và 5 bảng nghiệp vụ. Không thêm

@@ -64,7 +64,7 @@
     "business_tables": 55,
     "business_columns": 594,
     "foreign_key_constraints": 114,
-    "requirements": "docs/requirements/EQUITRANSIT_REQUIREMENTS.md",
+    "requirements": "swp/AI/docs/requirements/EQUITRANSIT_REQUIREMENTS.md",
     "migration": "002_align_figma_without_organization.sql"
   }
 }

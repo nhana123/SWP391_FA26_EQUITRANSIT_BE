@@ -16,13 +16,14 @@ This skill does not request implementation of every flow at once.
    A likely local checkout is
    `D:/FPT-ki7/SWP/Cross-Border Racehorse Transport System/SWP391_FA26_EQUITRANSIT_BE`.
 2. Read applicable AGENTS.md and these checkout-relative files:
-   - `docs/team/PROJECT_CONTRACT.md`: shared business/Java contract.
-   - `docs/team/BACKLOG.md`, assigned entry in `docs/team/issues.json`
-     or the current GitHub Issue, and `docs/team/github-issues.json`.
-   - `docs/database-schema.md`, `README.md`, `CONTRIBUTING.md`,
+   - `swp/AI/docs/requirements/EQUITRANSIT_REQUIREMENTS.md`: current scope, flow requirements and acceptance criteria.
+   - `swp/AI/docs/team/PROJECT_CONTRACT.md`: shared business/Java contract.
+   - `swp/AI/docs/team/BACKLOG.md`, assigned entry in `swp/AI/docs/team/issues.json`
+     or the current GitHub Issue, and `swp/AI/docs/team/github-issues.json`.
+   - `swp/AI/docs/database-schema.md`, `README.md`, `CONTRIBUTING.md`,
      `pom.xml`, `config/checkstyle.xml` and relevant mappings/migrations.
 3. Read the relevant parent-project plugin model/catalogue and source
-   documents when available. `docs/team/source-versions.json` identifies
+   documents when available. `swp/AI/docs/team/source-versions.json` identifies
    local versions reviewed, not a live Figma inspection. Read-only live
    schema inspection can establish newer physical names/constraints.
 4. New human decisions override old road-only/multi-horse/Express/MongoDB

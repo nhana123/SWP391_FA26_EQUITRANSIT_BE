@@ -16,17 +16,18 @@ guides implementation; it does not assign the entire backlog to one AI.
    is the repository. A likely local checkout is
    `D:/FPT-ki7/SWP/Cross-Border Racehorse Transport System/SWP391_FA26_EQUITRANSIT_BE`.
 2. Read applicable AGENTS.md, then these paths relative to the checkout:
-   - `docs/team/PROJECT_CONTRACT.md`: reconciled business rules and Java
+   - `swp/AI/docs/requirements/EQUITRANSIT_REQUIREMENTS.md`: current scope, flow requirements and acceptance criteria.
+   - `swp/AI/docs/team/PROJECT_CONTRACT.md`: reconciled business rules and Java
      conventions; read this before implementing a flow.
-   - `docs/team/BACKLOG.md` and the assigned body in
-     `docs/team/issues.json` or its current GitHub Issue.
-   - `docs/team/github-issues.json`: actual Issue identifiers after publish.
-   - `docs/database-schema.md`: physical SQL Server snapshot.
+   - `swp/AI/docs/team/BACKLOG.md` and the assigned body in
+     `swp/AI/docs/team/issues.json` or its current GitHub Issue.
+   - `swp/AI/docs/team/github-issues.json`: actual Issue identifiers after publish.
+   - `swp/AI/docs/database-schema.md`: physical SQL Server snapshot.
    - `README.md`, `CONTRIBUTING.md`, `pom.xml`,
      `config/checkstyle.xml`, relevant existing code and migrations.
 3. If available, inspect newer database metadata read-only and the local
    `SWP-RE/booking-model.js` in the project parent. Source versions are
-   recorded in `docs/team/source-versions.json`. Local plugin code does
+   recorded in `swp/AI/docs/team/source-versions.json`. Local plugin code does
    not prove the live Figma was inspected.
 4. Latest human decisions override legacy docs. Explain material conflict
    or a missing business decision; continue independent work. Do not

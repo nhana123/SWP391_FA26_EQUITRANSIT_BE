@@ -6,7 +6,7 @@ Ngày thống nhất: 2026-10-13. Repo: `nhana123/SWP391_FA26_EQUITRANSIT_BE`. N
 
 ## 1. Nguồn và cách giải quyết mâu thuẫn
 
-Thứ tự quyết định: yêu cầu mới nhất của người dùng → docs/requirements/EQUITRANSIT_REQUIREMENTS.md → hợp đồng đã thống nhất này → đặc tả booking cập nhật và model plugin → màn actor của English Workflow → tài liệu cũ. Database live quyết định tên/kiểu/khóa đang tồn tại; nếu thiếu dữ liệu để đáp ứng nghiệp vụ thì đề xuất migration, không bỏ yêu cầu hoặc bịa cột.
+Thứ tự quyết định: yêu cầu mới nhất của người dùng → swp/AI/docs/requirements/EQUITRANSIT_REQUIREMENTS.md → hợp đồng đã thống nhất này → đặc tả booking cập nhật và model plugin → màn actor của English Workflow → tài liệu cũ. Database live quyết định tên/kiểu/khóa đang tồn tại; nếu thiếu dữ liệu để đáp ứng nghiệp vụ thì đề xuất migration, không bỏ yêu cầu hoặc bịa cột.
 
 Đã đối chiếu nguồn local:
 
@@ -19,7 +19,7 @@ Thứ tự quyết định: yêu cầu mới nhất của người dùng → doc
 | BOOKING_CHI_PHI_8_NHOM.md, SWP-RE/booking-model.js | Chọn dịch vụ, 7 mục UI/8 nhóm chi phí, km, đơn vị thực, lọc stall | Các giá fixture và ngưỡng fixture không phải giá thật/tiêu chuẩn hãng |
 | SWP-RE/english-screens.js, manifest.json, code.js | A01–A03, C01–C17, M01–M13, S01–S05, F01–F08, D01–D04 | Nút Demo, ví dụ 2 ngựa, giá 9.800/800 cố định, base catalogue cũ |
 | SWP-RE/PRICING_DESIGN.md | Minh bạch đơn vị, included/pending và không thu trùng | UI explorer cũ, vehicle-km, danh sách giá trước cập nhật |
-| docs/database-schema.md | Snapshot live DESKTOP-9VRARFD / EquiTransit | Không dùng tên bảng giả từ ERD cũ |
+| swp/AI/docs/database-schema.md | Snapshot live DESKTOP-9VRARFD / EquiTransit | Không dùng tên bảng giả từ ERD cũ |
 | Oracle Java Coding Standards.pdf | Quy tắc Java của Sun 1997 | Không coi PDF là đặc tả Spring/security hiện đại |
 
 Mã plugin/catalogue local không xác nhận bản Figma live đã cập nhật. Không dùng chữ trong frame để làm dữ liệu runtime. Không đưa nguyên PDF, credentials hoặc hồ sơ khách hàng thật vào repo.
@@ -77,7 +77,7 @@ Show all charges chỉ mở danh sách các dòng hiện có, không tạo phí 
 - User giữ ACTIVE/INACTIVE/LOCKED; không đổi sang PENDING_VERIFICATION vì sẽ vi phạm CHECK hiện tại. Auth baseline dùng INACTIVE + token để xác minh và không tự kích hoạt lại người đã bị admin ngừng sử dụng.
 - Với các status còn VARCHAR không có CHECK: issue phải định nghĩa enum/state transitions, actor và điều kiện trước khi tạo endpoint; không nhận status tùy ý từ client.
 - Customer lọc theo ownership từ token subject. StaffID là StaffProfile.StaffID, không phải UserID. Specialist/Coordinator/Driver chỉ case/leg được phân công; Manager được xem phạm vi điều hành.
-- F01 bổ sung @EnableMethodSecurity, CurrentActorService và DomainAccessPolicy; xem docs/auth-review.md. Mỗi flow mới phải kiểm quyền bằng cả role và ownership/assignment, không chỉ ẩn nút UI. Primitive so khớp StaffID không thay lookup assignment đang hiệu lực ở F04/F10.
+- F01 bổ sung @EnableMethodSecurity, CurrentActorService và DomainAccessPolicy; xem swp/AI/docs/auth-review.md. Mỗi flow mới phải kiểm quyền bằng cả role và ownership/assignment, không chỉ ẩn nút UI. Primitive so khớp StaffID không thay lookup assignment đang hiệu lực ở F04/F10.
 
 ## 6. Gate, thanh toán và bằng chứng
 
