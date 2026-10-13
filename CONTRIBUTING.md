@@ -1,12 +1,9 @@
 # Contributing
 
-## Business flows and AI guidance
+## Business flows
 
-Use docs/team/PROJECT_CONTRACT.md as the shared business contract. Select an
-assigned flow from docs/team/BACKLOG.md and read its GitHub Issue criteria.
-BE1 uses skills/equitransit-be1-commercial/SKILL.md; BE2 uses
-skills/equitransit-be2-operations/SKILL.md. Coordinate shared facades before
-implementation, and have the other developer review dependent changes.
+Select an assigned GitHub Issue and read its acceptance criteria. Coordinate
+shared service contracts before implementation and review dependent changes.
 
 ## Branches
 
