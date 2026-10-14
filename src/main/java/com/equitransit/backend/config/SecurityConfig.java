@@ -151,6 +151,10 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/api/health", "/api/auth/**")
                         .permitAll()
+                        .requestMatchers("/api/manager/**")
+                        .hasRole("MANAGER")
+                        .requestMatchers("/api/staff/**")
+                        .hasAnyRole("SPECIALIST", "COORDINATOR")
                         .requestMatchers("/api/customers/**", "/api/horses",
                                 "/api/horses/**", "/api/transport-orders",
                                 "/api/transport-orders/**")

@@ -142,8 +142,8 @@ public class TransportOrderController {
      */
     @PostMapping("/{id}/revisions")
     @Operation(summary = "Revise my uncommitted request",
-            description = "Only SUBMITTED/CHANGES_REQUESTED before protected "
-                    + "commitments. Requires changeReason and operationId. "
+            description = "SUBMITTED/CHANGES_REQUESTED/APPROVED before "
+                    + "protected commitments. Requires reason and operationId. "
                     + "Historical revisions and currentPlanId are preserved.")
     public OrderRevisionResponse revise(@PathVariable @Positive long id,
             @RequestBody @Valid OrderRevisionRequest request) {

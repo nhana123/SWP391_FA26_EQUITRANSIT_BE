@@ -1,4 +1,4 @@
-# EquiTransit backend — account flow
+# EquiTransit backend
 
 Java 21, Spring Boot 3.5.16, Maven Wrapper 3.9.9. Kiến trúc monolith phân lớp: Controller → Service → Repository → SQL Server. Entity chỉ dùng cho persistence; request/response dùng DTO.
 
@@ -287,7 +287,7 @@ an older action does not make its historical snapshot the current request again.
 
 Revision commands contain the full editable request plus recordVersion,
 operationId and a nonblank changeReason (up to 500 characters). Direct revision
-is allowed only in SUBMITTED/CHANGES_REQUESTED before accepted quotes or protected
+is allowed in SUBMITTED/CHANGES_REQUESTED/APPROVED before accepted quotes or protected
 operational commitments. It preserves previous revisions and currentPlanId.
 Unaccepted preparation quotes become SUPERSEDED and plan gates return to PENDING;
 an old plan never becomes applicable to a new revision by selecting MAX(RevisionID).
@@ -314,7 +314,8 @@ F03 locks that parent, rechecks accepted/authorized/departed evidence and writes
 revision, horse detail, service choices and current pointer in one transaction.
 Any failed write rolls back the entire action. Persistence uses parameterized
 JDBC with SQL Server rowversion, preserving the layered service transaction model.
-Requires existing migrations 001/002; F03 adds no database migration.
+Requires existing migrations 001/002; F03 adds no database migration. F04 requires
+the additional migration 003 described below.
 
 Errors use safe JSON code/message (validation may include fields). Typical codes:
 ORDER_NOT_FOUND (404), ORDER_VERSION_CONFLICT, ORDER_RETRY_CONFLICT,
@@ -327,6 +328,146 @@ ID-scoped cleanup. Run the order suite using the F02 command above, replacing
 EQ_HORSE_TEST_ENABLED/DB_URL with EQ_ORDER_TEST_ENABLED/DB_URL and selecting
 `-Dtest=TransportOrderIntegrationTest`. Default CI runs policy and Swagger tests;
 opt-in SQL tests must also be run for persistence changes. Skips are not passes.
+
+## F04 — Manager assessment and assigned preparation cases
+
+Manager reviews the exact submitted revision, approves and assigns its team,
+requests clarification, or rejects it. Request approval starts preparation. It
+does not mark documents cleared, money received, quotes accepted, reservations
+confirmed or departure authorized. Staff provisioning is owned by F15; F04 only
+selects existing ACTIVE Specialist/Coordinator profiles. Registration remains
+CUSTOMER-only; these APIs cannot create or elevate accounts.
+
+Before running F04, apply `database/migrations/003_order_assessment_assignments.sql`
+after 001/002. It adds nullable AssignedBy, DueAt and AssignmentNote to the real
+OrderAssignment table, a due-date check, one decision per revision and one active
+holder per order/assignment role. Historical rows keep null metadata where the
+actor/deadline was not recorded. It never deletes conflicting history or invents
+backfilled actors. Preflight stops on duplicate decisions or active assignments:
+review those rows before rerunning. Stop the application during migration and
+take a backup first. The script is transactional and repeatable. A failed attempt
+does not install a partial schema; runtime mappings do not use Hibernate update.
+
+Migration 003 was verified on the isolated full-schema test copy. It is not
+automatically applied to the real EquiTransit database. Team members must run it
+on their own database before using F04. To repair a deployment, fix the reported
+legacy conflict with a reviewed forward migration and rerun 003. If reverting
+application code, leave the additive columns/history intact; do not drop populated
+columns or audit records as a rollback shortcut.
+
+Manager routes require a MANAGER JWT and a live linked StaffProfile:
+
+| Method | Path under `/api/manager/transport-orders` | Purpose |
+| --- | --- | --- |
+| GET | root, `?state=SUBMITTED&page=0&size=20` | Review queue envelope |
+| GET | `/staff?role=SPECIALIST&page=0&size=20` | Eligible staff and workload |
+| GET | `/{id}` | Current captured revision, version and active team |
+| POST | `/{id}/decisions` | Atomic assessment and approval/team assignment |
+| PUT | `/{id}/assignments/{role}` | Assign or replace responsibility |
+| POST | `/{id}/assignments/{role}/end` | Revoke responsibility, keep history |
+| GET | `/{id}/decisions?page=0&size=20` | Decision history array |
+| GET | `/{id}/assignments?page=0&size=20` | Assignment history array |
+
+Use the root without a trailing slash. Review states are SUBMITTED, APPROVED,
+CHANGES_REQUESTED and REJECTED. Role is SPECIALIST or COORDINATOR. Page is
+zero-based, size 1–100; history endpoints return bounded arrays, queues/directories
+return items/page/size/totalElements/totalPages envelopes. Unsent drafts are not
+part of Manager review. Staff directory returns StaffID, display name, live role
+and activeCases. It omits credentials, account IDs and private contact fields.
+
+One Specialist/Coordinator may handle several cases; Manager sees workload to
+balance them. activeCases counts currently APPROVED cases with active assignments.
+availabilityStatus=NOT_CONFIGURED explicitly means no staff calendar/capacity
+policy exists. DueAt is a case deadline, not a reserved journey interval. Resource
+and travel scheduling conflicts remain with F09/F10; F04 does not claim availability.
+
+After GET review and staff selection, approve using **StaffID**, not UserID:
+
+```json
+{
+  "revisionId": 42,
+  "recordVersion": "0000000000001234",
+  "operationId": "fa2c8d7b-6c51-4976-a28d-613c4199cfd6",
+  "decision": "APPROVED",
+  "specialistId": 7,
+  "coordinatorId": 9,
+  "dueAt": "2027-02-01T09:00:00+07:00",
+  "assignmentNote": "Review the route and document lead times"
+}
+```
+
+Replace IDs, version and deadline with actual values. Approval requires both
+distinct active staff roles; dueAt and assignmentNote are optional. Deadlines
+require offsets, a supported SQL date range and future dates, normalized to UTC
+seconds. For REJECTED/CHANGES_REQUESTED, supply a nonblank reason and omit all
+assignment fields. Reason is at most 1000 characters; staff notes at most 1000.
+No body field may supply managerId, owner, next status or downstream gate results.
+Unknown fields and malformed enum/path/query values are rejected.
+
+The state transition is SUBMITTED → APPROVED/CHANGES_REQUESTED/REJECTED. A revision
+receives one immutable assessment. Changing it requires a new customer revision,
+not replacing the old decision. An APPROVED request can still be revised by its
+customer before protected commitment; it returns to SUBMITTED and needs Manager
+assessment again. Staff case access pauses until the new revision is approved.
+Existing assignment history is retained; reapproval records the new active team.
+
+Reassignment PUT takes recordVersion, operationId, staffId, mandatory reason,
+optional dueAt/assignmentNote. These optional fields are full replacements; omit
+them to clear current metadata by creating a new responsibility row. Ending an
+assignment takes recordVersion, operationId and mandatory reason. Both operations
+require an APPROVED uncommitted current revision, preserve ended history and
+advance the parent version. Old staff immediately lose access; unaccepted
+preparation quotes are superseded and stale plan gates reset to PENDING.
+Accepted/authorized/departed commitments require controlled handling instead.
+
+Commands return AssessmentReceipt with orderStatus, recordVersion, decision and
+active assignment views. Generate a UUID once per action; retries reuse the same
+UUID, version and input. The same Manager's retry returns the original completion
+receipt, even after subsequent actions. Changed input/action with a reused UUID
+is 409 ASSESSMENT_RETRY_CONFLICT. GET the current case after completion/retry for
+the latest version; an old receipt is not the current team. Replay remains valid
+when a previously recorded dueAt has since passed.
+
+SPECIALIST/COORDINATOR endpoints:
+
+- `GET /api/staff/transport-orders?page=0&size=20`: only assigned APPROVED cases.
+- `GET /api/staff/transport-orders/{id}`: rechecks live account role/status and
+  active assignment; returns captured revision and only the actor's instructions.
+
+Unassigned/ended/wrong-case access returns the same 404 CASE_NOT_FOUND. Customer
+and Driver cannot use staff endpoints. BE2 case writes must call
+CaseAssignmentAccess.lockRevision(orderId, requiredRole) **inside their own service
+transaction** before work. Its parent lock stays held through the consumer commit,
+so reassignment cannot race that write. This facade currently covers APPROVED
+preparation cases; later operational flows must define their phase/state access
+contract explicitly, not silently bypass the assignment check.
+
+`GET /api/transport-orders/{id}/assessment` requires CUSTOMER ownership. It returns
+currentRevisionId, decision and the public rejection/clarification reason. While
+unassessed, decision/reason are null. Internal approval reasons, assignment notes,
+staff IDs and staff history are omitted. Render all supplied text as text.
+
+Concurrency: Manager actions use the same parent order lock as F03, compare the
+expected SQL rowversion and recheck current revision and protected commitments.
+Staff accounts are rechecked/locked in the transaction; multiple assignees are
+locked in StaffID order. Decision, assignment endings/insertions, order state and
+append-only AuditEvent completion record commit together. Failed writes leave
+none of these changes applied. Database unique indexes also prevent duplicate
+decisions and active role holders. Audit stores UserID; OrderDecision.ManagerID
+and OrderAssignment.AssignedBy store StaffID. No raw credentials are stored/logged.
+
+Errors include ASSESSMENT_REVISION_CONFLICT, ASSESSMENT_STATE_CONFLICT,
+ASSESSMENT_RETRY_CONFLICT, ASSIGNMENT_STAFF_INVALID, ASSIGNMENT_STATE_CONFLICT,
+ASSIGNMENT_NOT_ACTIVE and ORDER_VERSION_CONFLICT (409), and
+ASSESSMENT_INPUT_INVALID (400). Missing/invalid credentials return 401, wrong
+role 403, unavailable resources 404. Responses do not expose SQL or stack traces.
+
+Run the SQL suite using the earlier native-driver setup with
+EQ_ASSESSMENT_TEST_ENABLED=true, EQ_ASSESSMENT_TEST_DB_URL pointing to the isolated
+EquiTransit_FigmaMigrationTest_* copy with migration 003, and
+`-Dtest=OrderAssessmentIntegrationTest`. Default CI covers input policy, auth and
+Swagger; actual SQL persistence/revocation/rollback/concurrency must be verified
+separately before review. Opt-in skips are not test passes.
 
 ## Java conventions
 
