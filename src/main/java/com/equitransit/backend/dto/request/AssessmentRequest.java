@@ -10,6 +10,7 @@ package com.equitransit.backend.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.equitransit.backend.dto.ApiPatterns;
+import com.equitransit.backend.dto.validation.OptionalText;
 import com.equitransit.backend.dto.ApiExamples;
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -37,7 +38,6 @@ import com.equitransit.backend.entity.DecisionCode;
 public record AssessmentRequest(
         @Schema(
                 example = "201",
-                nullable = true,
                 minimum = "1")
         @Positive long revisionId,
         @Schema(
@@ -49,13 +49,12 @@ public record AssessmentRequest(
                 format = "uuid")
         @NotNull UUID operationId,
         @Schema(
-                example = ApiExamples.DECISION,
-                nullable = true)
+                example = "CHANGES_REQUESTED")
         @NotNull DecisionCode decision,
         @Schema(
                 example = "Please confirm the route.",
                 nullable = true)
-        @Size(max = 1000) String reason,
+        @OptionalText @Size(max = 1000) String reason,
         @Schema(
                 example = "31",
                 nullable = true,
@@ -74,5 +73,5 @@ public record AssessmentRequest(
         @Schema(
                 example = "Review route conditions.",
                 nullable = true)
-        @Size(max = 1000) String assignmentNote) {
+        @OptionalText @Size(max = 1000) String assignmentNote) {
 }

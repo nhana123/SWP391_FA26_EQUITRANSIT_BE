@@ -33,6 +33,7 @@ import com.equitransit.backend.dto.response.CaseAssignmentResponse;
 import com.equitransit.backend.entity.CaseOrder;
 import com.equitransit.backend.entity.CaseRole;
 import com.equitransit.backend.entity.DecisionCode;
+import com.equitransit.backend.entity.OrderStatus;
 import com.equitransit.backend.exception.OrderException;
 import com.equitransit.backend.json.OrderJsonCodec;
 import com.equitransit.backend.repository.AssessmentAuditRepository;
@@ -203,7 +204,8 @@ public class OrderAssessmentService {
             UUID operation, String action, String hash, Object command,
             List<CaseAssignmentResponse> before) {
         CaseOrder order = parent(id);
-        AssessmentReceipt receipt = new AssessmentReceipt(id, order.status(),
+        AssessmentReceipt receipt = new AssessmentReceipt(id,
+                OrderStatus.valueOf(order.status()),
                 order.version(), cases.decision(order.revisionId())
                         .map(CaseViews::decision).orElse(null), active(id));
 

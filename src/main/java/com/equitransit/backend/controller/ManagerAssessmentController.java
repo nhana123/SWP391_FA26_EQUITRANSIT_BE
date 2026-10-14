@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.equitransit.backend.service.CaseQueryService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -74,8 +76,16 @@ public class ManagerAssessmentController {
     @GetMapping
     @Operation(summary = "List requests requiring Manager assessment")
     public CasePageResponse list(
+            @Parameter(example = "SUBMITTED")
             @RequestParam(defaultValue = "SUBMITTED") ReviewState state,
+            @Parameter(example = "0",
+                    description = "Zero-based page index.",
+                    schema = @Schema(minimum = "0", defaultValue = "0"))
             @RequestParam(defaultValue = "0") @Min(0) int page,
+            @Parameter(example = "20",
+                    description = "Items per page; maximum 100.",
+                    schema = @Schema(minimum = "1", maximum = "100",
+                            defaultValue = "20"))
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return queries.managerQueue(state, page, size);
     }
@@ -89,8 +99,17 @@ public class ManagerAssessmentController {
      */
     @GetMapping("/staff")
     @Operation(summary = "List active Specialist or Coordinator candidates")
-    public CaseStaffPageResponse staff(@RequestParam CaseRole role,
+    public CaseStaffPageResponse staff(
+            @Parameter(example = "SPECIALIST")
+            @RequestParam CaseRole role,
+            @Parameter(example = "0",
+                    description = "Zero-based page index.",
+                    schema = @Schema(minimum = "0", defaultValue = "0"))
             @RequestParam(defaultValue = "0") @Min(0) int page,
+            @Parameter(example = "20",
+                    description = "Items per page; maximum 100.",
+                    schema = @Schema(minimum = "1", maximum = "100",
+                            defaultValue = "20"))
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return queries.staffDirectory(role, page, size);
     }
@@ -102,7 +121,9 @@ public class ManagerAssessmentController {
      */
     @GetMapping("/{id}")
     @Operation(summary = "Review the current submitted revision")
-    public CaseResponse get(@PathVariable @Positive long id) {
+    public CaseResponse get(@Parameter(example = "101",
+                    schema = @Schema(minimum = "1"))
+            @PathVariable @Positive long id) {
         return queries.managerCase(id);
     }
 
@@ -118,7 +139,9 @@ public class ManagerAssessmentController {
                     + "or departure. Supply both active staff IDs; "
                     + "REJECTED/CHANGES_REQUESTED require reason. Reuse UUID "
                     + "and exact input for retries, then GET current state.")
-    public AssessmentReceipt decide(@PathVariable @Positive long id,
+    public AssessmentReceipt decide(@Parameter(example = "101",
+                    schema = @Schema(minimum = "1"))
+            @PathVariable @Positive long id,
             @RequestBody @Valid AssessmentRequest request) {
         return assessments.decide(id, request);
     }
@@ -135,7 +158,10 @@ public class ManagerAssessmentController {
             description = "Full replacement metadata; omitted dueAt/note "
                     + "clear those fields. Reassignment immediately revokes "
                     + "old access and invalidates unaccepted preparation.")
-    public AssessmentReceipt assign(@PathVariable @Positive long id,
+    public AssessmentReceipt assign(@Parameter(example = "101",
+                    schema = @Schema(minimum = "1"))
+            @PathVariable @Positive long id,
+            @Parameter(example = "SPECIALIST")
             @PathVariable CaseRole role,
             @RequestBody @Valid CaseAssignmentRequest request) {
         return assessments.assign(id, role, request);
@@ -150,7 +176,10 @@ public class ManagerAssessmentController {
      */
     @PostMapping("/{id}/assignments/{role}/end")
     @Operation(summary = "End a current case assignment")
-    public AssessmentReceipt end(@PathVariable @Positive long id,
+    public AssessmentReceipt end(@Parameter(example = "101",
+                    schema = @Schema(minimum = "1"))
+            @PathVariable @Positive long id,
+            @Parameter(example = "SPECIALIST")
             @PathVariable CaseRole role,
             @RequestBody @Valid EndCaseAssignmentRequest request) {
         return assessments.end(id, role, request);
@@ -166,8 +195,17 @@ public class ManagerAssessmentController {
     @GetMapping("/{id}/decisions")
     @Operation(summary = "Read assessment history")
     public List<CaseDecisionResponse> decisions(
+            @Parameter(example = "101",
+                    schema = @Schema(minimum = "1"))
             @PathVariable @Positive long id,
+            @Parameter(example = "0",
+                    description = "Zero-based page index.",
+                    schema = @Schema(minimum = "0", defaultValue = "0"))
             @RequestParam(defaultValue = "0") @Min(0) int page,
+            @Parameter(example = "20",
+                    description = "Items per page; maximum 100.",
+                    schema = @Schema(minimum = "1", maximum = "100",
+                            defaultValue = "20"))
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return queries.decisions(id, page, size);
     }
@@ -182,8 +220,17 @@ public class ManagerAssessmentController {
     @GetMapping("/{id}/assignments")
     @Operation(summary = "Read assignment and reassignment history")
     public List<CaseAssignmentResponse> assignments(
+            @Parameter(example = "101",
+                    schema = @Schema(minimum = "1"))
             @PathVariable @Positive long id,
+            @Parameter(example = "0",
+                    description = "Zero-based page index.",
+                    schema = @Schema(minimum = "0", defaultValue = "0"))
             @RequestParam(defaultValue = "0") @Min(0) int page,
+            @Parameter(example = "20",
+                    description = "Items per page; maximum 100.",
+                    schema = @Schema(minimum = "1", maximum = "100",
+                            defaultValue = "20"))
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return queries.assignments(id, page, size);
     }

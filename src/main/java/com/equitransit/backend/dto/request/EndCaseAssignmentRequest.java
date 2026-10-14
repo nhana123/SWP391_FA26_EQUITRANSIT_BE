@@ -33,7 +33,6 @@ public record EndCaseAssignmentRequest(
                 format = "uuid")
         @NotNull UUID operationId,
         @Schema(
-                example = "Please confirm the route.",
-                nullable = true)
+                example = "Please confirm the route.")
         @NotBlank @Size(max = 1000) String reason) {
 }

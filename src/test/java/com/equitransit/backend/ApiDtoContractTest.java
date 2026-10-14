@@ -28,6 +28,16 @@ import com.equitransit.backend.dto.ApiExamples;
 import com.equitransit.backend.dto.request.HorseProfileRequest;
 import com.equitransit.backend.dto.request.OrderDraftRequest;
 import com.equitransit.backend.entity.OrderServiceIntent;
+import com.equitransit.backend.entity.CaseRole;
+import com.equitransit.backend.entity.DecisionCode;
+import com.equitransit.backend.entity.OrderStatus;
+import com.equitransit.backend.dto.request.AssessmentRequest;
+import com.equitransit.backend.dto.response.AssessmentReceipt;
+import com.equitransit.backend.dto.response.CaseAssignmentResponse;
+import com.equitransit.backend.dto.response.CaseDecisionResponse;
+import com.equitransit.backend.dto.response.CaseResponse;
+import com.equitransit.backend.dto.response.CaseStaffResponse;
+import com.equitransit.backend.dto.response.CaseSummaryResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.
         MockMvcRequestBuilders.get;
@@ -121,6 +131,91 @@ public class ApiDtoContractTest {
             }
         }
         assertJsonMedia(api);
+    }
+
+    /**
+     * Query defaults and enum examples must work for both staff surfaces.
+     * @throws Exception if the generated API cannot be read
+     */
+    @Test
+    public void managerStaffParametersHaveUsableExamples() throws Exception {
+        JsonNode api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        JsonNode schemas = api.at("/components/schemas");
+        JsonNode decision = schemas.at(
+                "/AssessmentRequest/properties/decision");
+
+        assertThat(decision.path("example").asText())
+                .isEqualTo("CHANGES_REQUESTED");
+        for (var paths = api.path("paths").fields(); paths.hasNext();) {
+            var path = paths.next();
+
+            if (!path.getKey().startsWith("/api/manager/")
+                    && !path.getKey().startsWith("/api/staff/")) {
+                continue;
+            }
+            for (JsonNode operation : path.getValue()) {
+                for (JsonNode param : operation.path("parameters")) {
+                    String name = param.path("name").asText();
+                    JsonNode schema = param.path("schema");
+                    JsonNode example = param.has("example")
+                            ? param.get("example") : schema.path("example");
+
+                    if ("page".equals(name)) {
+                        assertThat(example.asText()).isEqualTo("0");
+                        assertThat(schema.path("minimum").asInt())
+                                .isZero();
+                    } else if ("size".equals(name)) {
+                        assertThat(example.asText()).isEqualTo("20");
+                        assertThat(schema.path("maximum").asInt())
+                                .isEqualTo(100);
+                    } else if ("role".equals(name)) {
+                        assertThat(example.asText()).isEqualTo("SPECIALIST");
+                        assertThat(schema.path("enum").toString())
+                                .contains("SPECIALIST", "COORDINATOR")
+                                .doesNotContain("MANAGER", "DRIVER");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Java enum types preserve existing JSON codes and stored retry receipts.
+     * @throws Exception if enum serialization is incompatible
+     */
+    @Test
+    public void caseEnumsRoundTripWithoutChangingJsonCodes() throws Exception {
+        assertThat(CaseAssignmentResponse.class.getMethod("role")
+                .getReturnType()).isEqualTo(CaseRole.class);
+        assertThat(CaseStaffResponse.class.getMethod("role")
+                .getReturnType()).isEqualTo(CaseRole.class);
+        assertThat(CaseDecisionResponse.class.getMethod("decision")
+                .getReturnType()).isEqualTo(DecisionCode.class);
+        for (Class<?> type : List.of(AssessmentReceipt.class,
+                CaseResponse.class, CaseSummaryResponse.class)) {
+            assertThat(type.getMethod("orderStatus").getReturnType())
+                    .isEqualTo(OrderStatus.class);
+        }
+        for (OrderStatus state : OrderStatus.values()) {
+            ObjectNode receipt = (ObjectNode) mapper.readTree(
+                    ApiExamples.RECEIPT);
+
+            receipt.put("orderStatus", state.name());
+            AssessmentReceipt decoded = mapper.treeToValue(receipt,
+                    AssessmentReceipt.class);
+            assertThat(decoded.orderStatus()).isEqualTo(state);
+            assertThat(mapper.valueToTree(decoded).path("orderStatus").asText())
+                    .isEqualTo(state.name());
+        }
+        AssessmentRequest command = mapper.readValue(ApiExamples.ASSESSMENT,
+                AssessmentRequest.class);
+
+        assertThat(command.decision()).isEqualTo(DecisionCode.APPROVED);
+        assertThat(mapper.readValue(ApiExamples.RECEIPT,
+                AssessmentReceipt.class).decision().decision())
+                .isEqualTo(DecisionCode.APPROVED);
     }
 
     /**

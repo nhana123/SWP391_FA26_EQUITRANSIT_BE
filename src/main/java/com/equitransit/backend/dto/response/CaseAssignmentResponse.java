@@ -9,6 +9,7 @@ package com.equitransit.backend.dto.response;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.equitransit.backend.entity.CaseRole;
 import java.time.OffsetDateTime;
 
 
@@ -32,10 +33,8 @@ public record CaseAssignmentResponse(
                 example = "31",
                 minimum = "1")
         long staffId,
-        @Schema(
-                example = "SPECIALIST",
-                allowableValues = {"SPECIALIST", "COORDINATOR"})
-        String role,
+        @Schema(example = "SPECIALIST")
+        CaseRole role,
         @Schema(
                 example = "2026-10-14T14:05:00Z",
                 format = "date-time")
