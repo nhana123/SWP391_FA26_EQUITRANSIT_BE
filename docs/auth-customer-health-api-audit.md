@@ -23,4 +23,3 @@ Examples are documentation only. Password schema writeOnly describes the request
 Existing auth password rules, UTF-8 byte guard, token expiry/replay protection, public customer-only registration, generic account recovery responses and /customers/me identity/role checks remain unchanged. No DB migration/backfill or production data writes. Optional phone/address clients must send null rather than empty/free-text phone values. Email grammar now follows standard @Email instead of the removed ASCII-only filter.
 
 Tests inspect real generated OpenAPI examples/email patterns/password formats/media type/health schema and exact public health body, validate input examples/invalid emails/optional phone, and run existing auth/security regressions. Final counts and CI evidence are in the PR. This change builds on PR24 and PR25, both verified merged into dev on 14/10/2026. Private AI instructions remain local.
-
