@@ -8,6 +8,8 @@
 package com.equitransit.backend.entity;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import com.equitransit.backend.dto.ApiExamples;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -21,7 +23,30 @@ import java.util.List;
  * @param policyVersion source version or null
  * @param reasons safe blockers
  */
+@Schema(example = ApiExamples.FIT)
 public record StallFitResult(
-        String option, BigDecimal slots, String status,
-        Long policyId, Integer policyVersion, List<String> reasons) {
+        @Schema(
+                example = "WIDE",
+                allowableValues = {"SHARED_ONE", "WIDE", "PRIVATE"})
+        String option,
+        @Schema(
+                example = "1.5")
+        BigDecimal slots,
+        @Schema(
+                example = "PENDING",
+                allowableValues = {"ELIGIBLE", "UNSUITABLE", "PENDING"})
+        String status,
+        @Schema(
+                example = "31",
+                nullable = true,
+                minimum = "1")
+        Long policyId,
+        @Schema(
+                example = "1",
+                nullable = true,
+                minimum = "1")
+        Integer policyVersion,
+        @Schema(
+                example = "[\"FIT_POLICY_PENDING\"]")
+        List<String> reasons) {
 }

@@ -89,7 +89,7 @@ public class OrderDraftPolicy {
 
     /**
      * Requires enough route/horse/time data for staff assessment.
-     * Receiver, import advice and service choices may still be unknown.
+     * Receiver, event details and provider contacts may still be unknown.
      * @param draft the normalized request
      * @param enforceFuture whether this is a submission rather than a proposal
      */
@@ -103,9 +103,12 @@ public class OrderDraftPolicy {
                 || draft.getDestinationAddress() == null
                 || draft.getOriginTimezone() == null
                 || draft.getDestinationTimezone() == null
-                || draft.getDeliveryDeadline() == null) {
+                || draft.getPreferredDepartureAt() == null
+                || draft.getDeliveryDeadline() == null
+                || draft.getImportType() == null) {
             throw invalid("Complete horse, route, addresses, timezones and "
-                    + "delivery deadline before submission.");
+                    + "departure, delivery deadline and import type "
+                            + "before submission.");
         }
         if (draft.getOriginCountryCode().equals(
                 draft.getDestinationCountryCode())) {

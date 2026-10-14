@@ -8,6 +8,7 @@
 package com.equitransit.backend.dto.response;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 
@@ -20,6 +21,27 @@ import java.util.List;
  * @param totalPages page count
  */
 public record CaseStaffPageResponse(
-        List<CaseStaffResponse> items, int page, int size,
-        long totalElements, long totalPages) {
+        @Schema(
+                example = "[{\"staffId\":31,\"fullName\":\"Alex Nguy" +
+                        "en\",\"role\":\"SPECIALIST\",\"activeCases" +
+                        "\":2,\"availabilityStatus\":\"NOT_CONFIG" +
+                        "URED\"}]")
+        List<CaseStaffResponse> items,
+        @Schema(
+                example = "0",
+                minimum = "0")
+        int page,
+        @Schema(
+                example = "20",
+                minimum = "1",
+                maximum = "100")
+        int size,
+        @Schema(
+                example = "1",
+                minimum = "0")
+        long totalElements,
+        @Schema(
+                example = "1",
+                minimum = "0")
+        long totalPages) {
 }

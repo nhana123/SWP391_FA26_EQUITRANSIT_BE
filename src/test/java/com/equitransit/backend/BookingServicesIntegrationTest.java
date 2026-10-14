@@ -924,6 +924,9 @@ public class BookingServicesIntegrationTest {
         fields.put("destinationAddress", "Delivery address");
         fields.put("originTimezone", "America/New_York");
         fields.put("destinationTimezone", "Europe/London");
+        fields.put("importType", "TEMPORARY");
+        fields.put("preferredDepartureAt", OffsetDateTime.now(ZoneOffset.UTC)
+                .plusDays(7).withNano(0).toString());
         fields.put("deliveryDeadline", OffsetDateTime.now(ZoneOffset.UTC)
                 .plusDays(14).withNano(0).toString());
         draft = read(mvc.perform(post(CUSTOMER)

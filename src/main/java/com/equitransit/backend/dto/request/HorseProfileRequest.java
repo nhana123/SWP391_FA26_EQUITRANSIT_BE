@@ -8,6 +8,10 @@
 package com.equitransit.backend.dto.request;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import com.equitransit.backend.dto.validation.OptionalText;
+import com.equitransit.backend.dto.ApiExamples;
+import com.equitransit.backend.dto.ApiPatterns;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -21,59 +25,127 @@ import com.equitransit.backend.entity.HorseSex;
 
 
 /** Full editable profile; nullable fields allow an incomplete draft. */
+@Schema(example = ApiExamples.PROFILE)
 public class HorseProfileRequest {
 
     @NotBlank
-    @Size(max = 150)
+    @Size(min = 1, max = 150)
+    @Schema(
+            example = "Thunder Strike",
+            nullable = true)
     private String name;
 
-    @Size(max = 50)
-    @Pattern(regexp = "[\\x20-\\x7E]*")
+    @Size(min = 1, max = 50)
+    @Pattern(regexp = ApiPatterns.MICROCHIP)
+    @Schema(
+            example = "985112003456789",
+            nullable = true,
+            pattern = ApiPatterns.MICROCHIP)
+    @OptionalText
     private String microchipId;
 
-    @Size(max = 50)
-    @Pattern(regexp = "[\\x20-\\x7E]*")
+    @Size(min = 1, max = 50)
+    @Pattern(regexp = ApiPatterns.PASSPORT)
+    @Schema(
+            example = "FEI-10459921",
+            nullable = true,
+            pattern = ApiPatterns.PASSPORT)
+    @OptionalText
     private String passportNumber;
 
-    @Size(max = 100)
+    @Size(min = 1, max = 100)
+    @Schema(
+            example = "Thoroughbred",
+            nullable = true)
+    @OptionalText
     private String breed;
 
     @PastOrPresent
+    @Schema(
+            example = "2019-04-15",
+            nullable = true,
+            format = "date")
     private LocalDate dateOfBirth;
 
+    @Schema(
+            example = "GELDING",
+            nullable = true)
     private HorseSex sexCode;
 
     @Positive
     @Digits(integer = 6, fraction = 2)
+    @Schema(
+            example = "520.00",
+            nullable = true,
+            minimum = "0",
+            exclusiveMinimum = true)
     private BigDecimal weightKg;
 
     @Positive
     @Digits(integer = 4, fraction = 2)
+    @Schema(
+            example = "165.00",
+            nullable = true,
+            minimum = "0",
+            exclusiveMinimum = true)
     private BigDecimal heightCm;
 
     @Positive
     @Digits(integer = 4, fraction = 2)
+    @Schema(
+            example = "80.00",
+            nullable = true,
+            minimum = "0",
+            exclusiveMinimum = true)
     private BigDecimal bodyWidthCm;
 
     @PastOrPresent
+    @Schema(
+            example = "2026-10-13T08:00:00Z",
+            nullable = true,
+            format = "date-time")
     private OffsetDateTime measuredAt;
 
-    @Size(max = 1000)
+    @Size(min = 1, max = 1000)
+    @Schema(
+            example = "Calm handling required.",
+            nullable = true)
+    @OptionalText
     private String specialCareNotes;
 
-    @Size(max = 1000)
+    @Size(min = 1, max = 1000)
+    @Schema(
+            example = "Lead slowly.",
+            nullable = true)
+    @OptionalText
     private String handlingNotes;
 
-    @Size(max = 1000)
+    @Size(min = 1, max = 1000)
+    @Schema(
+            example = "Provide fresh water during stops.",
+            nullable = true)
+    @OptionalText
     private String feedWaterRequirements;
 
-    @Size(max = 1000)
+    @Size(min = 1, max = 1000)
+    @Schema(
+            example = "Wide stall requested.",
+            nullable = true)
+    @OptionalText
     private String stallPreferences;
 
-    @Size(max = 2000)
+    @Size(min = 1, max = 2000)
+    @Schema(
+            example = "Follow the supplied veterinary instructions.",
+            nullable = true)
+    @OptionalText
     private String veterinaryInstructions;
 
-    @Size(max = 1000)
+    @Size(min = 1, max = 1000)
+    @Schema(
+            example = "Owner-provided veterinary note.",
+            nullable = true)
+    @OptionalText
     private String veterinaryInstructionSource;
 
 

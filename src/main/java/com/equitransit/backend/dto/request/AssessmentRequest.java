@@ -8,6 +8,9 @@
 package com.equitransit.backend.dto.request;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import com.equitransit.backend.dto.ApiPatterns;
+import com.equitransit.backend.dto.ApiExamples;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import jakarta.validation.constraints.NotBlank;
@@ -30,11 +33,46 @@ import com.equitransit.backend.entity.DecisionCode;
  * @param dueAt optional case deadline, not a booked travel interval
  * @param assignmentNote staff-only preparation instructions
  */
+@Schema(example = ApiExamples.ASSESSMENT)
 public record AssessmentRequest(
+        @Schema(
+                example = "201",
+                nullable = true,
+                minimum = "1")
         @Positive long revisionId,
-        @NotBlank @Pattern(regexp = "[0-9a-fA-F]{16}") String recordVersion,
-        @NotNull UUID operationId, @NotNull DecisionCode decision,
+        @Schema(
+                example = "000000000001A2B3",
+                pattern = ApiPatterns.VERSION)
+        @NotBlank @Pattern(regexp = ApiPatterns.VERSION) String recordVersion,
+        @Schema(
+                example = "fa2c8d7b-6c51-4976-a28d-613c4199cfd6",
+                format = "uuid")
+        @NotNull UUID operationId,
+        @Schema(
+                example = ApiExamples.DECISION,
+                nullable = true)
+        @NotNull DecisionCode decision,
+        @Schema(
+                example = "Please confirm the route.",
+                nullable = true)
         @Size(max = 1000) String reason,
-        @Positive Long specialistId, @Positive Long coordinatorId,
-        OffsetDateTime dueAt, @Size(max = 1000) String assignmentNote) {
+        @Schema(
+                example = "31",
+                nullable = true,
+                minimum = "1")
+        @Positive Long specialistId,
+        @Schema(
+                example = "31",
+                nullable = true,
+                minimum = "1")
+        @Positive Long coordinatorId,
+        @Schema(
+                example = "2026-10-16T18:00:00Z",
+                nullable = true,
+                format = "date-time")
+        OffsetDateTime dueAt,
+        @Schema(
+                example = "Review route conditions.",
+                nullable = true)
+        @Size(max = 1000) String assignmentNote) {
 }

@@ -8,6 +8,7 @@
 package com.equitransit.backend.dto.response;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.OffsetDateTime;
 
 
@@ -23,7 +24,38 @@ import java.time.OffsetDateTime;
  * @param assignmentNote staff-only instructions
  */
 public record CaseAssignmentResponse(
-        long assignmentId, long staffId, String role,
-        OffsetDateTime assignedAt, OffsetDateTime endedAt, Long assignedBy,
-        OffsetDateTime dueAt, String assignmentNote) {
+        @Schema(
+                example = "31",
+                minimum = "1")
+        long assignmentId,
+        @Schema(
+                example = "31",
+                minimum = "1")
+        long staffId,
+        @Schema(
+                example = "SPECIALIST",
+                allowableValues = {"SPECIALIST", "COORDINATOR"})
+        String role,
+        @Schema(
+                example = "2026-10-14T14:05:00Z",
+                format = "date-time")
+        OffsetDateTime assignedAt,
+        @Schema(
+                example = "2026-10-17T09:00:00Z",
+                nullable = true,
+                format = "date-time")
+        OffsetDateTime endedAt,
+        @Schema(
+                example = "31",
+                nullable = true)
+        Long assignedBy,
+        @Schema(
+                example = "2026-10-16T18:00:00Z",
+                nullable = true,
+                format = "date-time")
+        OffsetDateTime dueAt,
+        @Schema(
+                example = "Review route conditions.",
+                nullable = true)
+        String assignmentNote) {
 }

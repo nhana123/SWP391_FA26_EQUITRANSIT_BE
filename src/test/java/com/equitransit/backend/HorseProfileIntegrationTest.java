@@ -10,6 +10,7 @@ package com.equitransit.backend;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.UUID;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
@@ -200,7 +201,9 @@ public class HorseProfileIntegrationTest {
      */
     @Test
     public void duplicateMicrochipIsASafeConflict() throws Exception {
-        String chip = TokenTools.randomToken();
+        String chip = "985" + String.format("%012d",
+                Math.abs(UUID.randomUUID().getMostSignificantBits()
+                        % 1000000000000L));
 
         create("First", chip);
         mvc.perform(post("/api/horses").header("Authorization", otherToken)

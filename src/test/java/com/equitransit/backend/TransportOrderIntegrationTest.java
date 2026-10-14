@@ -674,6 +674,51 @@ public class TransportOrderIntegrationTest {
         return mapper.readTree(result.getResponse().getContentAsString());
     }
 
+    /**
+     * Core routing is required only at submit; unknown receiver/event remain
+     * valid nullable intent.
+     * @throws Exception if an HTTP assertion fails
+     */
+    @Test
+    public void submissionRequiresCoreRoutingButNotOptionalDetails()
+            throws Exception {
+        JsonNode draft;
+        long id;
+        JsonNode revision;
+
+        for (String key : List.of("horseId", "originCountryCode",
+                "destinationCountryCode", "preferredDepartureAt",
+                "deliveryDeadline", "importType")) {
+            Map<String, Object> fields = complete();
+            JsonNode partial;
+            long partialId;
+
+            fields.remove(key);
+            partial = create(fields, ownerToken);
+            partialId = partial.get("orderId").asLong();
+            mvc.perform(post(API + "/{id}/submit", partialId)
+                    .header("Authorization", ownerToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(submitBody(partial, UUID.randomUUID())))
+                    .andExpect(status().isBadRequest());
+            assertThat(count("OrderRevision", partialId)).isZero();
+        }
+        draft = create(complete(), ownerToken);
+        id = draft.get("orderId").asLong();
+        revision = mapper.readTree(mvc.perform(post(
+                API + "/{id}/submit", id)
+                .header("Authorization", ownerToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(submitBody(draft, UUID.randomUUID())))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+
+        assertThat(revision.at("/snapshot/request/receiverName").isNull())
+                .isTrue();
+        assertThat(revision.at("/snapshot/request/eventStartAt").isNull())
+                .isTrue();
+    }
+
     private Map<String, Object> complete() {
         Map<String, Object> fields = new LinkedHashMap<>();
 
@@ -684,6 +729,9 @@ public class TransportOrderIntegrationTest {
         fields.put("destinationAddress", "Delivery address");
         fields.put("originTimezone", "America/New_York");
         fields.put("destinationTimezone", "Europe/London");
+        fields.put("importType", "TEMPORARY");
+        fields.put("preferredDepartureAt", OffsetDateTime.now(ZoneOffset.UTC)
+                .plusDays(7).withNano(0).toString());
         fields.put("deliveryDeadline", OffsetDateTime.now(ZoneOffset.UTC)
                 .plusDays(14).withNano(0).toString());
         return fields;

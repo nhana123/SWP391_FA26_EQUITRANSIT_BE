@@ -8,6 +8,7 @@
 package com.equitransit.backend.dto.response;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.OffsetDateTime;
 
 
@@ -21,6 +22,32 @@ import java.time.OffsetDateTime;
  * @param decidedAt UTC decision time
  */
 public record CaseDecisionResponse(
-        long decisionId, long revisionId, long managerId, String decision,
-        String reason, OffsetDateTime decidedAt) {
+        @Schema(
+                example = "31",
+                minimum = "1")
+        long decisionId,
+        @Schema(
+                example = "201",
+                nullable = true,
+                minimum = "1")
+        long revisionId,
+        @Schema(
+                example = "31",
+                minimum = "1")
+        long managerId,
+        @Schema(
+                example = "CHANGES_REQUESTED",
+                allowableValues = {
+                        "APPROVED",
+                        "REJECTED",
+                        "CHANGES_REQUESTED"})
+        String decision,
+        @Schema(
+                example = "Please confirm the route.",
+                nullable = true)
+        String reason,
+        @Schema(
+                example = "2026-10-14T14:00:00Z",
+                format = "date-time")
+        OffsetDateTime decidedAt) {
 }

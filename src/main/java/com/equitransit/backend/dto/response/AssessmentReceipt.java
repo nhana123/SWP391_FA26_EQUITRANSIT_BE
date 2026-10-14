@@ -8,6 +8,9 @@
 package com.equitransit.backend.dto.response;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import com.equitransit.backend.dto.ApiPatterns;
+import com.equitransit.backend.dto.ApiExamples;
 import java.util.List;
 
 
@@ -19,8 +22,37 @@ import java.util.List;
  * @param decision recorded current decision
  * @param assignments responsibilities at action completion
  */
+@Schema(example = ApiExamples.RECEIPT)
 public record AssessmentReceipt(
-        long orderId, String orderStatus, String recordVersion,
+        @Schema(
+                example = "101",
+                minimum = "1")
+        long orderId,
+        @Schema(
+                example = "SUBMITTED",
+                allowableValues = {
+                        "DRAFT",
+                        "SUBMITTED",
+                        "APPROVED",
+                        "CHANGES_REQUESTED",
+                        "REJECTED",
+                        "IN_PREPARATION",
+                        "CONFIRMED",
+                        "IN_TRANSIT",
+                        "DELIVERED",
+                        "COMPLETED",
+                        "CANCELLED",
+                        "CANCELED",
+                        "CLOSED"})
+        String orderStatus,
+        @Schema(
+                example = "000000000001A2B3",
+                pattern = ApiPatterns.VERSION)
+        String recordVersion,
+        @Schema(
+                example = ApiExamples.DECISION)
         CaseDecisionResponse decision,
+        @Schema(
+                example = ApiExamples.ASSIGNMENTS)
         List<CaseAssignmentResponse> assignments) {
 }

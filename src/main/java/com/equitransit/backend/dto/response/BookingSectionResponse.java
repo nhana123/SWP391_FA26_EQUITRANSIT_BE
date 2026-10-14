@@ -8,6 +8,7 @@
 package com.equitransit.backend.dto.response;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 
@@ -17,6 +18,22 @@ import java.util.List;
  * @param title customer display heading
  * @param options allowed/requestable preference codes, not reservations
  */
-public record BookingSectionResponse(String code, String title,
+public record BookingSectionResponse(
+        @Schema(
+                example = "AIR_STALL",
+                allowableValues = {
+                        "TRANSPORTATION",
+                        "AIR_STALL",
+                        "HORSE_CARE",
+                        "VETERINARY",
+                        "QUARANTINE",
+                        "INSURANCE",
+                        "ADDITIONAL_CHARGES"})
+        String code,
+        @Schema(
+                example = "Available Air Stalls for Your Horse")
+        String title,
+        @Schema(
+                example = "[\"WIDE\",\"PRIVATE\"]")
         List<String> options) {
 }
