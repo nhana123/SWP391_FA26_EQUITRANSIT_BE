@@ -311,9 +311,10 @@ public class OrderRepository {
      */
     public void saveIntents(long revision, List<OrderServiceIntent> intents) {
         for (OrderServiceIntent intent : intents) {
-            jdbc.update("INSERT dbo.OrderServiceChoice (RevisionID,ServiceCode,"
+            Long choice = jdbc.queryForObject("INSERT dbo.OrderServiceChoice"
+                    + " (RevisionID,ServiceCode,"
                     + "OptionCode,ArrangedBy,SelectionInputsJSON,ProviderName,"
-                    + "ProviderContact) VALUES"
+                    + "ProviderContact) OUTPUT INSERTED.ChoiceID VALUES"
                     + " (:revision,:code,:option,:by,:inputs,:name,:contact)",
                     new MapSqlParameterSource("revision", revision)
                             .addValue("code", intent.serviceCode())
@@ -322,7 +323,51 @@ public class OrderRepository {
                             .addValue("inputs", json.write(
                                     intent.requestedInputs()))
                             .addValue("name", intent.providerName())
-                            .addValue("contact", intent.providerContact()));
+                            .addValue("contact", intent.providerContact()),
+                    Long.class);
+
+            if (choice == null) {
+                throw new IllegalStateException("Service identity "
+                + "unavailable.");
+            }
+            specialized(choice, intent);
+        }
+    }
+
+    private void specialized(long choice, OrderServiceIntent intent) {
+        MapSqlParameterSource args = new MapSqlParameterSource("id", choice);
+        String coverage;
+
+        if ("AIR_STALL".equals(intent.serviceCode())) {
+            jdbc.update("INSERT dbo.StallChoice"
+                    + " (ChoiceID,SlotQuantity,SharingCode,FitStatus)"
+                    + " VALUES (:id,:slots,:sharing,:fit)", args
+                            .addValue("slots", intent.requestedInputs()
+                                    .get("slotQuantity"))
+                            .addValue("sharing", "PRIVATE".equals(
+                                    intent.optionCode()) ? "PRIVATE" : "SHARED")
+                            .addValue("fit", intent.requestedInputs()
+                                    .get("fitStatus")));
+        } else if ("QUARANTINE".equals(intent.serviceCode())) {
+            jdbc.update("INSERT dbo.QuarantineChoice (ChoiceID,PackageCode,"
+                    + "RequiredDays) VALUES (:id,:package,NULL)", args
+                            .addValue("package", intent.optionCode()));
+        } else if ("INSURANCE".equals(intent.serviceCode())) {
+            coverage = switch (intent.optionCode()) {
+                case "COMBINED" -> "MORTALITY_INJURY";
+                case "EXISTING" -> "EXISTING_POLICY";
+                default -> intent.optionCode();
+            };
+            jdbc.update("INSERT dbo.InsuranceChoice (ChoiceID,CoverageCode,"
+                    + "DeclaredValue,ValueCurrency,ExistingPolicyReference)"
+                    + " VALUES (:id,:coverage,:value,:currency,:reference)",
+                    args.addValue("coverage", coverage)
+                            .addValue("value", intent.requestedInputs()
+                                    .get("declaredValue"))
+                            .addValue("currency", intent.requestedInputs()
+                                    .get("valueCurrency"))
+                            .addValue("reference", intent.requestedInputs()
+                                    .get("existingPolicyReference")));
         }
     }
 

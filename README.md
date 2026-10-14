@@ -299,11 +299,12 @@ proposal is allowed per order. F13 implements staff review, customer consent and
 application later. Closed orders cannot open a new proposal.
 
 Services here are requested intent, not confirmed bookings or payable amounts.
-No sample prices, unknown quantities, required quarantine days or eligibility
-approvals are invented. WIDE/PRIVATE air stall requests remain pending fit review;
-SHARED_ONE submission returns AIR_STALL_ASSESSMENT_REQUIRED until F05 provides
-confirmed eligibility. No StallChoice/assignment or QuarantineChoice is fabricated.
-Optional care and insurance are not silently selected. F05/F08/F09 supply these
+F05 rechecks measurement eligibility against approved, sourced fit policies on
+submission/revision. SHARED_ONE is rejected unless eligible; known unsuitable
+WIDE/PRIVATE choices are rejected, and missing policy remains pending review.
+Specialized StallChoice, QuarantineChoice and InsuranceChoice rows retain the
+request; unknown required days stay NULL and no insurance cover is activated.
+Optional care and insurance are not silently selected. F08/F09/F10 supply source
 assessments; quote/payment and departure activation belong to their own flows.
 Drafts can coexist for the same horse; overlap prevention at departure belongs
 to F10/F11 and is not implemented by draft creation.
@@ -486,3 +487,190 @@ Không commit `.local`, credentials, outbox email hoặc bản ghi khách hàng.
 ## Git workflow
 
 Nhánh tích hợp của repository này là `dev`. Tạo nhánh task từ `dev`, mở Pull Request vào `dev` và yêu cầu một thành viên khác review. `main` dành cho bản phát hành đã kiểm thử.
+
+
+## F05 — Booking services and transparent charge disclosure
+
+Both endpoints require an ACTIVE CUSTOMER and an owned order. Identity comes
+from authentication; the body cannot select another horse, owner, policy,
+price, staff member or mandatory quarantine/veterinary quantity.
+
+| Method | Route | Purpose |
+|---|---|---|
+| GET | `/api/transport-orders/{id}/services` | Current saved preferences, seven sections, measured stall options and all charges |
+| POST | `/api/transport-orders/{id}/services/confirm` | Replace requested preferences on a draft or create a new submitted revision |
+
+### Frontend integration
+
+First save a request with its horse through F03, then GET services. `sections`
+contains TRANSPORTATION, AIR_STALL, HORSE_CARE, VETERINARY, QUARANTINE, INSURANCE
+and ADDITIONAL_CHARGES. Fees for coordination, documentation, airport and customs
+are presented in ADDITIONAL_CHARGES. Show all only expands `charges`; it must not
+submit choices, create fees or start payment. There is no next-horse action.
+
+Each charge has a stable `code`, `uiSection`, physical `costGroup`, `unit`,
+`quantity`, `unitRate`, `amount`, `mandatory`, `selected`, `pricingStatus`,
+`formula`, published tariff ID/version and safe `blockers`. Quantity and money
+are plain decimal **strings**, or NULL while unknown. Display decimals without
+converting them to JavaScript floating-point money; calculations belong to the
+server. Known zero, included service and unresolved quantity are different states.
+Amounts are multiplied exactly and rounded once HALF_UP to two USD decimals.
+
+`knownSubtotal` sums the currently known selected estimates. `totalEstimate`
+is NULL while a selected applicable charge remains unresolved. Neither is a
+payable quote: `payable` is always false and `carrierConfirmation` remains
+NOT_CONFIRMED. Do not render a payment action from this response.
+
+Use `airStalls[].status` and `reasons`, not the mere presence of an option, to
+label eligibility. UNSUITABLE options are omitted. SHARED_ONE appears only when
+ELIGIBLE; WIDE/PRIVATE may be PENDING requests requiring further assessment.
+Approved global policies require complete kg/cm measurements, inclusive limits,
+source/reviewer, effective dates and validity through the known delivery horizon.
+Ambiguous, incomplete, expired or absent policies are pending. Equipment/carrier
+scoped policies require actual operational context in F09/F10 and are not guessed.
+Measurement eligibility is not legal clearance, physical equipment acceptance
+or a confirmed carrier reservation. No fixture weight threshold is installed.
+
+Confirm sends the **complete replacement** preferences, not a patch:
+
+```json
+{
+  "recordVersion": "0000000000000001",
+  "horseRecordVersion": "0000000000000002",
+  "operationId": "029d479b-1f3b-4b40-b5ce-547a711e34d1",
+  "changeReason": "Update requested services",
+  "services": {
+    "roadArrangement": "EQUITRANSIT",
+    "veterinaryArrangement": "EQUITRANSIT",
+    "airStall": "WIDE",
+    "enhancedCare": false,
+    "groomingDays": 0,
+    "boardingNights": 0,
+    "quarantinePackage": "STANDARD",
+    "insurance": "NONE"
+  }
+}
+```
+
+The versions above are examples only; use versions from your latest GET.
+Arrangements: EQUITRANSIT/CUSTOMER. Stall: SHARED_ONE/WIDE/PRIVATE (1/1.5/3 slots).
+Quarantine: STANDARD/ENHANCED. Insurance: NONE/EXISTING/MORTALITY/COMBINED.
+EXISTING requires `existingPolicyReference` (max 100 characters); a reference is
+not valid with another option. Optional `declaredValue` is positive plain USD
+DECIMAL(18,2) text (max 16 integer and 2 fractional digits), not a premium. It
+requires an insurance request. Exponent notation is rejected. COMBINED maps to
+MORTALITY_INJURY coverage; it does not add another mortality policy.
+
+On DRAFT, confirm updates draft preferences without a submitted revision.
+On SUBMITTED/CHANGES_REQUESTED/eligible APPROVED orders, it requires a nonblank
+`changeReason` and creates a new immutable F03 revision. It saves REQUESTED
+choices and specialized selection rows, never an activated InsurancePolicy,
+QuoteItem, PaymentRequest or flight reservation. New revisions require their
+own source assessments; the old revision's assessment is not silently inherited.
+A requested QuarantineChoice has RequiredDays=NULL; it is not an active assessed
+package or a waiver. Verified NOT_REQUIRED is returned by the assessment source,
+never saved as RequiredDays=0. Extra boarding does not include quarantine days.
+
+Reuse the operation UUID with exactly the same input on an uncertain retry.
+The persisted receipt is stable; GET current again after success to obtain the
+new version. Different input with a reused UUID returns SERVICE_RETRY_CONFLICT.
+Parent/horse locks and observed versions protect concurrent updates. If the horse
+master changed after capture, HORSE_SNAPSHOT_STALE requires an explicit F03
+revision refresh; confirming services does not silently replace the snapshot.
+Accepted/authorized/departed orders return the existing F03 protected-change
+error; use controlled change intake and F13 rather than editing in place.
+
+Other safe errors include ORDER_NOT_FOUND (404), ORDER_VERSION_CONFLICT,
+HORSE_VERSION_CONFLICT, ORDER_HORSE_REQUIRED, SERVICE_CHANGE_REASON_REQUIRED,
+AIR_STALL_UNSUITABLE, AIR_STALL_ASSESSMENT_REQUIRED, INSURANCE_REFERENCE_REQUIRED
+and INSURANCE_INPUT_INVALID (409). Malformed/unknown fields return 400; wrong
+role returns 403. Reload on version conflicts and preserve editable FE input.
+
+### Published rates and source contracts
+
+One SQL query reads the server-owned service catalogue per disclosure, preserving
+all overlapping versions. There is no database query per charge. Only effective
+ACTIVE USD rates are used; multiple matches, missing rates and wrong units/groups
+remain pending. Rate changes affect estimates, not previously issued quotes.
+
+| Service / option | Expected unit | Calculation or source |
+|---|---|---|
+| ROAD_TRANSPORT / EQUITRANSIT | KM | Sourced ROAD km × one published rate |
+| AIR_STALL / DEFAULT | SLOT_KM | Selected slots × sourced AIR km × rate |
+| DOCUMENT_COORDINATION / DEFAULT | ROUTE_KM | (ROAD + AIR km) × rate, once |
+| HORSE_CARE / ENHANCED | HORSE_KM | One horse × route km × rate |
+| GROOMING / EXTRA | PERSON_DAY | Requested extra groom days |
+| BOARDING / EXTRA | HORSE_NIGHT | Requested extra nights only |
+| VETERINARY / EXAM, TEST, VACCINE, CERTIFICATE | HORSE_VISIT, TEST_SAMPLE, DOSE, CERTIFICATE | Exact-revision verified Specialist counts |
+| QUARANTINE / STANDARD, ENHANCED | HORSE_DAY | Specialist required days; UNKNOWN is not exemption |
+| AIRPORT_HANDLING / DEFAULT | HORSE_AIRPORT | Assessed airport scope, pending until produced |
+| CUSTOMS_DECLARATION / DEFAULT | DECLARATION | Assessed declaration scope, excludes authority duties |
+
+Basic care is INCLUDED; document review/follow-up is included in coordination.
+Customer-arranged services are EXTERNAL_PROVIDER, requiring later evidence review.
+Government duty is AUTHORITY_ASSESSMENT_PENDING. Waiting is EVENT_ONLY and not
+charged now. New insurance is INSURER_TERMS_PENDING; airfare is AIRFARE_PENDING
+until a customer quote is prepared. Private supplier purchase cost/margin is
+never selected or returned by the customer disclosure adapter.
+
+F08 source contracts: `RevisionQuarantineAssessment` and
+`RevisionVeterinaryAssessment` point to the exact submitted revision. Source,
+assessed time, validity through delivery, current active assigned Specialist and
+live account role/status are required. SupersededAt retains assessment history;
+only one current assessment per revision is permitted. New/expired/missing
+assessment returns UNKNOWN/null quantities. The producer write APIs belong to
+F08, not this customer popup.
+
+F10 distance contract: use the order's explicit CurrentPlanID, matching OrderID
+and RevisionID, with PlanStatus CONFIRMED. Each ROAD/AIR leg requires positive
+DistanceKm, DistanceSource, DistanceConfirmedAt and DistanceConfirmedBy from the
+current active Coordinator. Legacy distance alone is not verified. Missing source
+makes route quantities pending. F09/F10 own reservation and carrier confirmation.
+
+Selected, nonexpired AIRFARE SupplierOffer bundle metadata requires evidence.
+IncludesStall explicitly includes AIR_STALL. IncludedCharges uses this envelope:
+
+```json
+{"schemaVersion":1,"services":["AIRPORT_HANDLING","TERMINAL_HANDLING"]}
+```
+
+Allowed codes: AIR_STALL, AIRPORT_HANDLING, CUSTOMS_DECLARATION, TERMINAL_HANDLING.
+Multiple selected airfare offers, malformed/legacy envelopes or unknown codes
+require BUNDLE_REVIEW_REQUIRED, not guessed inclusion. Terminal handling is not
+charged separately without verified scope, avoiding accidental bundled duplicates.
+F06 owns offer preparation and commercial issuance; F15 owns real tariff publishing.
+
+### Migration, verification and deployment
+
+Migration `004_service_assessment_sources.sql` follows 001/002/003. It adds
+nullable leg source metadata and revision-bound assessment tables with FK/CHECK
+constraints and filtered unique indexes. No fixture rate, fit threshold, source
+or mandatory day is backfilled. Existing unsourced distances remain pending.
+The script is transactional and re-runnable; stop and review incompatible legacy
+assessment tables/duplicates, repair forward without deleting evidence history.
+Back up and review the target environment before deployment. Do not use Hibernate
+update, drop populated proof tables or treat a test-copy migration as deployment.
+
+The F05 disclosure handles missing 004 producer tables/leg source columns as
+pending, allowing integration with the 002 schema while producer migrations are
+not deployed. Full sourced assessment integration requires 003/004. F04 itself
+still requires 003. Production EquiTransit has not been changed by F05 work.
+
+Default `./mvnw verify` runs policy/pricing/auth/contract tests; SQL suites are
+opt-in and skipped by default. Use a separate full-schema restored
+EquiTransit_FigmaMigrationTest_* database with migrations 001–004:
+
+```powershell
+$env:EQ_SERVICES_TEST_ENABLED = 'true'
+$env:EQ_SERVICES_TEST_DB_URL = 'jdbc:sqlserver://localhost:1433;databaseName=YOUR_ISOLATED_TEST_DB;encrypt=true;trustServerCertificate=true;integratedSecurity=true'
+$env:EQ_TEST_DB_USERNAME = ''
+.\mvnw.cmd -B test '-Dtest=BookingServicesIntegrationTest' '-DargLine=-Djava.library.path=YOUR_SQLJDBC_NATIVE_DIRECTORY'
+```
+
+The suite refuses fixture writes outside the named test database prefix. It tests
+ownership/role/spoofing, read-only Show all, sourced prices and units, fit and
+expiry, bundles, NULL semantics, exact decimal precision, malicious decimals,
+immutable revisions, specialized selections, stale horse versions, retries,
+rollback and competing confirmations. SQL tests do not run against EquiTransit.
+API/SQL integration success is not a production throughput or latency guarantee;
+load testing and producer-flow end-to-end acceptance remain separate work.

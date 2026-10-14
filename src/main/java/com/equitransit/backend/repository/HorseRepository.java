@@ -87,6 +87,20 @@ public class HorseRepository {
     }
 
     /**
+     * Locks the selected horse while a booking measurement check commits.
+     * @param id selected owned horse key
+     * @param owner live customer key
+     * @return owned locked profile or empty
+     */
+    public Optional<Horse> lockOwned(long id, long owner) {
+        return jdbc.query("SELECT " + COLUMNS + " FROM " + TABLE
+                + " WITH (UPDLOCK,HOLDLOCK) WHERE HorseID=:id"
+                + " AND CustomerID=:owner",
+                new MapSqlParameterSource("id", id).addValue("owner", owner),
+                (row, index) -> read(row)).stream().findFirst();
+    }
+
+    /**
      * Lists the owner's profiles with fixed, deterministic sorting.
      * @param owner the authenticated customer key
      * @param page the zero-based page

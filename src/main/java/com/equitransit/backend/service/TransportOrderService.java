@@ -40,6 +40,7 @@ import com.equitransit.backend.entity.OrderHorseData;
 import com.equitransit.backend.entity.OrderRevisionRecord;
 import com.equitransit.backend.entity.OrderServiceIntent;
 import com.equitransit.backend.entity.TransportOrderRecord;
+import com.equitransit.backend.entity.StallFitResult;
 import com.equitransit.backend.exception.OrderException;
 import com.equitransit.backend.json.OrderJsonCodec;
 import com.equitransit.backend.repository.OrderRepository;
@@ -61,6 +62,7 @@ public class TransportOrderService {
     private final OrderCommitmentPolicy commitments;
     private final OrderJsonCodec json;
     private final Clock clock;
+    private final ServicePreferencePolicy selections;
 
     /**
      * Creates the customer request lifecycle facade.
@@ -72,12 +74,13 @@ public class TransportOrderService {
      * @param commitments the finance/operation protection boundary
      * @param json the supported JSON schema codec
      * @param clock the application's UTC clock
+     * @param selections actual source-backed service selection policy
      */
     public TransportOrderService(OrderRepository orders,
             CurrentActorService actors, HorseService horses,
             OrderDraftPolicy drafts, OrderServiceIntentFactory intents,
             OrderCommitmentPolicy commitments, OrderJsonCodec json,
-            Clock clock) {
+            Clock clock, ServicePreferencePolicy selections) {
         this.orders = orders;
         this.actors = actors;
         this.horses = horses;
@@ -86,6 +89,7 @@ public class TransportOrderService {
         this.commitments = commitments;
         this.json = json;
         this.clock = clock;
+        this.selections = selections;
     }
 
     /**
@@ -323,10 +327,13 @@ public class TransportOrderService {
         OffsetDateTime at = OffsetDateTime.now(clock).withNano(0);
         OrderSnapshot snapshot;
         long revision;
+        StallFitResult fit;
 
         drafts.requireComplete(draft, true);
         horse = horses.get(draft.getHorseId());
-        services = intents.requested(draft.getServices());
+        fit = selections.validate(draft.getServices(), horse,
+                draft.getDeliveryDeadline());
+        services = intents.requested(draft.getServices(), fit);
         number = orders.nextRevision(order.orderId());
         snapshot = new OrderSnapshot(1, operation, type, hash,
                 order.recordVersion(), order.orderId(), number, at,

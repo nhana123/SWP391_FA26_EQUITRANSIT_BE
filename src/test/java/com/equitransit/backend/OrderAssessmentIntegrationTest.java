@@ -566,9 +566,9 @@ public class OrderAssessmentIntegrationTest {
         command.put("dueAt", deadline.toString());
         command.put("assignmentNote", "Preparation notes");
         result = decide(order, command, manager.token(), 200);
-        assertThat(result.at("/assignments/0/dueAt").asText())
-                .isEqualTo(deadline.withOffsetSameInstant(ZoneOffset.UTC)
-                        .toString());
+        assertThat(OffsetDateTime.parse(result.at("/assignments/0/dueAt")
+                .asText()))
+                .isEqualTo(deadline.withOffsetSameInstant(ZoneOffset.UTC));
         assertThat(result.at("/assignments/0/assignedBy").asLong())
                 .isEqualTo(manager.staffId());
         assertThat(result.at("/assignments/0/assignmentNote").asText())
