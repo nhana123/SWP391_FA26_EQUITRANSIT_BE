@@ -288,7 +288,10 @@ public class TransportOrderIntegrationTest {
                 Integer.class, revision.get("revisionId").asLong()))
                 .isEqualTo(3);
         assertThat(jdbc.queryForObject("SELECT COUNT(*)"
-                + " FROM dbo.QuarantineChoice", Integer.class)).isZero();
+                + " FROM dbo.QuarantineChoice", Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*)"
+                + " FROM dbo.QuarantineChoice WHERE RequiredDays IS NOT NULL",
+                Integer.class)).isZero();
     }
 
     /**

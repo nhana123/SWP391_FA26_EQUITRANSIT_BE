@@ -146,4 +146,35 @@ public class OpenApiTest {
         mvc.perform(get("/api/staff/transport-orders"))
                 .andExpect(status().isUnauthorized());
     }
+    /**
+     * Publishes service choices without accepting prices or compulsory days.
+     * @throws Exception if documentation generation fails
+     */
+    @Test
+    public void serviceContractPublishesVersionedNonpayableDisclosure()
+            throws Exception {
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.paths"
+                        + "['/api/transport-orders/{id}/services'].get"
+                        + ".security[0].bearerAuth").isArray())
+                .andExpect(jsonPath("$.paths"
+                        + "['/api/transport-orders/{id}/services/confirm'].po"
+                                + "st")
+                        .exists())
+                .andExpect(jsonPath("$.components.schemas"
+                        + ".ServiceConfirmationRequest.properties"
+                        + ".horseRecordVersion").exists())
+                .andExpect(jsonPath("$.components.schemas"
+                        + ".ServiceDisclosureResponse.properties.knownSubtotal")
+                        .exists())
+                .andExpect(jsonPath("$.components.schemas"
+                        + ".OrderServicePreferences.properties.unitPrice")
+                        .doesNotExist())
+                .andExpect(jsonPath("$.components.schemas"
+                        + ".OrderServicePreferences.properties.requiredDays")
+                        .doesNotExist());
+        mvc.perform(get("/api/transport-orders/1/services"))
+                .andExpect(status().isUnauthorized());
+    }
 }

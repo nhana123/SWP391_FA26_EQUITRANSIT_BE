@@ -10,6 +10,13 @@ package com.equitransit.backend.dto.request;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Digits;
+import java.math.BigDecimal;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.equitransit.backend.json.DeclaredValueDeserializer;
+import io.swagger.v3.oas.annotations.media.Schema;
 import com.equitransit.backend.entity.ServiceArrangement;
 import com.equitransit.backend.entity.AirStallPreference;
 import com.equitransit.backend.entity.QuarantinePackage;
@@ -37,6 +44,16 @@ public class OrderServicePreferences {
 
     private InsurancePreference insurance;
 
+    @DecimalMin(value = "0", inclusive = false)
+    @Digits(integer = 16, fraction = 2)
+    @JsonDeserialize(using = DeclaredValueDeserializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    @Schema(type = "string", format = "decimal", example = "50000.00")
+    private BigDecimal declaredValue;
+
+    @Size(max = 100)
+    private String existingPolicyReference;
+
     @Size(max = 1000)
     private String escortNotes;
 
@@ -51,6 +68,26 @@ public class OrderServicePreferences {
 
     @Size(max = 500)
     private String veterinaryProviderContact;
+
+    /** @return requested declared value, not an insurance premium */
+    public BigDecimal getDeclaredValue() {
+        return declaredValue;
+    }
+
+    /** @param value requested USD horse value, never a premium */
+    public void setDeclaredValue(BigDecimal value) {
+        declaredValue = value;
+    }
+
+    /** @return existing policy reference requiring later verification */
+    public String getExistingPolicyReference() {
+        return existingPolicyReference;
+    }
+
+    /** @param value bounded existing policy reference */
+    public void setExistingPolicyReference(String value) {
+        existingPolicyReference = value;
+    }
 
 
     /**

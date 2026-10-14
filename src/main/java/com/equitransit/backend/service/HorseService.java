@@ -81,6 +81,28 @@ public class HorseService {
     }
 
     /**
+     * Captures booking measurements under a lock retained by the caller's tx.
+     * @param id selected owned horse key
+     * @param expected profile version acknowledged by the customer
+     * @return locked current profile
+     */
+    @Transactional
+    public HorseResponse lockSnapshot(@Positive long id, String expected) {
+        HorseResponse horse = response(horses.lockOwned(id,
+                actors.current().customerId()).orElseThrow(() ->
+                new HorseException(HttpStatus.NOT_FOUND, "HORSE_NOT_FOUND",
+                        "Horse profile was not found.")));
+
+        if (!horse.recordVersion().equalsIgnoreCase(expected)) {
+            throw new HorseException(HttpStatus.CONFLICT,
+                    "HORSE_VERSION_CONFLICT",
+                    "Horse measurements changed. Refresh the booking "
+                + "revision.");
+        }
+        return horse;
+    }
+
+    /**
      * Creates a profile with server-derived ownership.
      * @param request the editable fields, never an owner or version
      * @return the persisted profile and generated version

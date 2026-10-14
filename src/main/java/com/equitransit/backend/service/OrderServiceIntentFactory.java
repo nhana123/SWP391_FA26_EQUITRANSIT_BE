@@ -17,6 +17,7 @@ import com.equitransit.backend.dto.request.OrderServicePreferences;
 import com.equitransit.backend.entity.AirStallPreference;
 import com.equitransit.backend.entity.OrderServiceIntent;
 import com.equitransit.backend.entity.ServiceArrangement;
+import com.equitransit.backend.entity.StallFitResult;
 import com.equitransit.backend.exception.OrderException;
 
 
@@ -32,7 +33,19 @@ public class OrderServiceIntentFactory {
      */
     public List<OrderServiceIntent> requested(
             OrderServicePreferences preferences) {
+        return requested(preferences, null);
+    }
+
+    /**
+     * Captures server-checked measurements without claiming carrier acceptance.
+     * @param preferences typed requested inputs
+     * @param fit source-backed measurement assessment or pending
+     * @return immutable intent rows
+     */
+    public List<OrderServiceIntent> requested(
+            OrderServicePreferences preferences, StallFitResult fit) {
         List<OrderServiceIntent> intents = new ArrayList<>();
+        Map<String, Object> fields;
 
         if (preferences == null) {
             return List.of();
@@ -44,15 +57,27 @@ public class OrderServiceIntentFactory {
                 preferences.getVeterinaryArrangement(),
                 preferences.getVeterinaryProviderName(),
                 preferences.getVeterinaryProviderContact());
-        if (preferences.getAirStall() == AirStallPreference.SHARED_ONE) {
+        if (preferences.getAirStall() == AirStallPreference.SHARED_ONE
+                && (fit == null || !"ELIGIBLE".equals(fit.status()))) {
             throw new OrderException(HttpStatus.CONFLICT,
                     "AIR_STALL_ASSESSMENT_REQUIRED",
                     "One-slot selection requires the confirmed fit policy "
                             + "from the service eligibility workflow.");
         }
         if (preferences.getAirStall() != null) {
+            fields = new java.util.LinkedHashMap<>();
+            fields.put("fitStatus", fit != null
+                    && "ELIGIBLE".equals(fit.status())
+                    ? "SUITABLE" : "PENDING");
+            fields.put("carrierConfirmation", "NOT_CONFIRMED");
+            fields.put("slotQuantity", StallFitEvaluator
+                    .slots(preferences.getAirStall()));
+            if (fit != null && fit.policyId() != null) {
+                fields.put("policyId", fit.policyId());
+                fields.put("policyVersion", fit.policyVersion());
+            }
             add(intents, "AIR_STALL", preferences.getAirStall().name(),
-                    Map.of("fitStatus", "PENDING"));
+                    fields);
         }
         if (Boolean.TRUE.equals(preferences.getEnhancedCare())) {
             add(intents, "HORSE_CARE", "ENHANCED", Map.of());
@@ -67,8 +92,18 @@ public class OrderServiceIntentFactory {
                     Map.of("requiredDaysStatus", "UNKNOWN"));
         }
         if (preferences.getInsurance() != null) {
+            fields = new java.util.LinkedHashMap<>();
+            if (preferences.getDeclaredValue() != null) {
+                fields.put("declaredValue", preferences.getDeclaredValue()
+                        .toPlainString());
+                fields.put("valueCurrency", "USD");
+            }
+            if (optional(preferences.getExistingPolicyReference()) != null) {
+                fields.put("existingPolicyReference", optional(
+                        preferences.getExistingPolicyReference()));
+            }
             add(intents, "INSURANCE",
-                    preferences.getInsurance().name(), Map.of());
+                    preferences.getInsurance().name(), fields);
         }
         if (optional(preferences.getEscortNotes()) != null) {
             add(intents, "ESCORT", "REQUESTED", Map.of("notes",
