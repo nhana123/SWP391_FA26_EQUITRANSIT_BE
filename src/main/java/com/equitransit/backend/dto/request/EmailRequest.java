@@ -11,8 +11,8 @@ package com.equitransit.backend.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.Pattern;
 import com.equitransit.backend.dto.ValidationLimits;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 
 /** Contains a verification or recovery email. */
@@ -20,7 +20,7 @@ public class EmailRequest {
     @NotBlank
     @Email
     @Size(max = ValidationLimits.EMAIL_MAX_LENGTH)
-    @Pattern(regexp = "[\\x00-\\x7F]+")
+    @Schema(example = "customer@equitransit.com", format = "email")
     private String email;
 
     /**

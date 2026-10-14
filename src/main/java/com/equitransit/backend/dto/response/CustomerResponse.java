@@ -8,21 +8,33 @@
 package com.equitransit.backend.dto.response;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import com.equitransit.backend.dto.ApiPatterns;
+
+
 
 
 
 /** Contains safe API response data. */
 public class CustomerResponse {
+    @Schema(example = "12", minimum = "1")
     private Long customerId;
 
+    @Schema(example = "101", minimum = "1")
     private Long userId;
 
+    @Schema(example = "customer@equitransit.com", format = "email")
     private String email;
 
+    @Schema(example = "Alex Nguyen")
     private String fullName;
 
+    @Schema(example = "+84901234567", nullable = true,
+            pattern = ApiPatterns.PHONE)
     private String phone;
 
+    @Schema(example = "12 Nguyen Hue, Ho Chi Minh City",
+            nullable = true)
     private String address;
 
     /**

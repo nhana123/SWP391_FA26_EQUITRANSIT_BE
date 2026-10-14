@@ -8,17 +8,28 @@
 package com.equitransit.backend.dto.response;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+
 
 
 
 /** Contains safe API response data. */
 public class LoginResponse {
+    @Schema(example = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMDEifQ."
+            + "example-signature", format = "jwt",
+            description = "Illustrative token; use the issued access token.")
     private String accessToken;
 
+    @Schema(example = "Bearer", allowableValues = {"Bearer"})
     private String tokenType;
 
+    @Schema(example = "3600", minimum = "1",
+            description = "Access-token lifetime in seconds.")
     private long expiresIn;
 
+    @Schema(example = "CUSTOMER", allowableValues = {"CUSTOMER",
+            "MANAGER", "SPECIALIST", "COORDINATOR", "DRIVER"})
     private String role;
 
     /**

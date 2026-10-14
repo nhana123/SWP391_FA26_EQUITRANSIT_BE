@@ -26,6 +26,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import com.equitransit.backend.dto.ApiExamples;
 import com.equitransit.backend.dto.request.HorseProfileRequest;
+import com.equitransit.backend.dto.request.EmailRequest;
+import com.equitransit.backend.dto.request.LoginRequest;
+import com.equitransit.backend.dto.request.RegisterRequest;
+import com.equitransit.backend.dto.request.ResetPasswordRequest;
 import com.equitransit.backend.dto.request.OrderDraftRequest;
 import com.equitransit.backend.entity.OrderServiceIntent;
 import com.equitransit.backend.entity.CaseRole;
@@ -71,6 +75,15 @@ public class ApiDtoContractTest {
 
         Files.writeString(Path.of("target/api-dto-contract.json"), encoded);
         for (String name : List.of(
+                "EmailRequest",
+                "LoginRequest",
+                "RegisterRequest",
+                "ResetPasswordRequest",
+                "TokenRequest",
+                "LoginResponse",
+                "CustomerResponse",
+                "MessageResponse",
+                "HealthResponse",
                 "AssessmentReceipt",
                 "AssessmentRequest",
                 "BookingSectionResponse",
@@ -131,6 +144,98 @@ public class ApiDtoContractTest {
             }
         }
         assertJsonMedia(api);
+    }
+
+    /**
+     * Credentials have useful documentation and health has fixed properties.
+     * @throws Exception if the HTTP contract cannot be read
+     */
+    @Test
+    public void authAndHealthSchemasAreExplicit() throws Exception {
+        JsonNode api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        JsonNode schemas = api.at("/components/schemas");
+
+        for (String name : List.of("EmailRequest", "LoginRequest",
+                "RegisterRequest", "CustomerResponse")) {
+            JsonNode email = schemas.path(name).at("/properties/email");
+
+            assertThat(email.path("format").asText()).isEqualTo("email");
+            assertThat(email.has("pattern")).isFalse();
+            assertThat(email.path("example").asText())
+                    .isEqualTo("customer@equitransit.com");
+        }
+        for (String name : List.of("LoginRequest", "RegisterRequest",
+                "ResetPasswordRequest")) {
+            JsonNode password = schemas.path(name).at("/properties/password");
+
+            assertThat(password.path("example").asText())
+                    .isEqualTo("ExamplePass!2026");
+            assertThat(password.path("format").asText())
+                    .isEqualTo("password");
+            assertThat(password.path("writeOnly").asBoolean()).isTrue();
+        }
+        assertThat(schemas.at("/HealthResponse/additionalProperties")
+                .asBoolean(true)).isFalse();
+        assertThat(schemas.at("/HealthResponse/properties").size())
+                .isEqualTo(2);
+        assertThat(api.at("/paths/~1api~1health/get/responses/200/content/"
+                + "application~1json/schema/$ref").asText())
+                .isEqualTo("#/components/schemas/HealthResponse");
+        JsonNode health = mapper.readTree(mvc.perform(get("/api/health"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+
+        assertThat(health).isEqualTo(mapper.valueToTree(Map.of(
+                "status", "UP", "application", "EquiTransit")));
+    }
+
+    /**
+     * Email uses standard validation and supplied phone uses strict E164.
+     * @throws Exception if test input cannot be parsed
+     */
+    @Test
+    public void authInputExamplesValidateWithoutCustomEmailRegex()
+            throws Exception {
+        ObjectNode registration = mapper.valueToTree(Map.of(
+                "email", "customer@equitransit.com",
+                "password", "ExamplePass!2026",
+                "confirmPassword", "ExamplePass!2026",
+                "fullName", "Alex Nguyen", "phone", "+84901234567"));
+        RegisterRequest valid = mapper.treeToValue(registration,
+                RegisterRequest.class);
+        LoginRequest login = mapper.treeToValue(mapper.valueToTree(Map.of(
+                "email", "customer@equitransit.com",
+                "password", "ExamplePass!2026")), LoginRequest.class);
+        ResetPasswordRequest reset = mapper.treeToValue(
+                mapper.valueToTree(Map.of("token", "demo_reset_token",
+                        "password", "ExamplePass!2026",
+                        "confirmPassword", "ExamplePass!2026")),
+                ResetPasswordRequest.class);
+
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            var validator = factory.getValidator();
+
+            assertThat(validator.validate(valid)).isEmpty();
+            assertThat(validator.validate(login)).isEmpty();
+            assertThat(validator.validate(reset)).isEmpty();
+            for (String value : List.of("not-an-email", "", "   ")) {
+                EmailRequest invalid = new EmailRequest();
+
+                invalid.setEmail(value);
+                assertThat(validator.validate(invalid)).isNotEmpty();
+                valid.setEmail(value);
+                login.setEmail(value);
+                assertThat(validator.validate(valid)).isNotEmpty();
+                assertThat(validator.validate(login)).isNotEmpty();
+            }
+            valid.setEmail("customer@equitransit.com");
+            valid.setPhone("call me tomorrow");
+            assertThat(validator.validate(valid)).isNotEmpty();
+            valid.setPhone(null);
+            assertThat(validator.validate(valid)).isEmpty();
+        }
     }
 
     /**
@@ -313,7 +418,10 @@ public class ApiDtoContractTest {
     private void assertJsonMedia(JsonNode api) {
         api.path("paths").properties().forEach(path -> {
             if (path.getKey().startsWith("/api/horses")
-                    || path.getKey().contains("transport-orders")) {
+                    || path.getKey().contains("transport-orders")
+                    || path.getKey().startsWith("/api/auth/")
+                    || path.getKey().startsWith("/api/customers/")
+                    || path.getKey().equals("/api/health")) {
                 path.getValue().properties().forEach(method ->
                         method.getValue().path("responses").properties()
                                 .forEach(response -> {

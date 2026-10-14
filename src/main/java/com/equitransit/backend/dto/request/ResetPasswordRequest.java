@@ -11,20 +11,31 @@ package com.equitransit.backend.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import com.equitransit.backend.dto.ValidationLimits;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 
 /** Contains a one-time password reset request. */
 public class ResetPasswordRequest {
     @NotBlank
     @Size(max = ValidationLimits.TOKEN_MAX_LENGTH)
+    @Schema(example = "demo_reset_token_from_email_link",
+            description = "Replace with the one-time token from your email.",
+            accessMode = Schema.AccessMode.WRITE_ONLY)
     private String token;
 
     @NotBlank
     @Size(min = ValidationLimits.PASSWORD_MIN_LENGTH,
             max = ValidationLimits.PASSWORD_MAX_LENGTH)
+    @Schema(example = "ExamplePass!2026", format = "password",
+            accessMode = Schema.AccessMode.WRITE_ONLY,
+            description = "Documentation example only, not a real password.")
     private String password;
 
     @NotBlank
+    @Size(max = ValidationLimits.PASSWORD_MAX_LENGTH)
+    @Schema(example = "ExamplePass!2026", format = "password",
+            accessMode = Schema.AccessMode.WRITE_ONLY,
+            description = "Must match password.")
     private String confirmPassword;
 
     /**
