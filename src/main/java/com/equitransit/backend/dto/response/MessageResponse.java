@@ -8,11 +8,15 @@
 package com.equitransit.backend.dto.response;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+
 
 
 
 /** Contains safe API response data. */
 public class MessageResponse {
+    @Schema(example = "Email verified. You can now sign in.")
     private String message;
 
     /**

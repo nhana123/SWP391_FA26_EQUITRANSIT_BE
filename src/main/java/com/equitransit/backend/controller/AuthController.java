@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.equitransit.backend.dto.request.RegisterRequest;
 import com.equitransit.backend.dto.request.LoginRequest;
 import com.equitransit.backend.dto.request.EmailRequest;
@@ -27,7 +30,9 @@ import com.equitransit.backend.service.AuthService;
 
 /** Exposes account APIs corresponding to Figma A01, A02 and A03. */
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping(value = "/api/auth",
+        produces = MediaType.APPLICATION_JSON_VALUE)
+@Tag(name = "Authentication")
 public class AuthController {
 
     private static final String GENERIC_EMAIL_MESSAGE =
@@ -49,6 +54,7 @@ public class AuthController {
      * @return the next-step message
      */
     @PostMapping("/register")
+    @Operation(summary = "Register an individual customer")
     @ResponseStatus(HttpStatus.CREATED)
     public MessageResponse register(@Valid @RequestBody RegisterRequest
             request) {
@@ -62,6 +68,7 @@ public class AuthController {
      * @return the access-token response
      */
     @PostMapping("/login")
+    @Operation(summary = "Sign in to a verified active account")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
         return auth.login(request);
     }
@@ -72,6 +79,7 @@ public class AuthController {
      * @return the activation result
      */
     @PostMapping("/verify-email")
+    @Operation(summary = "Verify email using a one-time token")
     public MessageResponse verify(@Valid @RequestBody TokenRequest request) {
         auth.verify(request.getToken());
         return message("Email verified. You can now sign in.");
@@ -83,6 +91,7 @@ public class AuthController {
      * @return a non-enumerating response
      */
     @PostMapping("/resend-verification")
+    @Operation(summary = "Request a new verification email")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public MessageResponse resend(@Valid @RequestBody EmailRequest request) {
         auth.resendVerification(request.getEmail());
@@ -95,6 +104,7 @@ public class AuthController {
      * @return a non-enumerating response
      */
     @PostMapping("/forgot-password")
+    @Operation(summary = "Request a password-reset email")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public MessageResponse forgot(@Valid @RequestBody EmailRequest request) {
         auth.forgotPassword(request.getEmail());
@@ -107,6 +117,7 @@ public class AuthController {
      * @return the reset result
      */
     @PostMapping("/reset-password")
+    @Operation(summary = "Reset password using a one-time token")
     public MessageResponse reset(@Valid @RequestBody ResetPasswordRequest
             request) {
         auth.resetPassword(request);

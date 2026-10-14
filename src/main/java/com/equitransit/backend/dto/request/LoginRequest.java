@@ -11,8 +11,8 @@ package com.equitransit.backend.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.Pattern;
 import com.equitransit.backend.dto.ValidationLimits;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 
 /** Contains sign-in credentials. */
@@ -20,11 +20,14 @@ public class LoginRequest {
     @NotBlank
     @Email
     @Size(max = ValidationLimits.EMAIL_MAX_LENGTH)
-    @Pattern(regexp = "[\\x00-\\x7F]+")
+    @Schema(example = "customer@equitransit.com", format = "email")
     private String email;
 
     @NotBlank
     @Size(max = ValidationLimits.PASSWORD_MAX_LENGTH)
+    @Schema(example = "ExamplePass!2026", format = "password",
+            accessMode = Schema.AccessMode.WRITE_ONLY,
+            description = "Documentation example only, not a real password.")
     private String password;
 
     /**
