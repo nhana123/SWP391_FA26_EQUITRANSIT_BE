@@ -119,7 +119,7 @@ public class SecurityConfig {
                 new UrlBasedCorsConfigurationSource();
 
         cors.setAllowedOrigins(List.of(origin));
-        cors.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+        cors.setAllowedMethods(List.of("GET", "POST", "PUT", "OPTIONS"));
         cors.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         cors.setAllowCredentials(false);
         source.registerCorsConfiguration("/api/**", cors);
@@ -151,7 +151,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/api/health", "/api/auth/**")
                         .permitAll()
-                        .requestMatchers("/api/customers/**")
+                        .requestMatchers("/api/customers/**", "/api/horses",
+                                "/api/horses/**")
                         .hasRole("CUSTOMER")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(resource -> resource

@@ -10,6 +10,7 @@ package com.equitransit.backend.exception;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -21,6 +22,9 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.
+        MethodArgumentTypeMismatchException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 
 
 /** Returns consistent errors without exposing secrets or SQL details. */
@@ -29,6 +33,46 @@ public class ApiExceptionHandler {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(ApiExceptionHandler.class);
+
+    /**
+     * Returns a stable horse-domain code without SQL or owner details.
+     * @param error the expected domain failure
+     * @return the safe response
+     */
+    @ExceptionHandler(HorseException.class)
+    public ResponseEntity<Map<String, Object>> handleHorse(
+            HorseException error) {
+        Map<String, Object> body = new LinkedHashMap<>();
+
+        body.put("code", error.getCode());
+        body.put("message", error.getMessage());
+        return ResponseEntity.status(error.getStatus()).body(body);
+    }
+
+    /**
+     * Rejects invalid path/query values without reflecting submitted data.
+     * @param error the invalid parameter
+     * @return the safe bad-request response
+     */
+    @ExceptionHandler({ConstraintViolationException.class,
+            MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<Map<String, Object>> handleParameter(
+            Exception error) {
+        return response(HttpStatus.BAD_REQUEST,
+                "Invalid request parameters.");
+    }
+
+    /**
+     * Rejects unsupported mutations, including horse deletion.
+     * @param error the unsupported HTTP method
+     * @return the method-not-allowed response
+     */
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, Object>> handleMethod(
+            HttpRequestMethodNotSupportedException error) {
+        return response(HttpStatus.METHOD_NOT_ALLOWED,
+                "This method is not supported.");
+    }
 
     /**
      * Returns a safe response for service-level authorization failures.

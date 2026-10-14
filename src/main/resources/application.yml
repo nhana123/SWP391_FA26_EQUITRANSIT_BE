@@ -5,6 +5,11 @@ spring:
     url: ${EQ_DB_URL:jdbc:sqlserver://DESKTOP-9VRARFD:1433;databaseName=EquiTransit;encrypt=true;trustServerCertificate=false}
     username: ${EQ_DB_USERNAME:}
     password: ${EQ_DB_PASSWORD:}
+    hikari:
+      connection-init-sql: >-
+        SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON;
+        SET ANSI_WARNINGS ON; SET CONCAT_NULL_YIELDS_NULL ON;
+        SET ARITHABORT ON; SET NUMERIC_ROUNDABORT OFF;
   jpa:
     open-in-view: false
     hibernate:
