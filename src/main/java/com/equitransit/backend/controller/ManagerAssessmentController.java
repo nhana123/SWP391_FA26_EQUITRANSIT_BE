@@ -80,11 +80,13 @@ public class ManagerAssessmentController {
             @RequestParam(defaultValue = "SUBMITTED") ReviewState state,
             @Parameter(example = "0",
                     description = "Zero-based page index.",
-                    schema = @Schema(minimum = "0", defaultValue = "0"))
+                    schema = @Schema(type = "integer", format = "int32",
+                            minimum = "0", defaultValue = "0"))
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @Parameter(example = "20",
                     description = "Items per page; maximum 100.",
-                    schema = @Schema(minimum = "1", maximum = "100",
+                    schema = @Schema(type = "integer", format = "int32",
+                            minimum = "1", maximum = "100",
                             defaultValue = "20"))
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return queries.managerQueue(state, page, size);
@@ -104,11 +106,13 @@ public class ManagerAssessmentController {
             @RequestParam CaseRole role,
             @Parameter(example = "0",
                     description = "Zero-based page index.",
-                    schema = @Schema(minimum = "0", defaultValue = "0"))
+                    schema = @Schema(type = "integer", format = "int32",
+                            minimum = "0", defaultValue = "0"))
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @Parameter(example = "20",
                     description = "Items per page; maximum 100.",
-                    schema = @Schema(minimum = "1", maximum = "100",
+                    schema = @Schema(type = "integer", format = "int32",
+                            minimum = "1", maximum = "100",
                             defaultValue = "20"))
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return queries.staffDirectory(role, page, size);
@@ -122,7 +126,8 @@ public class ManagerAssessmentController {
     @GetMapping("/{id}")
     @Operation(summary = "Review the current submitted revision")
     public CaseResponse get(@Parameter(example = "101",
-                    schema = @Schema(minimum = "1"))
+                    schema = @Schema(type = "integer", format = "int64",
+                            minimum = "1"))
             @PathVariable @Positive long id) {
         return queries.managerCase(id);
     }
@@ -140,7 +145,8 @@ public class ManagerAssessmentController {
                     + "REJECTED/CHANGES_REQUESTED require reason. Reuse UUID "
                     + "and exact input for retries, then GET current state.")
     public AssessmentReceipt decide(@Parameter(example = "101",
-                    schema = @Schema(minimum = "1"))
+                    schema = @Schema(type = "integer", format = "int64",
+                            minimum = "1"))
             @PathVariable @Positive long id,
             @RequestBody @Valid AssessmentRequest request) {
         return assessments.decide(id, request);
@@ -159,7 +165,8 @@ public class ManagerAssessmentController {
                     + "clear those fields. Reassignment immediately revokes "
                     + "old access and invalidates unaccepted preparation.")
     public AssessmentReceipt assign(@Parameter(example = "101",
-                    schema = @Schema(minimum = "1"))
+                    schema = @Schema(type = "integer", format = "int64",
+                            minimum = "1"))
             @PathVariable @Positive long id,
             @Parameter(example = "SPECIALIST")
             @PathVariable CaseRole role,
@@ -177,7 +184,8 @@ public class ManagerAssessmentController {
     @PostMapping("/{id}/assignments/{role}/end")
     @Operation(summary = "End a current case assignment")
     public AssessmentReceipt end(@Parameter(example = "101",
-                    schema = @Schema(minimum = "1"))
+                    schema = @Schema(type = "integer", format = "int64",
+                            minimum = "1"))
             @PathVariable @Positive long id,
             @Parameter(example = "SPECIALIST")
             @PathVariable CaseRole role,
@@ -196,15 +204,18 @@ public class ManagerAssessmentController {
     @Operation(summary = "Read assessment history")
     public List<CaseDecisionResponse> decisions(
             @Parameter(example = "101",
-                    schema = @Schema(minimum = "1"))
+                    schema = @Schema(type = "integer", format = "int64",
+                            minimum = "1"))
             @PathVariable @Positive long id,
             @Parameter(example = "0",
                     description = "Zero-based page index.",
-                    schema = @Schema(minimum = "0", defaultValue = "0"))
+                    schema = @Schema(type = "integer", format = "int32",
+                            minimum = "0", defaultValue = "0"))
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @Parameter(example = "20",
                     description = "Items per page; maximum 100.",
-                    schema = @Schema(minimum = "1", maximum = "100",
+                    schema = @Schema(type = "integer", format = "int32",
+                            minimum = "1", maximum = "100",
                             defaultValue = "20"))
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return queries.decisions(id, page, size);
@@ -221,15 +232,18 @@ public class ManagerAssessmentController {
     @Operation(summary = "Read assignment and reassignment history")
     public List<CaseAssignmentResponse> assignments(
             @Parameter(example = "101",
-                    schema = @Schema(minimum = "1"))
+                    schema = @Schema(type = "integer", format = "int64",
+                            minimum = "1"))
             @PathVariable @Positive long id,
             @Parameter(example = "0",
                     description = "Zero-based page index.",
-                    schema = @Schema(minimum = "0", defaultValue = "0"))
+                    schema = @Schema(type = "integer", format = "int32",
+                            minimum = "0", defaultValue = "0"))
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @Parameter(example = "20",
                     description = "Items per page; maximum 100.",
-                    schema = @Schema(minimum = "1", maximum = "100",
+                    schema = @Schema(type = "integer", format = "int32",
+                            minimum = "1", maximum = "100",
                             defaultValue = "20"))
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return queries.assignments(id, page, size);

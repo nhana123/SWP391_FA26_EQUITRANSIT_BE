@@ -163,10 +163,14 @@ public class ApiDtoContractTest {
                             ? param.get("example") : schema.path("example");
 
                     if ("page".equals(name)) {
+                        assertThat(schema.path("type").asText())
+                                .isEqualTo("integer");
                         assertThat(example.asText()).isEqualTo("0");
                         assertThat(schema.path("minimum").asInt())
                                 .isZero();
                     } else if ("size".equals(name)) {
+                        assertThat(schema.path("type").asText())
+                                .isEqualTo("integer");
                         assertThat(example.asText()).isEqualTo("20");
                         assertThat(schema.path("maximum").asInt())
                                 .isEqualTo(100);

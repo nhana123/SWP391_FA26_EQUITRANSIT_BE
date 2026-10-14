@@ -58,11 +58,13 @@ public class AssignedCaseController {
     public CasePageResponse list(
             @Parameter(example = "0",
                     description = "Zero-based page index.",
-                    schema = @Schema(minimum = "0", defaultValue = "0"))
+                    schema = @Schema(type = "integer", format = "int32",
+                            minimum = "0", defaultValue = "0"))
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @Parameter(example = "20",
                     description = "Items per page; maximum 100.",
-                    schema = @Schema(minimum = "1", maximum = "100",
+                    schema = @Schema(type = "integer", format = "int32",
+                            minimum = "1", maximum = "100",
                             defaultValue = "20"))
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return queries.myQueue(page, size);
@@ -76,7 +78,8 @@ public class AssignedCaseController {
     @GetMapping("/{id}")
     @Operation(summary = "Read my currently assigned case")
     public CaseResponse get(@Parameter(example = "101",
-                    schema = @Schema(minimum = "1"))
+                    schema = @Schema(type = "integer", format = "int64",
+                            minimum = "1"))
             @PathVariable @Positive long id) {
         return queries.myCase(id);
     }
