@@ -19,12 +19,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class LoginRequest {
     @NotBlank
     @Email
-    @Size(max = ValidationLimits.EMAIL_MAX_LENGTH)
+    @Size(min = 1, max = ValidationLimits.EMAIL_MAX_LENGTH)
     @Schema(example = "customer@equitransit.com", format = "email")
     private String email;
 
     @NotBlank
-    @Size(max = ValidationLimits.PASSWORD_MAX_LENGTH)
+    @Size(min = 1, max = ValidationLimits.PASSWORD_MAX_LENGTH)
     @Schema(example = "ExamplePass!2026", format = "password",
             accessMode = Schema.AccessMode.WRITE_ONLY,
             description = "Documentation example only, not a real password.")

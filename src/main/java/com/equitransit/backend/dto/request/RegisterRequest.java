@@ -22,7 +22,7 @@ import com.equitransit.backend.dto.validation.OptionalText;
 public class RegisterRequest {
     @NotBlank
     @Email
-    @Size(max = ValidationLimits.EMAIL_MAX_LENGTH)
+    @Size(min = 1, max = ValidationLimits.EMAIL_MAX_LENGTH)
     @Schema(example = "customer@equitransit.com", format = "email")
     private String email;
 
@@ -35,26 +35,26 @@ public class RegisterRequest {
     private String password;
 
     @NotBlank
-    @Size(max = ValidationLimits.PASSWORD_MAX_LENGTH)
+    @Size(min = 1, max = ValidationLimits.PASSWORD_MAX_LENGTH)
     @Schema(example = "ExamplePass!2026", format = "password",
             accessMode = Schema.AccessMode.WRITE_ONLY,
             description = "Must match password.")
     private String confirmPassword;
 
     @NotBlank
-    @Size(max = ValidationLimits.NAME_MAX_LENGTH)
+    @Size(min = 1, max = ValidationLimits.NAME_MAX_LENGTH)
     @Schema(example = "Alex Nguyen")
     private String fullName;
 
     @OptionalText
     @Pattern(regexp = ApiPatterns.PHONE)
-    @Size(max = ValidationLimits.PHONE_MAX_LENGTH)
+    @Size(min = 1, max = ValidationLimits.PHONE_MAX_LENGTH)
     @Schema(example = "+84901234567", nullable = true,
             pattern = ApiPatterns.PHONE)
     private String phone;
 
     @OptionalText
-    @Size(max = ValidationLimits.ADDRESS_MAX_LENGTH)
+    @Size(min = 1, max = ValidationLimits.ADDRESS_MAX_LENGTH)
     @Schema(example = "12 Nguyen Hue, Ho Chi Minh City",
             nullable = true)
     private String address;

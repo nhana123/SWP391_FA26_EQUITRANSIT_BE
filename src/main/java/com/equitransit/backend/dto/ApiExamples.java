@@ -77,7 +77,8 @@ public final class ApiExamples {
             "1234567\",\"veterinaryProviderName\":\"C" +
             "ustomer veterinary provider\",\"veteri" +
             "naryProviderContact\":\"+84909876543\"}" +
-            "}";
+            ",\"dateFlexibilityNotes\":\"Departure m" +
+            "ay shift by one day.\"}";
 
     /** Consistent inputs documentation example. */
     public static final String INPUTS =
@@ -194,66 +195,68 @@ public final class ApiExamples {
             "\"+84901234567\",\"veterinaryProviderNa" +
             "me\":\"Customer veterinary provider\",\"" +
             "veterinaryProviderContact\":\"+8490987" +
-            "6543\"}},\"horse\":{\"horseId\":12,\"name\"" +
-            ":\"Thunder Strike\",\"microchipId\":\"985" +
-            "112003456789\",\"passportNumber\":\"FEI-" +
-            "10459921\",\"breed\":\"Thoroughbred\",\"da" +
-            "teOfBirth\":\"2019-04-15\",\"sexCode\":\"G" +
-            "ELDING\",\"weightKg\":520,\"heightCm\":16" +
-            "5,\"bodyWidthCm\":80,\"measuredAt\":\"202" +
-            "6-10-13T08:00:00Z\",\"recordVersion\":\"" +
-            "000000000001A2B3\",\"measurementsCompl" +
-            "ete\":true},\"services\":[{\"serviceCode" +
-            "\":\"ROAD_TRANSPORT\",\"optionCode\":\"CUS" +
-            "TOMER\",\"arrangedBy\":\"CUSTOMER\",\"requ" +
-            "estedInputs\":{\"schemaVersion\":1,\"sta" +
-            "tus\":\"REQUESTED\"},\"providerName\":\"Cu" +
-            "stomer road provider\",\"providerConta" +
-            "ct\":\"+84901234567\"},{\"serviceCode\":\"" +
-            "VETERINARY\",\"optionCode\":\"CUSTOMER\"," +
-            "\"arrangedBy\":\"CUSTOMER\",\"requestedIn" +
-            "puts\":{\"schemaVersion\":1,\"status\":\"R" +
-            "EQUESTED\"},\"providerName\":\"Customer " +
-            "veterinary provider\",\"providerContac" +
-            "t\":\"+84909876543\"},{\"serviceCode\":\"A" +
-            "IR_STALL\",\"optionCode\":\"WIDE\",\"arran" +
-            "gedBy\":\"EQUITRANSIT\",\"requestedInput" +
-            "s\":{\"schemaVersion\":1,\"status\":\"REQU" +
-            "ESTED\",\"fitStatus\":\"PENDING\",\"slotQu" +
-            "antity\":1.5,\"carrierConfirmation\":\"N" +
-            "OT_CONFIRMED\"},\"providerName\":null,\"" +
+            "6543\"},\"dateFlexibilityNotes\":\"Depar" +
+            "ture may shift by one day.\"},\"horse\"" +
+            ":{\"horseId\":12,\"name\":\"Thunder Strik" +
+            "e\",\"microchipId\":\"985112003456789\",\"" +
+            "passportNumber\":\"FEI-10459921\",\"bree" +
+            "d\":\"Thoroughbred\",\"dateOfBirth\":\"201" +
+            "9-04-15\",\"sexCode\":\"GELDING\",\"weight" +
+            "Kg\":520,\"heightCm\":165,\"bodyWidthCm\"" +
+            ":80,\"measuredAt\":\"2026-10-13T08:00:0" +
+            "0Z\",\"recordVersion\":\"000000000001A2B" +
+            "3\",\"measurementsComplete\":true},\"ser" +
+            "vices\":[{\"serviceCode\":\"ROAD_TRANSPO" +
+            "RT\",\"optionCode\":\"CUSTOMER\",\"arrange" +
+            "dBy\":\"CUSTOMER\",\"requestedInputs\":{\"" +
+            "schemaVersion\":1,\"status\":\"REQUESTED" +
+            "\"},\"providerName\":\"Customer road pro" +
+            "vider\",\"providerContact\":\"+849012345" +
+            "67\"},{\"serviceCode\":\"VETERINARY\",\"op" +
+            "tionCode\":\"CUSTOMER\",\"arrangedBy\":\"C" +
+            "USTOMER\",\"requestedInputs\":{\"schemaV" +
+            "ersion\":1,\"status\":\"REQUESTED\"},\"pro" +
+            "viderName\":\"Customer veterinary prov" +
+            "ider\",\"providerContact\":\"+8490987654" +
+            "3\"},{\"serviceCode\":\"AIR_STALL\",\"opti" +
+            "onCode\":\"WIDE\",\"arrangedBy\":\"EQUITRA" +
+            "NSIT\",\"requestedInputs\":{\"schemaVers" +
+            "ion\":1,\"status\":\"REQUESTED\",\"fitStat" +
+            "us\":\"PENDING\",\"slotQuantity\":1.5,\"ca" +
+            "rrierConfirmation\":\"NOT_CONFIRMED\"}," +
+            "\"providerName\":null,\"providerContact" +
+            "\":null},{\"serviceCode\":\"GROOMING\",\"o" +
+            "ptionCode\":\"EXTRA\",\"arrangedBy\":\"EQU" +
+            "ITRANSIT\",\"requestedInputs\":{\"reques" +
+            "tedDays\":2,\"schemaVersion\":1,\"status" +
+            "\":\"REQUESTED\"},\"providerName\":null,\"" +
             "providerContact\":null},{\"serviceCode" +
-            "\":\"GROOMING\",\"optionCode\":\"EXTRA\",\"a" +
+            "\":\"BOARDING\",\"optionCode\":\"EXTRA\",\"a" +
             "rrangedBy\":\"EQUITRANSIT\",\"requestedI" +
-            "nputs\":{\"requestedDays\":2,\"schemaVer" +
-            "sion\":1,\"status\":\"REQUESTED\"},\"provi" +
-            "derName\":null,\"providerContact\":null" +
-            "},{\"serviceCode\":\"BOARDING\",\"optionC" +
-            "ode\":\"EXTRA\",\"arrangedBy\":\"EQUITRANS" +
-            "IT\",\"requestedInputs\":{\"requestedNig" +
-            "hts\":1,\"schemaVersion\":1,\"status\":\"R" +
-            "EQUESTED\"},\"providerName\":null,\"prov" +
-            "iderContact\":null},{\"serviceCode\":\"Q" +
-            "UARANTINE\",\"optionCode\":\"STANDARD\",\"" +
-            "arrangedBy\":\"EQUITRANSIT\",\"requested" +
-            "Inputs\":{\"requiredDaysStatus\":\"UNKNO" +
-            "WN\",\"schemaVersion\":1,\"status\":\"REQU" +
-            "ESTED\"},\"providerName\":null,\"provide" +
-            "rContact\":null},{\"serviceCode\":\"INSU" +
-            "RANCE\",\"optionCode\":\"EXISTING\",\"arra" +
-            "ngedBy\":\"EQUITRANSIT\",\"requestedInpu" +
-            "ts\":{\"declaredValue\":\"50000.00\",\"val" +
-            "ueCurrency\":\"USD\",\"existingPolicyRef" +
-            "erence\":\"POL-2026-0147\",\"schemaVersi" +
-            "on\":1,\"status\":\"REQUESTED\"},\"provide" +
-            "rName\":null,\"providerContact\":null}," +
-            "{\"serviceCode\":\"ESCORT\",\"optionCode\"" +
-            ":\"REQUESTED\",\"arrangedBy\":\"EQUITRANS" +
-            "IT\",\"requestedInputs\":{\"notes\":\"Esco" +
-            "rt support requested for airport han" +
-            "dover.\",\"schemaVersion\":1,\"status\":\"" +
-            "REQUESTED\"},\"providerName\":null,\"pro" +
-            "viderContact\":null}]}";
+            "nputs\":{\"requestedNights\":1,\"schemaV" +
+            "ersion\":1,\"status\":\"REQUESTED\"},\"pro" +
+            "viderName\":null,\"providerContact\":nu" +
+            "ll},{\"serviceCode\":\"QUARANTINE\",\"opt" +
+            "ionCode\":\"STANDARD\",\"arrangedBy\":\"EQ" +
+            "UITRANSIT\",\"requestedInputs\":{\"requi" +
+            "redDaysStatus\":\"UNKNOWN\",\"schemaVers" +
+            "ion\":1,\"status\":\"REQUESTED\"},\"provid" +
+            "erName\":null,\"providerContact\":null}" +
+            ",{\"serviceCode\":\"INSURANCE\",\"optionC" +
+            "ode\":\"EXISTING\",\"arrangedBy\":\"EQUITR" +
+            "ANSIT\",\"requestedInputs\":{\"declaredV" +
+            "alue\":\"50000.00\",\"valueCurrency\":\"US" +
+            "D\",\"existingPolicyReference\":\"POL-20" +
+            "26-0147\",\"schemaVersion\":1,\"status\":" +
+            "\"REQUESTED\"},\"providerName\":null,\"pr" +
+            "oviderContact\":null},{\"serviceCode\":" +
+            "\"ESCORT\",\"optionCode\":\"REQUESTED\",\"a" +
+            "rrangedBy\":\"EQUITRANSIT\",\"requestedI" +
+            "nputs\":{\"notes\":\"Escort support requ" +
+            "ested for airport handover.\",\"schema" +
+            "Version\":1,\"status\":\"REQUESTED\"},\"pr" +
+            "oviderName\":null,\"providerContact\":n" +
+            "ull}]}";
 
     /** Consistent revision documentation example. */
     public static final String REVISION =
@@ -302,66 +305,68 @@ public final class ApiExamples {
             "ntact\":\"+84901234567\",\"veterinaryPro" +
             "viderName\":\"Customer veterinary prov" +
             "ider\",\"veterinaryProviderContact\":\"+" +
-            "84909876543\"}},\"horse\":{\"horseId\":12" +
-            ",\"name\":\"Thunder Strike\",\"microchipI" +
-            "d\":\"985112003456789\",\"passportNumber" +
-            "\":\"FEI-10459921\",\"breed\":\"Thoroughbr" +
-            "ed\",\"dateOfBirth\":\"2019-04-15\",\"sexC" +
-            "ode\":\"GELDING\",\"weightKg\":520,\"heigh" +
-            "tCm\":165,\"bodyWidthCm\":80,\"measuredA" +
-            "t\":\"2026-10-13T08:00:00Z\",\"recordVer" +
-            "sion\":\"000000000001A2B3\",\"measuremen" +
-            "tsComplete\":true},\"services\":[{\"serv" +
-            "iceCode\":\"ROAD_TRANSPORT\",\"optionCod" +
-            "e\":\"CUSTOMER\",\"arrangedBy\":\"CUSTOMER" +
-            "\",\"requestedInputs\":{\"schemaVersion\"" +
-            ":1,\"status\":\"REQUESTED\"},\"providerNa" +
-            "me\":\"Customer road provider\",\"provid" +
-            "erContact\":\"+84901234567\"},{\"service" +
-            "Code\":\"VETERINARY\",\"optionCode\":\"CUS" +
-            "TOMER\",\"arrangedBy\":\"CUSTOMER\",\"requ" +
-            "estedInputs\":{\"schemaVersion\":1,\"sta" +
-            "tus\":\"REQUESTED\"},\"providerName\":\"Cu" +
-            "stomer veterinary provider\",\"provide" +
-            "rContact\":\"+84909876543\"},{\"serviceC" +
-            "ode\":\"AIR_STALL\",\"optionCode\":\"WIDE\"" +
-            ",\"arrangedBy\":\"EQUITRANSIT\",\"request" +
-            "edInputs\":{\"schemaVersion\":1,\"status" +
-            "\":\"REQUESTED\",\"fitStatus\":\"PENDING\"," +
-            "\"slotQuantity\":1.5,\"carrierConfirmat" +
-            "ion\":\"NOT_CONFIRMED\"},\"providerName\"" +
+            "84909876543\"},\"dateFlexibilityNotes\"" +
+            ":\"Departure may shift by one day.\"}," +
+            "\"horse\":{\"horseId\":12,\"name\":\"Thunde" +
+            "r Strike\",\"microchipId\":\"98511200345" +
+            "6789\",\"passportNumber\":\"FEI-10459921" +
+            "\",\"breed\":\"Thoroughbred\",\"dateOfBirt" +
+            "h\":\"2019-04-15\",\"sexCode\":\"GELDING\"," +
+            "\"weightKg\":520,\"heightCm\":165,\"bodyW" +
+            "idthCm\":80,\"measuredAt\":\"2026-10-13T" +
+            "08:00:00Z\",\"recordVersion\":\"00000000" +
+            "0001A2B3\",\"measurementsComplete\":tru" +
+            "e},\"services\":[{\"serviceCode\":\"ROAD_" +
+            "TRANSPORT\",\"optionCode\":\"CUSTOMER\",\"" +
+            "arrangedBy\":\"CUSTOMER\",\"requestedInp" +
+            "uts\":{\"schemaVersion\":1,\"status\":\"RE" +
+            "QUESTED\"},\"providerName\":\"Customer r" +
+            "oad provider\",\"providerContact\":\"+84" +
+            "901234567\"},{\"serviceCode\":\"VETERINA" +
+            "RY\",\"optionCode\":\"CUSTOMER\",\"arrange" +
+            "dBy\":\"CUSTOMER\",\"requestedInputs\":{\"" +
+            "schemaVersion\":1,\"status\":\"REQUESTED" +
+            "\"},\"providerName\":\"Customer veterina" +
+            "ry provider\",\"providerContact\":\"+849" +
+            "09876543\"},{\"serviceCode\":\"AIR_STALL" +
+            "\",\"optionCode\":\"WIDE\",\"arrangedBy\":\"" +
+            "EQUITRANSIT\",\"requestedInputs\":{\"sch" +
+            "emaVersion\":1,\"status\":\"REQUESTED\",\"" +
+            "fitStatus\":\"PENDING\",\"slotQuantity\":" +
+            "1.5,\"carrierConfirmation\":\"NOT_CONFI" +
+            "RMED\"},\"providerName\":null,\"provider" +
+            "Contact\":null},{\"serviceCode\":\"GROOM" +
+            "ING\",\"optionCode\":\"EXTRA\",\"arrangedB" +
+            "y\":\"EQUITRANSIT\",\"requestedInputs\":{" +
+            "\"requestedDays\":2,\"schemaVersion\":1," +
+            "\"status\":\"REQUESTED\"},\"providerName\"" +
             ":null,\"providerContact\":null},{\"serv" +
-            "iceCode\":\"GROOMING\",\"optionCode\":\"EX" +
+            "iceCode\":\"BOARDING\",\"optionCode\":\"EX" +
             "TRA\",\"arrangedBy\":\"EQUITRANSIT\",\"req" +
-            "uestedInputs\":{\"requestedDays\":2,\"sc" +
-            "hemaVersion\":1,\"status\":\"REQUESTED\"}" +
-            ",\"providerName\":null,\"providerContac" +
-            "t\":null},{\"serviceCode\":\"BOARDING\",\"" +
-            "optionCode\":\"EXTRA\",\"arrangedBy\":\"EQ" +
-            "UITRANSIT\",\"requestedInputs\":{\"reque" +
-            "stedNights\":1,\"schemaVersion\":1,\"sta" +
-            "tus\":\"REQUESTED\"},\"providerName\":nul" +
-            "l,\"providerContact\":null},{\"serviceC" +
-            "ode\":\"QUARANTINE\",\"optionCode\":\"STAN" +
-            "DARD\",\"arrangedBy\":\"EQUITRANSIT\",\"re" +
-            "questedInputs\":{\"requiredDaysStatus\"" +
-            ":\"UNKNOWN\",\"schemaVersion\":1,\"status" +
-            "\":\"REQUESTED\"},\"providerName\":null,\"" +
-            "providerContact\":null},{\"serviceCode" +
-            "\":\"INSURANCE\",\"optionCode\":\"EXISTING" +
-            "\",\"arrangedBy\":\"EQUITRANSIT\",\"reques" +
-            "tedInputs\":{\"declaredValue\":\"50000.0" +
-            "0\",\"valueCurrency\":\"USD\",\"existingPo" +
-            "licyReference\":\"POL-2026-0147\",\"sche" +
-            "maVersion\":1,\"status\":\"REQUESTED\"},\"" +
-            "providerName\":null,\"providerContact\"" +
-            ":null},{\"serviceCode\":\"ESCORT\",\"opti" +
-            "onCode\":\"REQUESTED\",\"arrangedBy\":\"EQ" +
-            "UITRANSIT\",\"requestedInputs\":{\"notes" +
-            "\":\"Escort support requested for airp" +
-            "ort handover.\",\"schemaVersion\":1,\"st" +
-            "atus\":\"REQUESTED\"},\"providerName\":nu" +
-            "ll,\"providerContact\":null}]}}";
+            "uestedInputs\":{\"requestedNights\":1,\"" +
+            "schemaVersion\":1,\"status\":\"REQUESTED" +
+            "\"},\"providerName\":null,\"providerCont" +
+            "act\":null},{\"serviceCode\":\"QUARANTIN" +
+            "E\",\"optionCode\":\"STANDARD\",\"arranged" +
+            "By\":\"EQUITRANSIT\",\"requestedInputs\":" +
+            "{\"requiredDaysStatus\":\"UNKNOWN\",\"sch" +
+            "emaVersion\":1,\"status\":\"REQUESTED\"}," +
+            "\"providerName\":null,\"providerContact" +
+            "\":null},{\"serviceCode\":\"INSURANCE\",\"" +
+            "optionCode\":\"EXISTING\",\"arrangedBy\":" +
+            "\"EQUITRANSIT\",\"requestedInputs\":{\"de" +
+            "claredValue\":\"50000.00\",\"valueCurren" +
+            "cy\":\"USD\",\"existingPolicyReference\":" +
+            "\"POL-2026-0147\",\"schemaVersion\":1,\"s" +
+            "tatus\":\"REQUESTED\"},\"providerName\":n" +
+            "ull,\"providerContact\":null},{\"servic" +
+            "eCode\":\"ESCORT\",\"optionCode\":\"REQUES" +
+            "TED\",\"arrangedBy\":\"EQUITRANSIT\",\"req" +
+            "uestedInputs\":{\"notes\":\"Escort suppo" +
+            "rt requested for airport handover.\"," +
+            "\"schemaVersion\":1,\"status\":\"REQUESTE" +
+            "D\"},\"providerName\":null,\"providerCon" +
+            "tact\":null}]}}";
 
     /** Consistent order documentation example. */
     public static final String ORDER =
@@ -405,7 +410,9 @@ public final class ApiExamples {
             "r\",\"roadProviderContact\":\"+849012345" +
             "67\",\"veterinaryProviderName\":\"Custom" +
             "er veterinary provider\",\"veterinaryP" +
-            "roviderContact\":\"+84909876543\"}}}";
+            "roviderContact\":\"+84909876543\"},\"dat" +
+            "eFlexibilityNotes\":\"Departure may sh" +
+            "ift by one day.\"}}";
 
     /** Consistent charge documentation example. */
     public static final String CHARGE =
@@ -589,76 +596,77 @@ public final class ApiExamples {
             "ct\":\"+84901234567\",\"veterinaryProvid" +
             "erName\":\"Customer veterinary provide" +
             "r\",\"veterinaryProviderContact\":\"+849" +
-            "09876543\"}},\"horse\":{\"horseId\":12,\"n" +
-            "ame\":\"Thunder Strike\",\"microchipId\":" +
-            "\"985112003456789\",\"passportNumber\":\"" +
-            "FEI-10459921\",\"breed\":\"Thoroughbred\"" +
-            ",\"dateOfBirth\":\"2019-04-15\",\"sexCode" +
-            "\":\"GELDING\",\"weightKg\":520,\"heightCm" +
-            "\":165,\"bodyWidthCm\":80,\"measuredAt\":" +
-            "\"2026-10-13T08:00:00Z\",\"recordVersio" +
-            "n\":\"000000000001A2B3\",\"measurementsC" +
-            "omplete\":true},\"services\":[{\"service" +
-            "Code\":\"ROAD_TRANSPORT\",\"optionCode\":" +
-            "\"CUSTOMER\",\"arrangedBy\":\"CUSTOMER\",\"" +
-            "requestedInputs\":{\"schemaVersion\":1," +
-            "\"status\":\"REQUESTED\"},\"providerName\"" +
-            ":\"Customer road provider\",\"providerC" +
-            "ontact\":\"+84901234567\"},{\"serviceCod" +
-            "e\":\"VETERINARY\",\"optionCode\":\"CUSTOM" +
-            "ER\",\"arrangedBy\":\"CUSTOMER\",\"request" +
-            "edInputs\":{\"schemaVersion\":1,\"status" +
-            "\":\"REQUESTED\"},\"providerName\":\"Custo" +
-            "mer veterinary provider\",\"providerCo" +
-            "ntact\":\"+84909876543\"},{\"serviceCode" +
-            "\":\"AIR_STALL\",\"optionCode\":\"WIDE\",\"a" +
-            "rrangedBy\":\"EQUITRANSIT\",\"requestedI" +
-            "nputs\":{\"schemaVersion\":1,\"status\":\"" +
-            "REQUESTED\",\"fitStatus\":\"PENDING\",\"sl" +
-            "otQuantity\":1.5,\"carrierConfirmation" +
-            "\":\"NOT_CONFIRMED\"},\"providerName\":nu" +
+            "09876543\"},\"dateFlexibilityNotes\":\"D" +
+            "eparture may shift by one day.\"},\"ho" +
+            "rse\":{\"horseId\":12,\"name\":\"Thunder S" +
+            "trike\",\"microchipId\":\"98511200345678" +
+            "9\",\"passportNumber\":\"FEI-10459921\",\"" +
+            "breed\":\"Thoroughbred\",\"dateOfBirth\":" +
+            "\"2019-04-15\",\"sexCode\":\"GELDING\",\"we" +
+            "ightKg\":520,\"heightCm\":165,\"bodyWidt" +
+            "hCm\":80,\"measuredAt\":\"2026-10-13T08:" +
+            "00:00Z\",\"recordVersion\":\"00000000000" +
+            "1A2B3\",\"measurementsComplete\":true}," +
+            "\"services\":[{\"serviceCode\":\"ROAD_TRA" +
+            "NSPORT\",\"optionCode\":\"CUSTOMER\",\"arr" +
+            "angedBy\":\"CUSTOMER\",\"requestedInputs" +
+            "\":{\"schemaVersion\":1,\"status\":\"REQUE" +
+            "STED\"},\"providerName\":\"Customer road" +
+            " provider\",\"providerContact\":\"+84901" +
+            "234567\"},{\"serviceCode\":\"VETERINARY\"" +
+            ",\"optionCode\":\"CUSTOMER\",\"arrangedBy" +
+            "\":\"CUSTOMER\",\"requestedInputs\":{\"sch" +
+            "emaVersion\":1,\"status\":\"REQUESTED\"}," +
+            "\"providerName\":\"Customer veterinary " +
+            "provider\",\"providerContact\":\"+849098" +
+            "76543\"},{\"serviceCode\":\"AIR_STALL\",\"" +
+            "optionCode\":\"WIDE\",\"arrangedBy\":\"EQU" +
+            "ITRANSIT\",\"requestedInputs\":{\"schema" +
+            "Version\":1,\"status\":\"REQUESTED\",\"fit" +
+            "Status\":\"PENDING\",\"slotQuantity\":1.5" +
+            ",\"carrierConfirmation\":\"NOT_CONFIRME" +
+            "D\"},\"providerName\":null,\"providerCon" +
+            "tact\":null},{\"serviceCode\":\"GROOMING" +
+            "\",\"optionCode\":\"EXTRA\",\"arrangedBy\":" +
+            "\"EQUITRANSIT\",\"requestedInputs\":{\"re" +
+            "questedDays\":2,\"schemaVersion\":1,\"st" +
+            "atus\":\"REQUESTED\"},\"providerName\":nu" +
             "ll,\"providerContact\":null},{\"service" +
-            "Code\":\"GROOMING\",\"optionCode\":\"EXTRA" +
+            "Code\":\"BOARDING\",\"optionCode\":\"EXTRA" +
             "\",\"arrangedBy\":\"EQUITRANSIT\",\"reques" +
-            "tedInputs\":{\"requestedDays\":2,\"schem" +
-            "aVersion\":1,\"status\":\"REQUESTED\"},\"p" +
-            "roviderName\":null,\"providerContact\":" +
-            "null},{\"serviceCode\":\"BOARDING\",\"opt" +
-            "ionCode\":\"EXTRA\",\"arrangedBy\":\"EQUIT" +
-            "RANSIT\",\"requestedInputs\":{\"requeste" +
-            "dNights\":1,\"schemaVersion\":1,\"status" +
-            "\":\"REQUESTED\"},\"providerName\":null,\"" +
-            "providerContact\":null},{\"serviceCode" +
-            "\":\"QUARANTINE\",\"optionCode\":\"STANDAR" +
-            "D\",\"arrangedBy\":\"EQUITRANSIT\",\"reque" +
-            "stedInputs\":{\"requiredDaysStatus\":\"U" +
-            "NKNOWN\",\"schemaVersion\":1,\"status\":\"" +
-            "REQUESTED\"},\"providerName\":null,\"pro" +
-            "viderContact\":null},{\"serviceCode\":\"" +
-            "INSURANCE\",\"optionCode\":\"EXISTING\",\"" +
-            "arrangedBy\":\"EQUITRANSIT\",\"requested" +
-            "Inputs\":{\"declaredValue\":\"50000.00\"," +
-            "\"valueCurrency\":\"USD\",\"existingPolic" +
-            "yReference\":\"POL-2026-0147\",\"schemaV" +
-            "ersion\":1,\"status\":\"REQUESTED\"},\"pro" +
-            "viderName\":null,\"providerContact\":nu" +
-            "ll},{\"serviceCode\":\"ESCORT\",\"optionC" +
-            "ode\":\"REQUESTED\",\"arrangedBy\":\"EQUIT" +
-            "RANSIT\",\"requestedInputs\":{\"notes\":\"" +
-            "Escort support requested for airport" +
-            " handover.\",\"schemaVersion\":1,\"statu" +
-            "s\":\"REQUESTED\"},\"providerName\":null," +
-            "\"providerContact\":null}]}},\"decision" +
-            "\":{\"decisionId\":301,\"revisionId\":201" +
-            ",\"managerId\":30,\"decision\":\"APPROVED" +
-            "\",\"reason\":null,\"decidedAt\":\"2026-10" +
-            "-14T14:00:00Z\"},\"assignments\":[{\"ass" +
-            "ignmentId\":401,\"staffId\":31,\"role\":\"" +
-            "SPECIALIST\",\"assignedAt\":\"2026-10-14" +
-            "T14:05:00Z\",\"endedAt\":null,\"assigned" +
-            "By\":30,\"dueAt\":\"2026-10-16T18:00:00Z" +
-            "\",\"assignmentNote\":\"Review route con" +
-            "ditions.\"}]}";
+            "tedInputs\":{\"requestedNights\":1,\"sch" +
+            "emaVersion\":1,\"status\":\"REQUESTED\"}," +
+            "\"providerName\":null,\"providerContact" +
+            "\":null},{\"serviceCode\":\"QUARANTINE\"," +
+            "\"optionCode\":\"STANDARD\",\"arrangedBy\"" +
+            ":\"EQUITRANSIT\",\"requestedInputs\":{\"r" +
+            "equiredDaysStatus\":\"UNKNOWN\",\"schema" +
+            "Version\":1,\"status\":\"REQUESTED\"},\"pr" +
+            "oviderName\":null,\"providerContact\":n" +
+            "ull},{\"serviceCode\":\"INSURANCE\",\"opt" +
+            "ionCode\":\"EXISTING\",\"arrangedBy\":\"EQ" +
+            "UITRANSIT\",\"requestedInputs\":{\"decla" +
+            "redValue\":\"50000.00\",\"valueCurrency\"" +
+            ":\"USD\",\"existingPolicyReference\":\"PO" +
+            "L-2026-0147\",\"schemaVersion\":1,\"stat" +
+            "us\":\"REQUESTED\"},\"providerName\":null" +
+            ",\"providerContact\":null},{\"serviceCo" +
+            "de\":\"ESCORT\",\"optionCode\":\"REQUESTED" +
+            "\",\"arrangedBy\":\"EQUITRANSIT\",\"reques" +
+            "tedInputs\":{\"notes\":\"Escort support " +
+            "requested for airport handover.\",\"sc" +
+            "hemaVersion\":1,\"status\":\"REQUESTED\"}" +
+            ",\"providerName\":null,\"providerContac" +
+            "t\":null}]}},\"decision\":{\"decisionId\"" +
+            ":301,\"revisionId\":201,\"managerId\":30" +
+            ",\"decision\":\"APPROVED\",\"reason\":null" +
+            ",\"decidedAt\":\"2026-10-14T14:00:00Z\"}" +
+            ",\"assignments\":[{\"assignmentId\":401," +
+            "\"staffId\":31,\"role\":\"SPECIALIST\",\"as" +
+            "signedAt\":\"2026-10-14T14:05:00Z\",\"en" +
+            "dedAt\":null,\"assignedBy\":30,\"dueAt\":" +
+            "\"2026-10-16T18:00:00Z\",\"assignmentNo" +
+            "te\":\"Review route conditions.\"}]}";
 
     /** Consistent receipt documentation example. */
     public static final String RECEIPT =
@@ -711,7 +719,9 @@ public final class ApiExamples {
             "1234567\",\"veterinaryProviderName\":\"C" +
             "ustomer veterinary provider\",\"veteri" +
             "naryProviderContact\":\"+84909876543\"}" +
-            ",\"recordVersion\":\"000000000001A2B3\"}";
+            ",\"recordVersion\":\"000000000001A2B3\"," +
+            "\"dateFlexibilityNotes\":\"Departure ma" +
+            "y shift by one day.\"}";
 
     /** Consistent revision_command documentation example. */
     public static final String REVISION_COMMAND =
@@ -752,7 +762,9 @@ public final class ApiExamples {
             ",\"recordVersion\":\"000000000001A2B3\"," +
             "\"operationId\":\"fa2c8d7b-6c51-4976-a2" +
             "8d-613c4199cfd6\",\"changeReason\":\"Upd" +
-            "ate delivery schedule.\"}";
+            "ate delivery schedule.\",\"dateFlexibi" +
+            "lityNotes\":\"Departure may shift by o" +
+            "ne day.\"}";
 
     /** Consistent profile documentation example. */
     public static final String PROFILE =

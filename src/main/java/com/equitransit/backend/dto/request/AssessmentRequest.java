@@ -43,7 +43,8 @@ public record AssessmentRequest(
         @Schema(
                 example = "000000000001A2B3",
                 pattern = ApiPatterns.VERSION)
-        @NotBlank @Pattern(regexp = ApiPatterns.VERSION) String recordVersion,
+        @NotBlank @Size(min = 1, max = 16)
+        @Pattern(regexp = ApiPatterns.VERSION) String recordVersion,
         @Schema(
                 example = "fa2c8d7b-6c51-4976-a28d-613c4199cfd6",
                 format = "uuid")
@@ -54,14 +55,14 @@ public record AssessmentRequest(
         @Schema(
                 example = "Please confirm the route.",
                 nullable = true)
-        @OptionalText @Size(max = 1000) String reason,
+        @OptionalText @Size(min = 1, max = 1000) String reason,
         @Schema(
                 example = "31",
                 nullable = true,
                 minimum = "1")
         @Positive Long specialistId,
         @Schema(
-                example = "31",
+                example = "32",
                 nullable = true,
                 minimum = "1")
         @Positive Long coordinatorId,
@@ -73,5 +74,5 @@ public record AssessmentRequest(
         @Schema(
                 example = "Review route conditions.",
                 nullable = true)
-        @OptionalText @Size(max = 1000) String assignmentNote) {
+        @OptionalText @Size(min = 1, max = 1000) String assignmentNote) {
 }

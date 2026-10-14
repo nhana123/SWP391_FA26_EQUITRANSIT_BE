@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class EmailRequest {
     @NotBlank
     @Email
-    @Size(max = ValidationLimits.EMAIL_MAX_LENGTH)
+    @Size(min = 1, max = ValidationLimits.EMAIL_MAX_LENGTH)
     @Schema(example = "customer@equitransit.com", format = "email")
     private String email;
 
