@@ -9,6 +9,7 @@ package com.equitransit.backend.dto.response;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.equitransit.backend.entity.CaseRole;
 
 
 /**
@@ -27,10 +28,8 @@ public record CaseStaffResponse(
         @Schema(
                 example = "Alex Nguyen")
         String fullName,
-        @Schema(
-                example = "SPECIALIST",
-                allowableValues = {"SPECIALIST", "COORDINATOR"})
-        String role,
+        @Schema(example = "SPECIALIST")
+        CaseRole role,
         @Schema(
                 example = "2",
                 minimum = "0")

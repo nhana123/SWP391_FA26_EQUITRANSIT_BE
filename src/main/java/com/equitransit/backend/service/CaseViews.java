@@ -13,6 +13,9 @@ import com.equitransit.backend.dto.response.CaseDecisionResponse;
 import com.equitransit.backend.dto.response.CaseStaffResponse;
 import com.equitransit.backend.dto.response.CaseSummaryResponse;
 import com.equitransit.backend.entity.CaseAssignmentRecord;
+import com.equitransit.backend.entity.CaseRole;
+import com.equitransit.backend.entity.DecisionCode;
+import com.equitransit.backend.entity.OrderStatus;
 import com.equitransit.backend.entity.CaseDecisionRecord;
 import com.equitransit.backend.entity.CaseStaffRecord;
 import com.equitransit.backend.entity.CaseSummaryRecord;
@@ -31,7 +34,8 @@ public final class CaseViews {
      */
     public static CaseDecisionResponse decision(CaseDecisionRecord record) {
         return new CaseDecisionResponse(record.decisionId(),
-                record.revisionId(), record.managerId(), record.decision(),
+                record.revisionId(), record.managerId(),
+                DecisionCode.valueOf(record.decision()),
                 record.reason(), record.decidedAt());
     }
 
@@ -43,7 +47,8 @@ public final class CaseViews {
     public static CaseAssignmentResponse assignment(
             CaseAssignmentRecord record) {
         return new CaseAssignmentResponse(record.assignmentId(),
-                record.staffId(), record.role(), record.assignedAt(),
+                record.staffId(), CaseRole.valueOf(record.role()),
+                record.assignedAt(),
                 record.endedAt(), record.assignedBy(), record.dueAt(),
                 record.assignmentNote());
     }
@@ -55,7 +60,8 @@ public final class CaseViews {
      */
     public static CaseSummaryResponse summary(CaseSummaryRecord record) {
         return new CaseSummaryResponse(record.orderId(), record.orderNumber(),
-                record.orderStatus(), record.recordVersion(),
+                OrderStatus.valueOf(record.orderStatus()),
+                record.recordVersion(),
                 record.currentRevisionId(), record.originCountryCode(),
                 record.destinationCountryCode(), record.deliveryDeadline());
     }
@@ -67,6 +73,7 @@ public final class CaseViews {
      */
     public static CaseStaffResponse staff(CaseStaffRecord record) {
         return new CaseStaffResponse(record.staffId(), record.fullName(),
-                record.role(), record.activeCases(), "NOT_CONFIGURED");
+                CaseRole.valueOf(record.role()), record.activeCases(),
+                "NOT_CONFIGURED");
     }
 }

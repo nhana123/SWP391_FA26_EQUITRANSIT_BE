@@ -9,6 +9,7 @@ package com.equitransit.backend.dto.response;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.equitransit.backend.entity.DecisionCode;
 import java.time.OffsetDateTime;
 
 
@@ -28,20 +29,14 @@ public record CaseDecisionResponse(
         long decisionId,
         @Schema(
                 example = "201",
-                nullable = true,
                 minimum = "1")
         long revisionId,
         @Schema(
                 example = "31",
                 minimum = "1")
         long managerId,
-        @Schema(
-                example = "CHANGES_REQUESTED",
-                allowableValues = {
-                        "APPROVED",
-                        "REJECTED",
-                        "CHANGES_REQUESTED"})
-        String decision,
+        @Schema(example = "CHANGES_REQUESTED")
+        DecisionCode decision,
         @Schema(
                 example = "Please confirm the route.",
                 nullable = true)

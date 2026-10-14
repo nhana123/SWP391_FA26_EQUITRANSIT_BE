@@ -9,6 +9,7 @@ package com.equitransit.backend.dto.response;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.equitransit.backend.entity.OrderStatus;
 import com.equitransit.backend.dto.ApiPatterns;
 import java.time.OffsetDateTime;
 
@@ -32,23 +33,8 @@ public record CaseSummaryResponse(
         @Schema(
                 example = "ET-2026-000101")
         String orderNumber,
-        @Schema(
-                example = "SUBMITTED",
-                allowableValues = {
-                        "DRAFT",
-                        "SUBMITTED",
-                        "APPROVED",
-                        "CHANGES_REQUESTED",
-                        "REJECTED",
-                        "IN_PREPARATION",
-                        "CONFIRMED",
-                        "IN_TRANSIT",
-                        "DELIVERED",
-                        "COMPLETED",
-                        "CANCELLED",
-                        "CANCELED",
-                        "CLOSED"})
-        String orderStatus,
+        @Schema(example = "SUBMITTED")
+        OrderStatus orderStatus,
         @Schema(
                 example = "000000000001A2B3",
                 pattern = ApiPatterns.VERSION)

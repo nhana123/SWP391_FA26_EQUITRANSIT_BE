@@ -10,6 +10,7 @@ package com.equitransit.backend.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import com.equitransit.backend.dto.ApiPatterns;
+import com.equitransit.backend.dto.validation.OptionalText;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import jakarta.validation.constraints.NotBlank;
@@ -39,12 +40,10 @@ public record CaseAssignmentRequest(
         @NotNull UUID operationId,
         @Schema(
                 example = "31",
-                nullable = true,
                 minimum = "1")
         @Positive long staffId,
         @Schema(
-                example = "Please confirm the route.",
-                nullable = true)
+                example = "Please confirm the route.")
         @NotBlank @Size(max = 1000) String reason,
         @Schema(
                 example = "2026-10-16T18:00:00Z",
@@ -54,5 +53,5 @@ public record CaseAssignmentRequest(
         @Schema(
                 example = "Review route conditions.",
                 nullable = true)
-        @Size(max = 1000) String assignmentNote) {
+        @OptionalText @Size(max = 1000) String assignmentNote) {
 }

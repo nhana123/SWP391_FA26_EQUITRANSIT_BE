@@ -26,6 +26,8 @@ import com.equitransit.backend.dto.response.CustomerAssessmentResponse;
 import com.equitransit.backend.dto.response.OrderRevisionResponse;
 import com.equitransit.backend.entity.CaseOrder;
 import com.equitransit.backend.entity.CaseRole;
+import com.equitransit.backend.entity.DecisionCode;
+import com.equitransit.backend.entity.OrderStatus;
 import com.equitransit.backend.entity.OrderRevisionRecord;
 import com.equitransit.backend.entity.ReviewState;
 import com.equitransit.backend.entity.TransportOrderRecord;
@@ -194,8 +196,8 @@ public class CaseQueryService {
                         .map(CaseViews::decision).orElse(null);
 
         return new CustomerAssessmentResponse(order.currentRevisionId(),
-                decision == null ? null : decision.decision(),
-                decision == null || "APPROVED".equals(decision.decision())
+                decision == null ? null : decision.decision().name(),
+                decision == null || decision.decision() == DecisionCode.APPROVED
                         ? null : decision.reason());
     }
 
@@ -213,7 +215,8 @@ public class CaseQueryService {
                 .map(CaseViews::assignment).toList();
 
         return new CaseResponse(order.orderId(), order.orderNumber(),
-                order.status(), order.version(), order.revisionId(), revision,
+                OrderStatus.valueOf(order.status()), order.version(),
+                order.revisionId(), revision,
                 cases.decision(order.revisionId()).map(CaseViews::decision)
                         .orElse(null), assignments);
     }
