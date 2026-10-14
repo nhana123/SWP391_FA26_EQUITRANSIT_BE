@@ -34,6 +34,17 @@ public class DomainAccessPolicy {
         return "CUSTOMER".equals(actors.current().roleCode());
     }
 
+    /** @return whether the live actor is a profiled active Manager */
+    public boolean isManager() {
+        return "MANAGER".equals(actors.current().roleCode());
+    }
+
+    /** @return whether the live actor has a case preparation role */
+    public boolean isCaseStaff() {
+        return java.util.Set.of("SPECIALIST", "COORDINATOR")
+                .contains(actors.current().roleCode());
+    }
+
     /**
      * Requires ownership of a resource's persisted customer key.
      * @param ownerCustomerId the owner key read from the resource by service

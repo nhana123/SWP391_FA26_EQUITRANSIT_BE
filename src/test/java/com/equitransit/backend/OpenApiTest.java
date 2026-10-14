@@ -118,4 +118,32 @@ public class OpenApiTest {
         mvc.perform(get("/api/transport-orders"))
                 .andExpect(status().isUnauthorized());
     }
+    /**
+     * Publishes exact-revision commands and the separate assigned-case surface.
+     * @throws Exception if documentation generation fails
+     */
+    @Test
+    public void assessmentContractSeparatesActorsAndTypedDecisions()
+            throws Exception {
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.paths"
+                        + "['/api/manager/transport-orders/{id}/decisions']"
+                        + ".post.security[0].bearerAuth").isArray())
+                .andExpect(jsonPath("$.components.schemas.AssessmentRequest"
+                        + ".properties.operationId.format").value("uuid"))
+                .andExpect(jsonPath("$.components.schemas.AssessmentRequest"
+                        + ".properties.revisionId").exists())
+                .andExpect(jsonPath("$.components.schemas.AssessmentRequest"
+                        + ".properties.managerId").doesNotExist())
+                .andExpect(jsonPath("$.paths"
+                        + "['/api/staff/transport-orders/{id}'].get").exists())
+                .andExpect(jsonPath("$.components.schemas"
+                        + ".CustomerAssessmentResponse.properties.assignments")
+                        .doesNotExist());
+        mvc.perform(get("/api/manager/transport-orders"))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/staff/transport-orders"))
+                .andExpect(status().isUnauthorized());
+    }
 }

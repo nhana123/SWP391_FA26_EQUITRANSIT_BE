@@ -212,7 +212,8 @@ public class TransportOrderService {
         }
         expectedVersion(order, command.getRecordVersion());
         if (!"SUBMITTED".equals(order.orderStatus())
-                && !"CHANGES_REQUESTED".equals(order.orderStatus())) {
+                && !"CHANGES_REQUESTED".equals(order.orderStatus())
+                && !"APPROVED".equals(order.orderStatus())) {
             throw conflict("ORDER_NOT_EDITABLE",
                     "This state does not permit direct revision.");
         }
