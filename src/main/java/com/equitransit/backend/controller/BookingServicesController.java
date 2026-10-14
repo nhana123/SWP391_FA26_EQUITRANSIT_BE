@@ -8,6 +8,7 @@
 package com.equitransit.backend.controller;
 
 
+import org.springframework.http.MediaType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.validation.annotation.Validated;
@@ -31,7 +32,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
  */
 @RestController
 @Validated
-@RequestMapping("/api/transport-orders/{id}/services")
+@RequestMapping(value = "/api/transport-orders/{id}/services",
+        produces = MediaType.APPLICATION_JSON_VALUE)
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Booking services")
 public class BookingServicesController {

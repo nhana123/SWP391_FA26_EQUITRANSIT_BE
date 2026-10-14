@@ -8,6 +8,9 @@
 package com.equitransit.backend.dto.request;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import com.equitransit.backend.dto.ApiPatterns;
+import com.equitransit.backend.dto.ApiExamples;
 import java.util.UUID;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -24,11 +27,27 @@ import jakarta.validation.constraints.Size;
  * @param services explicit bounded preferences, never a new horse selection
  * @param changeReason required for submitted replacements, optional for drafts
  */
+@Schema(example = ApiExamples.SERVICE_CONFIRM)
 public record ServiceConfirmationRequest(
-        @NotBlank @Pattern(regexp = "[0-9a-fA-F]{16}") String recordVersion,
+        @Schema(
+                example = "000000000001A2B3",
+                pattern = ApiPatterns.VERSION)
+        @NotBlank @Pattern(regexp = ApiPatterns.VERSION) String recordVersion,
+        @Schema(
+                example = "fa2c8d7b-6c51-4976-a28d-613c4199cfd6",
+                format = "uuid")
         @NotNull UUID operationId,
-        @NotBlank @Pattern(regexp =
-                "[0-9a-fA-F]{16}") String horseRecordVersion,
+        @Schema(
+                example = "000000000001A2B3",
+                pattern = ApiPatterns.VERSION)
+        @NotBlank @Pattern(regexp = ApiPatterns.VERSION)
+        String horseRecordVersion,
+        @Schema(
+                example = ApiExamples.SERVICES,
+                nullable = true)
         @NotNull @Valid OrderServicePreferences services,
+        @Schema(
+                example = "Update delivery schedule.",
+                nullable = true)
         @Size(max = 500) String changeReason) {
 }

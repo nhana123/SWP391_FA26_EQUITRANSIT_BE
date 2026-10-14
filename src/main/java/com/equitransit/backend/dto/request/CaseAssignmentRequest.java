@@ -8,6 +8,8 @@
 package com.equitransit.backend.dto.request;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import com.equitransit.backend.dto.ApiPatterns;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import jakarta.validation.constraints.NotBlank;
@@ -27,8 +29,30 @@ import jakarta.validation.constraints.Size;
  * @param assignmentNote staff-only instructions
  */
 public record CaseAssignmentRequest(
-        @NotBlank @Pattern(regexp = "[0-9a-fA-F]{16}") String recordVersion,
-        @NotNull UUID operationId, @Positive long staffId,
+        @Schema(
+                example = "000000000001A2B3",
+                pattern = ApiPatterns.VERSION)
+        @NotBlank @Pattern(regexp = ApiPatterns.VERSION) String recordVersion,
+        @Schema(
+                example = "fa2c8d7b-6c51-4976-a28d-613c4199cfd6",
+                format = "uuid")
+        @NotNull UUID operationId,
+        @Schema(
+                example = "31",
+                nullable = true,
+                minimum = "1")
+        @Positive long staffId,
+        @Schema(
+                example = "Please confirm the route.",
+                nullable = true)
         @NotBlank @Size(max = 1000) String reason,
-        OffsetDateTime dueAt, @Size(max = 1000) String assignmentNote) {
+        @Schema(
+                example = "2026-10-16T18:00:00Z",
+                nullable = true,
+                format = "date-time")
+        OffsetDateTime dueAt,
+        @Schema(
+                example = "Review route conditions.",
+                nullable = true)
+        @Size(max = 1000) String assignmentNote) {
 }

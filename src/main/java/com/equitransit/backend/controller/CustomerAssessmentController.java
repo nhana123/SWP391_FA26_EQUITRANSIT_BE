@@ -8,6 +8,7 @@
 package com.equitransit.backend.controller;
 
 
+import org.springframework.http.MediaType;
 import jakarta.validation.constraints.Positive;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +25,8 @@ import com.equitransit.backend.dto.response.CustomerAssessmentResponse;
 /** Customer assessment outcome */
 @RestController
 @Validated
-@RequestMapping("/api/transport-orders")
+@RequestMapping(value = "/api/transport-orders",
+        produces = MediaType.APPLICATION_JSON_VALUE)
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Customer assessment outcome")
 public class CustomerAssessmentController {

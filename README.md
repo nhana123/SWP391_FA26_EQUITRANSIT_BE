@@ -674,3 +674,39 @@ immutable revisions, specialized selections, stale horse versions, retries,
 rollback and competing confirmations. SQL tests do not run against EquiTransit.
 API/SQL integration success is not a production throughput or latency guarantee;
 load testing and producer-flow end-to-end acceptance remain separate work.
+
+
+## DTO/OpenAPI contract normalization
+
+The horse and transport-order contracts now publish explicit field and complete
+command examples, anchored formats and finite OpenAPI enums. JSON property names,
+response shapes and immutable snapshot serialization remain unchanged. Inherited
+update/revision examples include their required version/operation identifiers.
+See [the field-by-field audit](docs/api-dto-audit.md) for scope and changes.
+
+Optional text is NULL when unknown; non-null empty/whitespace values are rejected.
+Receiver/event/provider details remain optional at draft and assessment submission.
+Submission requires horse, international countries, addresses, IANA timezones,
+preferredDepartureAt, deliveryDeadline and importType (TEMPORARY/PERMANENT/
+NEEDS_ADVICE). Drafts can still be incomplete. Dates must follow the existing
+chronology rules. This records assessment intent, not a confirmed booking.
+
+Use uppercase country/airport codes, E.164 phone/provider contacts, IANA timezone
+names such as Asia/Ho_Chi_Minh, valid uppercase microchip/passport identifiers and
+opaque16hex record versions. Email uses standard email validation. Former free
+ASCII identifiers/contacts, lowercase codes, UTC shorthand and empty strings may
+now return400; preserve input and let the customer correct it. No legacy master
+or revision data is automatically rewritten or cleared to satisfy new formats.
+
+requestedInputs is described by RequestedServiceInputsSchema with explicit
+version1 keys, rather than a Swagger additionalProp1 map. Its internal persisted
+map is preserved, retaining exact applicability and omitted-key behavior.
+DTO finite codes are OpenAPI enums without changing existing stored strings.
+Response money remains decimal strings, no client-side financial rounding.
+SLOT_KM quantity can carry3decimal places (1.5 ×0.01km =0.015); money and published
+unit rates retain2decimal places. Quantity is not rounded to change the fee.
+
+Examples are documentation fixtures only. Replace sample horse/order/staff IDs
+with actual authorized IDs and use current dates/versions when trying the API.
+Restart the correctly configured local backend after switching/building this
+branch to see updated Swagger; a previously running JAR does not reload itself.

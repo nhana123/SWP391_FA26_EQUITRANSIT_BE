@@ -8,6 +8,8 @@
 package com.equitransit.backend.dto.response;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import com.equitransit.backend.dto.ApiExamples;
 import java.time.OffsetDateTime;
 
 
@@ -20,11 +22,30 @@ import java.time.OffsetDateTime;
  * @param submittedAt the submittedAt
  * @param snapshot the snapshot
  */
+@Schema(example = ApiExamples.REVISION)
 public record OrderRevisionResponse(
+        @Schema(
+                example = "201",
+                nullable = true,
+                minimum = "1")
         long revisionId,
+        @Schema(
+                example = "101",
+                minimum = "1")
         long orderId,
+        @Schema(
+                example = "1",
+                minimum = "1")
         int revisionNo,
+        @Schema(
+                example = "Update delivery schedule.",
+                nullable = true)
         String changeReason,
+        @Schema(
+                example = "2026-10-14T12:00:00Z",
+                format = "date-time")
         OffsetDateTime submittedAt,
+        @Schema(
+                example = ApiExamples.SNAPSHOT)
         OrderSnapshot snapshot) {
 }

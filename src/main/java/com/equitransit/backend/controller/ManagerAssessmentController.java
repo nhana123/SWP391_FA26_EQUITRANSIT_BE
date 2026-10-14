@@ -8,6 +8,7 @@
 package com.equitransit.backend.controller;
 
 
+import org.springframework.http.MediaType;
 import java.util.List;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -43,7 +44,8 @@ import com.equitransit.backend.service.OrderAssessmentService;
 /** Manager request assessment */
 @RestController
 @Validated
-@RequestMapping("/api/manager/transport-orders")
+@RequestMapping(value = "/api/manager/transport-orders",
+        produces = MediaType.APPLICATION_JSON_VALUE)
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Manager request assessment")
 public class ManagerAssessmentController {

@@ -8,6 +8,9 @@
 package com.equitransit.backend.dto.response;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+
 /**
  * Typed case contract without account credentials or supplier finance.
  * @param staffId active staff key
@@ -16,6 +19,24 @@ package com.equitransit.backend.dto.response;
  * @param activeCases current case workload, not capacity
  * @param availabilityStatus NOT_CONFIGURED; no calendar promise
  */
-public record CaseStaffResponse(long staffId, String fullName, String role,
-        long activeCases, String availabilityStatus) {
+public record CaseStaffResponse(
+        @Schema(
+                example = "31",
+                minimum = "1")
+        long staffId,
+        @Schema(
+                example = "Alex Nguyen")
+        String fullName,
+        @Schema(
+                example = "SPECIALIST",
+                allowableValues = {"SPECIALIST", "COORDINATOR"})
+        String role,
+        @Schema(
+                example = "2",
+                minimum = "0")
+        long activeCases,
+        @Schema(
+                example = "NOT_CONFIGURED",
+                allowableValues = {"NOT_CONFIGURED"})
+        String availabilityStatus) {
 }

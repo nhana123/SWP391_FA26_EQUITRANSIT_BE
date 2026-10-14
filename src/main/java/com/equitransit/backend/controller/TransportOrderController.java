@@ -8,6 +8,7 @@
 package com.equitransit.backend.controller;
 
 
+import org.springframework.http.MediaType;
 import java.net.URI;
 import java.util.List;
 import jakarta.validation.Valid;
@@ -44,7 +45,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /** Thin HTTP adapter; transactions, state and ownership stay in the service. */
 @RestController
 @Validated
-@RequestMapping("/api/transport-orders")
+@RequestMapping(value = "/api/transport-orders",
+        produces = MediaType.APPLICATION_JSON_VALUE)
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Transport requests", description = "Single-horse requests")
 public class TransportOrderController {

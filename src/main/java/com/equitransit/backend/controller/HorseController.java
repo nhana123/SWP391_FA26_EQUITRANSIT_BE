@@ -8,6 +8,7 @@
 package com.equitransit.backend.controller;
 
 
+import org.springframework.http.MediaType;
 import java.net.URI;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -40,7 +41,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 /** Thin HTTP adapter; ownership and concurrency belong to the service. */
 @RestController
 @Validated
-@RequestMapping("/api/horses")
+@RequestMapping(value = "/api/horses",
+        produces = MediaType.APPLICATION_JSON_VALUE)
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Horse profiles", description = "Customer-owned profiles")
 public class HorseController {

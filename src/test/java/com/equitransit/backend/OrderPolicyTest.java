@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import com.equitransit.backend.dto.request.OrderDraftRequest;
+import com.equitransit.backend.entity.ImportType;
 import com.equitransit.backend.dto.request.OrderServicePreferences;
 import com.equitransit.backend.entity.AirStallPreference;
 import com.equitransit.backend.entity.QuarantinePackage;
@@ -177,10 +178,34 @@ public class OrderPolicyTest {
                 .isInstanceOf(OrderException.class);
     }
 
+    /** Submission needs routing intent, but receiver/event may be unknown. */
+    @Test
+    public void submissionRequiresDepartureAndImportType() {
+        OrderDraftRequest draft = complete();
+        OrderDraftRequest missingDeparture;
+        OrderDraftRequest missingImport;
+
+        policy.requireComplete(draft, true);
+        draft.setPreferredDepartureAt(null);
+        missingDeparture = draft;
+
+        assertThatThrownBy(() -> policy.requireComplete(missingDeparture, true))
+                .isInstanceOf(OrderException.class);
+        draft = complete();
+        draft.setImportType(null);
+        missingImport = draft;
+
+        assertThatThrownBy(() -> policy.requireComplete(missingImport, true))
+                .isInstanceOf(OrderException.class);
+    }
+
     private OrderDraftRequest complete() {
         OrderDraftRequest draft = new OrderDraftRequest();
 
         draft.setHorseId(1L);
+        draft.setImportType(ImportType.TEMPORARY);
+        draft.setPreferredDepartureAt(
+                OffsetDateTime.parse("2026-10-15T00:00:00Z"));
         draft.setOriginCountryCode("US");
         draft.setDestinationCountryCode("GB");
         draft.setOriginAddress("Pickup");

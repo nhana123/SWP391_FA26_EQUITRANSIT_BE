@@ -8,6 +8,8 @@
 package com.equitransit.backend.dto.response;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
+import com.equitransit.backend.dto.ApiPatterns;
 import java.time.OffsetDateTime;
 
 
@@ -23,7 +25,49 @@ import java.time.OffsetDateTime;
  * @param deliveryDeadline UTC deadline
  */
 public record CaseSummaryResponse(
-        long orderId, String orderNumber, String orderStatus,
-        String recordVersion, Long currentRevisionId, String originCountryCode,
-        String destinationCountryCode, OffsetDateTime deliveryDeadline) {
+        @Schema(
+                example = "101",
+                minimum = "1")
+        long orderId,
+        @Schema(
+                example = "ET-2026-000101")
+        String orderNumber,
+        @Schema(
+                example = "SUBMITTED",
+                allowableValues = {
+                        "DRAFT",
+                        "SUBMITTED",
+                        "APPROVED",
+                        "CHANGES_REQUESTED",
+                        "REJECTED",
+                        "IN_PREPARATION",
+                        "CONFIRMED",
+                        "IN_TRANSIT",
+                        "DELIVERED",
+                        "COMPLETED",
+                        "CANCELLED",
+                        "CANCELED",
+                        "CLOSED"})
+        String orderStatus,
+        @Schema(
+                example = "000000000001A2B3",
+                pattern = ApiPatterns.VERSION)
+        String recordVersion,
+        @Schema(
+                example = "201",
+                nullable = true,
+                minimum = "1")
+        Long currentRevisionId,
+        @Schema(
+                example = "VN",
+                pattern = ApiPatterns.COUNTRY)
+        String originCountryCode,
+        @Schema(
+                example = "SG",
+                pattern = ApiPatterns.COUNTRY)
+        String destinationCountryCode,
+        @Schema(
+                example = "2026-11-03T18:00:00Z",
+                format = "date-time")
+        OffsetDateTime deliveryDeadline) {
 }

@@ -8,6 +8,7 @@
 package com.equitransit.backend.dto.response;
 
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
 
@@ -19,6 +20,33 @@ import java.util.List;
  * @param totalElements the owner's matching record count
  * @param totalPages the number of matching pages
  */
-public record HorsePageResponse(List<HorseResponse> items, int page,
-        int size, long totalElements, long totalPages) {
+public record HorsePageResponse(
+        @Schema(
+                example = "[{\"horseId\":12,\"name\":\"Thunder Strik" +
+                        "e\",\"microchipId\":\"985112003456789\",\"" +
+                        "passportNumber\":\"FEI-10459921\",\"bree" +
+                        "d\":\"Thoroughbred\",\"dateOfBirth\":\"201" +
+                        "9-04-15\",\"sexCode\":\"GELDING\",\"weight" +
+                        "Kg\":520,\"heightCm\":165,\"bodyWidthCm\"" +
+                        ":80,\"measuredAt\":\"2026-10-13T08:00:0" +
+                        "0Z\",\"recordVersion\":\"000000000001A2B" +
+                        "3\",\"measurementsComplete\":true}]")
+        List<HorseResponse> items,
+        @Schema(
+                example = "0",
+                minimum = "0")
+        int page,
+        @Schema(
+                example = "20",
+                minimum = "1",
+                maximum = "100")
+        int size,
+        @Schema(
+                example = "1",
+                minimum = "0")
+        long totalElements,
+        @Schema(
+                example = "1",
+                minimum = "0")
+        long totalPages) {
 }

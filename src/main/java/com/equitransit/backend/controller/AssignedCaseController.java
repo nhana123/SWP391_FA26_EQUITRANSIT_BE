@@ -8,6 +8,7 @@
 package com.equitransit.backend.controller;
 
 
+import org.springframework.http.MediaType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
@@ -28,7 +29,8 @@ import com.equitransit.backend.dto.response.CaseResponse;
 /** Assigned preparation cases */
 @RestController
 @Validated
-@RequestMapping("/api/staff/transport-orders")
+@RequestMapping(value = "/api/staff/transport-orders",
+        produces = MediaType.APPLICATION_JSON_VALUE)
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Assigned preparation cases")
 public class AssignedCaseController {
