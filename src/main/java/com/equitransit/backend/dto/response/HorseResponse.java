@@ -74,20 +74,17 @@ public record HorseResponse(
         @Schema(
                 example = "520.00",
                 nullable = true,
-                minimum = "0",
-                exclusiveMinimum = true)
+                minimum = "0.01")
         BigDecimal weightKg,
         @Schema(
                 example = "165.00",
                 nullable = true,
-                minimum = "0",
-                exclusiveMinimum = true)
+                minimum = "0.01")
         BigDecimal heightCm,
         @Schema(
                 example = "80.00",
                 nullable = true,
-                minimum = "0",
-                exclusiveMinimum = true)
+                minimum = "0.01")
         BigDecimal bodyWidthCm,
         @Schema(
                 example = "2026-10-13T08:00:00Z",

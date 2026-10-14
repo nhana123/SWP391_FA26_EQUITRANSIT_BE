@@ -147,6 +147,76 @@ public class ApiDtoContractTest {
     }
 
     /**
+     * OpenAPI 3.1 nullable references and numeric bounds must remain usable.
+     * @throws Exception if the generated contract cannot be read
+     */
+    @Test
+    public void finalOpenApiDetailsMatchFrontendContract() throws Exception {
+        JsonNode api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        JsonNode schemas = api.at("/components/schemas");
+
+        assertThat(api.path("openapi").asText()).startsWith("3.1");
+        for (String name : List.of("OrderDraftRequest",
+                "OrderDraftUpdateRequest", "OrderRevisionRequest")) {
+            JsonNode services = schemas.path(name).at("/properties/services");
+
+            assertThat(services.has("$ref")).isFalse();
+            assertThat(services.path("anyOf").size()).isEqualTo(2);
+            assertThat(services.at("/anyOf/0/$ref").asText())
+                    .isEqualTo("#/components/schemas/OrderServicePreferences");
+            assertThat(services.at("/anyOf/1/type").asText())
+                    .isEqualTo("null");
+            assertThat(schemas.path(name).path("example")
+                    .path("dateFlexibilityNotes").asText())
+                    .isEqualTo("Departure may shift by one day.");
+        }
+        JsonNode confirmation = schemas.path("ServiceConfirmationRequest");
+        JsonNode services = confirmation.at("/properties/services");
+
+        assertThat(services.path("$ref").asText())
+                .isEqualTo("#/components/schemas/OrderServicePreferences");
+        assertThat(services.path("type").asText()).isNotEqualTo("null");
+        assertThat(confirmation.path("required").toString())
+                .contains("services");
+        for (String name : List.of("EmailRequest", "LoginRequest",
+                "RegisterRequest", "ResetPasswordRequest", "TokenRequest",
+                "CaseAssignmentRequest", "EndCaseAssignmentRequest",
+                "AssessmentRequest")) {
+            for (var fields = schemas.path(name).path("properties").fields();
+                    fields.hasNext();) {
+                JsonNode field = fields.next().getValue();
+                String types = field.path("type").toString();
+
+                if (types.contains("string") && !field.has("enum")
+                        && !"uuid".equals(field.path("format").asText())
+                        && !"date-time".equals(field.path("format").asText())) {
+                    assertThat(field.path("minLength").asInt()).as(name)
+                            .isGreaterThanOrEqualTo(1);
+                }
+            }
+        }
+        for (String name : List.of("HorseResponse", "HorseProfileRequest")) {
+            for (String field : List.of("weightKg", "heightCm",
+                    "bodyWidthCm")) {
+                assertThat(schemas.path(name).path("properties").path(field)
+                        .path("minimum").decimalValue())
+                        .isEqualByComparingTo("0.01");
+            }
+        }
+        assertThat(schemas.at("/AssessmentRequest/properties/coordinatorId"
+                + "/example").asInt()).isEqualTo(32);
+        JsonNode slot = schemas.at(
+                "/RequestedServiceInputsSchema/properties/slotQuantity");
+
+        assertThat(slot.has("enum")).isFalse();
+        assertThat(slot.path("type").toString()).contains("number");
+        assertThat(slot.path("description").asText())
+                .isEqualTo("Allowed values: 1, 1.5, 3");
+    }
+
+    /**
      * Credentials have useful documentation and health has fixed properties.
      * @throws Exception if the HTTP contract cannot be read
      */

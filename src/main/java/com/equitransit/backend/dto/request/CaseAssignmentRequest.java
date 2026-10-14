@@ -33,7 +33,8 @@ public record CaseAssignmentRequest(
         @Schema(
                 example = "000000000001A2B3",
                 pattern = ApiPatterns.VERSION)
-        @NotBlank @Pattern(regexp = ApiPatterns.VERSION) String recordVersion,
+        @NotBlank @Size(min = 1, max = 16)
+        @Pattern(regexp = ApiPatterns.VERSION) String recordVersion,
         @Schema(
                 example = "fa2c8d7b-6c51-4976-a28d-613c4199cfd6",
                 format = "uuid")
@@ -44,7 +45,7 @@ public record CaseAssignmentRequest(
         @Positive long staffId,
         @Schema(
                 example = "Please confirm the route.")
-        @NotBlank @Size(max = 1000) String reason,
+        @NotBlank @Size(min = 1, max = 1000) String reason,
         @Schema(
                 example = "2026-10-16T18:00:00Z",
                 nullable = true,
@@ -53,5 +54,5 @@ public record CaseAssignmentRequest(
         @Schema(
                 example = "Review route conditions.",
                 nullable = true)
-        @OptionalText @Size(max = 1000) String assignmentNote) {
+        @OptionalText @Size(min = 1, max = 1000) String assignmentNote) {
 }

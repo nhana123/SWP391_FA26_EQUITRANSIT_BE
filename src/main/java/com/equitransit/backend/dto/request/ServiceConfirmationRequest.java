@@ -44,7 +44,7 @@ public record ServiceConfirmationRequest(
         String horseRecordVersion,
         @Schema(
                 example = ApiExamples.SERVICES,
-                nullable = true)
+                requiredMode = Schema.RequiredMode.REQUIRED)
         @NotNull @Valid OrderServicePreferences services,
         @Schema(
                 example = "Update delivery schedule.",

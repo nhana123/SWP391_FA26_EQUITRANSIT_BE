@@ -38,7 +38,8 @@ public record RequestedServiceInputsSchema(
         Integer requestedDays,
         @Schema(example = "1", minimum = "1", nullable = true)
         Integer requestedNights,
-        @Schema(example = "1.5", allowableValues = {"1", "1.5", "3"},
+        @Schema(example = "1.5",
+                description = "Allowed values: 1, 1.5, 3",
                 nullable = true) BigDecimal slotQuantity,
         @Schema(example = "PENDING", allowableValues = {"SUITABLE", "PENDING"},
                 nullable = true) String fitStatus,

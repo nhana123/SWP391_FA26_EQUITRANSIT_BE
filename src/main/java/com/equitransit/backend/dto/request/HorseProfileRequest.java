@@ -77,8 +77,7 @@ public class HorseProfileRequest {
     @Schema(
             example = "520.00",
             nullable = true,
-            minimum = "0",
-            exclusiveMinimum = true)
+            minimum = "0.01")
     private BigDecimal weightKg;
 
     @Positive
@@ -86,8 +85,7 @@ public class HorseProfileRequest {
     @Schema(
             example = "165.00",
             nullable = true,
-            minimum = "0",
-            exclusiveMinimum = true)
+            minimum = "0.01")
     private BigDecimal heightCm;
 
     @Positive
@@ -95,8 +93,7 @@ public class HorseProfileRequest {
     @Schema(
             example = "80.00",
             nullable = true,
-            minimum = "0",
-            exclusiveMinimum = true)
+            minimum = "0.01")
     private BigDecimal bodyWidthCm;
 
     @PastOrPresent

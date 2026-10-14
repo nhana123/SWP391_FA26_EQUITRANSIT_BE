@@ -187,8 +187,7 @@ public class OrderDraftRequest {
 
     @Valid
     @Schema(
-            example = ApiExamples.SERVICES,
-            nullable = true)
+            example = ApiExamples.SERVICES)
     private OrderServicePreferences services;
 
 

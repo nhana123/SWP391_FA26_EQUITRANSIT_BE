@@ -27,12 +27,13 @@ public record EndCaseAssignmentRequest(
         @Schema(
                 example = "000000000001A2B3",
                 pattern = ApiPatterns.VERSION)
-        @NotBlank @Pattern(regexp = ApiPatterns.VERSION) String recordVersion,
+        @NotBlank @Size(min = 1, max = 16)
+        @Pattern(regexp = ApiPatterns.VERSION) String recordVersion,
         @Schema(
                 example = "fa2c8d7b-6c51-4976-a28d-613c4199cfd6",
                 format = "uuid")
         @NotNull UUID operationId,
         @Schema(
                 example = "Please confirm the route.")
-        @NotBlank @Size(max = 1000) String reason) {
+        @NotBlank @Size(min = 1, max = 1000) String reason) {
 }
