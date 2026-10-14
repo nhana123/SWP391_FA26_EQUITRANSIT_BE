@@ -152,7 +152,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/health", "/api/auth/**")
                         .permitAll()
                         .requestMatchers("/api/customers/**", "/api/horses",
-                                "/api/horses/**")
+                                "/api/horses/**", "/api/transport-orders",
+                                "/api/transport-orders/**")
                         .hasRole("CUSTOMER")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(resource -> resource

@@ -208,6 +208,126 @@ Mở terminal mới sau khi test để không giữ các env test. CI mặc đ�
 validation, auth và OpenAPI tests; SQL integration là opt-in, cần chạy riêng trước
 review thay đổi persistence. Kết quả skip không được coi là đã kiểm SQL Server.
 
+## F03 — Single-horse transport requests
+
+All endpoints below require a CUSTOMER bearer token. Ownership comes from the
+authenticated account. Another customer's order, revision or horse is not
+accessible by guessing its ID. Swagger publishes typed requests and responses.
+
+| Method | Path under `/api/transport-orders` | Result |
+| --- | --- | --- |
+| POST | `/` | Create partial DRAFT, 201 + Location |
+| GET | `/?page=0&size=20` | Owned orders, pagination envelope |
+| GET | `/{id}` | Current request, version and explicit revision/plan IDs |
+| PUT | `/{id}/draft` | Replace DRAFT fields using recordVersion |
+| POST | `/{id}/submit` | Atomically submit the saved draft |
+| POST | `/{id}/revisions` | Submit a replacement before commitment |
+| GET | `/{id}/revisions?page=0&size=20` | History array, newest first |
+| GET | `/{id}/revisions/{revision}` | Immutable captured revision |
+| POST | `/{id}/change-requests` | Pending proposal after commitment |
+| GET | `/{id}/change-requests/{change}` | Proposal receipt |
+
+Use the root path without a trailing slash in actual requests. Page starts at
+zero; size is 1–100. A saved draft does not create OrderRevision or an artificial
+SubmittedAt. A submitted order has exactly one owned horse in TransportOrderDetail.
+Each revision captures horse measurements/care and requested services together.
+Changing the horse master later does not change historical snapshots.
+
+Example draft (replace horseId with an owned profile and dates with future dates):
+
+```json
+{
+  "horseId": 12,
+  "originCountryCode": "VN",
+  "destinationCountryCode": "GB",
+  "originAddress": "Pickup stable address",
+  "destinationAddress": "Destination stable address",
+  "originTimezone": "Asia/Ho_Chi_Minh",
+  "destinationTimezone": "Europe/London",
+  "preferredDepartureAt": "2027-02-01T08:00:00+07:00",
+  "deliveryDeadline": "2027-02-04T18:00:00Z",
+  "importType": "NEEDS_ADVICE",
+  "receiverName": "Receiving contact",
+  "services": {
+    "roadArrangement": "EQUITRANSIT",
+    "airStall": "WIDE",
+    "quarantinePackage": "STANDARD"
+  }
+}
+```
+
+Draft fields may be incomplete. Submission requires horseId, ISO country codes
+(GB, not UK), pickup/delivery addresses, named timezones and a future delivery
+deadline. Countries must differ. Departure, when present, precedes the deadline;
+the deadline cannot follow eventStartAt. Dates require an offset and are stored
+as UTC seconds. Receiver/event/import details can be supplied when known.
+The server assigns the order number, USD currency, owner and lifecycle state;
+do not send these fields. Unknown fields are rejected.
+
+PUT draft and POST revisions are full replacements: omitted/null optional fields
+are cleared. Send only editable fields, not the full GET response. Include the
+recordVersion from the latest GET. Stale writes return 409 ORDER_VERSION_CONFLICT;
+reload and let the customer reconcile changes rather than silently overwrite.
+
+After saving, submit the saved draft using:
+
+```json
+{
+  "recordVersion": "0000000000001234",
+  "operationId": "b8ea3970-5cdf-4f1b-b3b4-790e2f2b51ef"
+}
+```
+
+Generate operationId once per submit/revise/proposal action. Retry an uncertain
+action using the same UUID, version and input. A successful retry returns the
+same immutable revision or proposal receipt; changed input with a reused UUID
+returns 409 ORDER_RETRY_CONFLICT. Action responses are 200, including replays.
+GET the current order afterwards to obtain its current recordVersion. Replaying
+an older action does not make its historical snapshot the current request again.
+
+Revision commands contain the full editable request plus recordVersion,
+operationId and a nonblank changeReason (up to 500 characters). Direct revision
+is allowed only in SUBMITTED/CHANGES_REQUESTED before accepted quotes or protected
+operational commitments. It preserves previous revisions and currentPlanId.
+Unaccepted preparation quotes become SUPERSEDED and plan gates return to PENDING;
+an old plan never becomes applicable to a new revision by selecting MAX(RevisionID).
+
+After acceptance, authorization or departure, use change-requests with the same
+command shape. This only records a PENDING proposal, linked to the current base
+revision. It does not change the order, plan, quote or itinerary. One pending
+proposal is allowed per order. F13 implements staff review, customer consent and
+application later. Closed orders cannot open a new proposal.
+
+Services here are requested intent, not confirmed bookings or payable amounts.
+No sample prices, unknown quantities, required quarantine days or eligibility
+approvals are invented. WIDE/PRIVATE air stall requests remain pending fit review;
+SHARED_ONE submission returns AIR_STALL_ASSESSMENT_REQUIRED until F05 provides
+confirmed eligibility. No StallChoice/assignment or QuarantineChoice is fabricated.
+Optional care and insurance are not silently selected. F05/F08/F09 supply these
+assessments; quote/payment and departure activation belong to their own flows.
+Drafts can coexist for the same horse; overlap prevention at departure belongs
+to F10/F11 and is not implemented by draft creation.
+
+Cross-flow transaction contract: quote acceptance and plan activation must lock
+the same TransportOrder parent before checking revision/version and committing.
+F03 locks that parent, rechecks accepted/authorized/departed evidence and writes
+revision, horse detail, service choices and current pointer in one transaction.
+Any failed write rolls back the entire action. Persistence uses parameterized
+JDBC with SQL Server rowversion, preserving the layered service transaction model.
+Requires existing migrations 001/002; F03 adds no database migration.
+
+Errors use safe JSON code/message (validation may include fields). Typical codes:
+ORDER_NOT_FOUND (404), ORDER_VERSION_CONFLICT, ORDER_RETRY_CONFLICT,
+ORDER_CHANGE_REQUEST_REQUIRED, ORDER_NOT_EDITABLE and ORDER_CHANGE_PENDING (409).
+Missing token is 401; wrong role is 403; malformed/unknown fields are 400.
+Render customer text as text, never raw HTML.
+
+SQL verification uses only the isolated full-schema restore, with rollback or
+ID-scoped cleanup. Run the order suite using the F02 command above, replacing
+EQ_HORSE_TEST_ENABLED/DB_URL with EQ_ORDER_TEST_ENABLED/DB_URL and selecting
+`-Dtest=TransportOrderIntegrationTest`. Default CI runs policy and Swagger tests;
+opt-in SQL tests must also be run for persistence changes. Skips are not passes.
+
 ## Java conventions
 
 Theo PDF Oracle/Sun Java Code Conventions được cung cấp: 4 spaces, không tab; 80 ký tự kể cả import (import dài được xuống dòng); tên class/method/field/constant theo quy ước; một public type/file; comment đầu file; Javadoc public API; braces cho control flow; khai báo local variables đầu block; static fields trước instance fields, constructors trước methods; phân nhóm bằng dòng trống.
