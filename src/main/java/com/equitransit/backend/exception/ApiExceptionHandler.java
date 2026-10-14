@@ -35,6 +35,21 @@ public class ApiExceptionHandler {
             LoggerFactory.getLogger(ApiExceptionHandler.class);
 
     /**
+     * Returns safe lifecycle errors with stable frontend domain codes.
+     * @param error the expected request failure
+     * @return the safe response without owner or SQL details
+     */
+    @ExceptionHandler(OrderException.class)
+    public ResponseEntity<Map<String, Object>> handleOrder(
+            OrderException error) {
+        Map<String, Object> body = new LinkedHashMap<>();
+
+        body.put("code", error.getCode());
+        body.put("message", error.getMessage());
+        return ResponseEntity.status(error.getStatus()).body(body);
+    }
+
+    /**
      * Returns a stable horse-domain code without SQL or owner details.
      * @param error the expected domain failure
      * @return the safe response

@@ -90,4 +90,32 @@ public class OpenApiTest {
                 .andExpect(jsonPath("$.components.schemas.HorseResponse"
                         + ".properties.measurementsComplete").exists());
     }
+    /**
+     * Publishes typed order commands and protects customer journey access.
+     * @throws Exception if documentation generation fails
+     */
+    @Test
+    public void orderContractIncludesVersionAndRetryCommands()
+            throws Exception {
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.paths['/api/transport-orders'].post"
+                        + ".responses['201']").exists())
+                .andExpect(jsonPath("$.paths['/api/transport-orders'].post"
+                        + ".security[0].bearerAuth").isArray())
+                .andExpect(jsonPath("$.paths['/api/transport-orders/{id}']"
+                        + ".delete").doesNotExist())
+                .andExpect(jsonPath("$.components.schemas"
+                        + ".OrderDraftUpdateRequest.properties.recordVersion")
+                        .exists())
+                .andExpect(jsonPath("$.components.schemas.OrderSubmitRequest"
+                        + ".properties.operationId.format").value("uuid"))
+                .andExpect(jsonPath("$.components.schemas.OrderRevisionRequest"
+                        + ".properties.changeReason").exists())
+                .andExpect(jsonPath("$.paths"
+                        + "['/api/transport-orders/{id}/change-requests'].post")
+                        .exists());
+        mvc.perform(get("/api/transport-orders"))
+                .andExpect(status().isUnauthorized());
+    }
 }
