@@ -70,4 +70,24 @@ public class OpenApiTest {
         mvc.perform(get("/api/customers/me"))
                 .andExpect(status().isUnauthorized());
     }
+
+    /**
+     * The frontend sees typed profile contracts and bearer requirements.
+     * @throws Exception if documentation generation fails
+     */
+    @Test
+    public void horseContractIncludesVersionDocumentation() throws Exception {
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.paths['/api/horses'].post"
+                        + ".security[0].bearerAuth").isArray())
+                .andExpect(jsonPath("$.paths['/api/horses'].post"
+                        + ".responses['201']").exists())
+                .andExpect(jsonPath("$.paths['/api/horses/{id}'].put"
+                        + ".responses['409']").exists())
+                .andExpect(jsonPath("$.components.schemas.HorseUpdateRequest"
+                        + ".properties.recordVersion").exists())
+                .andExpect(jsonPath("$.components.schemas.HorseResponse"
+                        + ".properties.measurementsComplete").exists());
+    }
 }

@@ -86,7 +86,9 @@ Recovery: gửi email tới forgot-password, lấy token trong email mới, rồ
 được bảo vệ bằng method security. StaffProfile hiện chỉ được đọc để xác định
 identity, chưa có API quản trị staff.
 
-`database/migrations/001_authentication_token.sql` tạo một bảng mới `AuthenticationToken` để đáp ứng A03. Chỉ lưu hash token, purpose, hạn dùng và thời điểm dùng; raw token chỉ nằm trong email. Không sửa cột hoặc dữ liệu hiện có của 49 bảng nghiệp vụ.
+`database/migrations/001_authentication_token.sql` tạo `AuthenticationToken`
+để đáp ứng A03. Chỉ lưu hash token, purpose, hạn dùng và thời điểm dùng; raw
+token chỉ nằm trong email. Schema nghiệp vụ hiện tại dùng thêm migration 002.
 
 Chạy migration một lần trước khi khởi động trên database chưa có bảng này. Script có guard để chạy lại an toàn. Hibernate dùng **validate**, không dùng update/create trên database thật.
 
@@ -117,6 +119,94 @@ $nativeDir = Join-Path $env:LOCALAPPDATA 'EquiTransit\tools\sqljdbc-native'
 ```
 
 Mở terminal mới hoặc xóa hai EQ_TEST_* env vars để quay lại H2. Không đổi tên database test thành EquiTransit: các test xóa fixture trong database test.
+
+## Horse profile API — F02
+
+Các endpoint cần JWT của CUSTOMER đang ACTIVE; CustomerID lấy từ tài khoản
+đăng nhập. Không nhận customerId, horseId hoặc quyền sở hữu trong body.
+
+| Method / path | Kết quả |
+|---|---|
+| POST `/api/horses` | 201, Location và profile + recordVersion |
+| GET `/api/horses?page=0&size=20&q=Thunder` | 200, danh sách của mình; size 1–100, page từ 0; q tối đa 150 ký tự |
+| GET `/api/horses/{id}` | 200 profile của mình; ngựa khác/không có đều 404 |
+| PUT `/api/horses/{id}` | 200 profile + version mới; replacement, yêu cầu recordVersion |
+
+Danh sách có dạng `{items, page, size, totalElements, totalPages}`, sort cố định
+horseId giảm dần. q tìm tên theo chuỗi literal, không phải SQL wildcard.
+DELETE/archive chưa thuộc scope đã chốt; không xóa ngựa và lịch sử qua API này.
+
+Ví dụ tạo hồ sơ nháp (dữ liệu mẫu, không seed vào DB):
+
+```json
+{
+  "name": "Thunder Strike",
+  "sexCode": "GELDING",
+  "microchipId": null,
+  "weightKg": 500.25,
+  "heightCm": null,
+  "bodyWidthCm": null,
+  "handlingNotes": "Requires calm handling"
+}
+```
+
+Các field editable trong request/schema Swagger:
+
+- name bắt buộc, tối đa 150; breed tối đa 100.
+- microchipId/passportNumber tối đa 50 ký tự ASCII; blank được lưu NULL.
+  Microchip đã biết phải duy nhất theo index của SQL Server; không tiết lộ chủ
+  của microchip trùng. Nhiều hồ sơ chưa biết microchip được phép tồn tại.
+- dateOfBirth là `YYYY-MM-DD`, không ở tương lai. sexCode là STALLION/MARE/GELDING
+  hoặc null. Không tự tính tuổi cố định vào DB.
+- weightKg > 0, tối đa 6 chữ số nguyên; heightCm/bodyWidthCm > 0, tối đa 4 chữ
+  số nguyên. Tất cả tối đa 2 chữ số thập phân; có thể null trong hồ sơ nháp.
+- measuredAt dùng ISO 8601 có offset, không ở tương lai, lưu UTC giây; ví dụ
+  `2026-10-10T09:00:00+07:00` trả `2026-10-10T02:00:00Z`.
+- specialCareNotes, handlingNotes, feedWaterRequirements, stallPreferences và
+  veterinaryInstructionSource tối đa 1000; veterinaryInstructions tối đa 2000.
+  Đây là thông tin chủ ngựa cung cấp, không phải approval của Specialist.
+
+Response thêm horseId, recordVersion (16 ký tự hex, opaque) và
+measurementsComplete. Complete chỉ có nghĩa đủ ba số đo và measuredAt; không
+chứng minh fit policy, đủ giấy tờ hoặc được phép vận chuyển. Các lựa chọn slot
+thuộc flow F05/F09, không tự suy ra từ profile API.
+
+Khi lưu sửa, gửi **toàn bộ field editable** và recordVersion từ GET mới nhất.
+Optional field bị bỏ qua/null sẽ được xóa ở master. Không gửi lại horseId hoặc
+measurementsComplete từ response. 409 HORSE_VERSION_CONFLICT yêu cầu reload và
+cho người dùng đối chiếu thay đổi; không tự retry bằng version mới. Sửa profile
+không đổi horse/order snapshots đã submit và không thay ngựa của booking.
+
+Lỗi dùng JSON an toàn: `message`, optional `fields` khi validation, và `code`
+cho lỗi domain: HORSE_NOT_FOUND (404), HORSE_CONFLICT hoặc HORSE_VERSION_CONFLICT
+(409). Input sai/field lạ/path-query sai trả 400; thiếu JWT trả 401; sai role 403.
+Không trả SQL, stack trace, owner của ngựa khác hoặc credentials. FE hiển thị
+chuỗi ghi chú dưới dạng text, không chèn trực tiếp vào HTML. Không tự retry POST
+khi chưa biết request trước đã thành công hay chưa.
+
+Horse persistence dùng parameterized JDBC trong Repository để dùng trực tiếp
+SQL Server ROWVERSION và CAS update `owner + id + version`; Entity là persistence
+model, DTO tách riêng. Transaction vẫn tại Service, cùng datasource và transaction
+manager hiện tại. SQL session SET options được cấu hình cho filtered index.
+Flow yêu cầu schema đầy đủ sau 001/002; không dùng Hibernate update để thêm cột.
+Không cần migration mới cho F02.
+
+Kiểm thử SQL của flow dùng bản restore tên `EquiTransit_FigmaMigrationTest_*`,
+không dùng EquiTransit thật hay AuthTest tối giản. Ví dụ Windows Authentication:
+
+```powershell
+$env:EQ_HORSE_TEST_ENABLED = 'true'
+$env:EQ_HORSE_TEST_DB_URL = 'jdbc:sqlserver://localhost:1433;databaseName=EquiTransit_FigmaMigrationTest_<stamp>;encrypt=true;trustServerCertificate=true;integratedSecurity=true'
+$env:EQ_TEST_DB_USERNAME = ''
+$nativeDir = 'C:/Users/thang/AppData/Local/EquiTransit/tools/sqljdbc-native'
+.\mvnw.cmd test -Dtest=HorseProfileIntegrationTest "-DargLine=-Djava.library.path=$nativeDir"
+```
+
+Thay `<stamp>` bằng test copy của máy. Fixtures thường rollback; test cạnh tranh
+cần committed rows và xóa đúng ID fixture trong finally/AfterEach, không deleteAll.
+Mở terminal mới sau khi test để không giữ các env test. CI mặc định chạy service,
+validation, auth và OpenAPI tests; SQL integration là opt-in, cần chạy riêng trước
+review thay đổi persistence. Kết quả skip không được coi là đã kiểm SQL Server.
 
 ## Java conventions
 
