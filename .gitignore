@@ -10,3 +10,6 @@ out/
 *.pfx
 *.key
 *.log
+
+# Personal AI guidance is kept outside the repository.
+/swp/AI/

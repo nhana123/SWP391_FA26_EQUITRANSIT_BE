@@ -1,0 +1,6 @@
+spring:
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;databaseName=EquiTransit;encrypt=true;trustServerCertificate=true;integratedSecurity=true
+app:
+  mail:
+    mode: file
