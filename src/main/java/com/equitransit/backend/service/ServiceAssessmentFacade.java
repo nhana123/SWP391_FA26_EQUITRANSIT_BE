@@ -12,6 +12,10 @@ import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Optional;
+import com.equitransit.backend.entity.quote.QuoteSnapshot;
+import com.equitransit.backend.exception.OrderException;
+import org.springframework.http.HttpStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -45,6 +49,44 @@ public class ServiceAssessmentFacade {
             ObjectMapper mapper) {
         this.sources = sources;
         this.mapper = mapper;
+    }
+
+    /**
+     * Shares F06 retail snapshots and evidence with F05 read-only disclosure.
+     * The caller must authorize the parent before reading this private type.
+     * @param order owned parent
+     * @param revision exact current revision, null for draft
+     * @param now server time
+     * @return supported commercial snapshot, never a public response
+     */
+    public Optional<QuoteSnapshot> commercialQuote(long order, Long revision,
+            OffsetDateTime now) {
+        if (revision == null) {
+            return Optional.empty();
+        }
+        return sources.commercialSnapshot(order, revision, now).map(encoded -> {
+            try {
+                var snapshot = mapper.readValue(encoded, QuoteSnapshot.class);
+
+                if (snapshot != null && snapshot.schemaVersion() == 1
+                        && snapshot.request() != null
+                        && snapshot.lines() != null
+                        && snapshot.sources() != null
+                        && snapshot.blockers() != null
+                        && snapshot.request().revisionId() == revision) {
+                    return snapshot;
+                }
+            } catch (JsonProcessingException error) {
+                throw unsupportedQuote();
+            }
+            throw unsupportedQuote();
+        });
+    }
+
+    private OrderException unsupportedQuote() {
+        return new OrderException(HttpStatus.CONFLICT,
+                "QUOTE_DATA_UNSUPPORTED",
+                "This quotation requires a supported data version.");
     }
 
     /**

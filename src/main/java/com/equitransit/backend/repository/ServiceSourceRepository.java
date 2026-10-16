@@ -247,6 +247,35 @@ public class ServiceSourceRepository {
                         row.getString("IncludedCharges")));
     }
 
+    /**
+     * Reads the chosen commercial version, never an arbitrary supplier offer.
+     * Retail prices and commercial assessments are frozen in this snapshot.
+     * @param order authorized parent
+     * @param revision exact current submitted revision
+     * @param now server UTC time
+     * @return latest usable snapshot, without exposing purchase costs
+     */
+    public java.util.Optional<String> commercialSnapshot(long order,
+            long revision, OffsetDateTime now) {
+        if (!available("dbo.Quote", List.of("PricingSnapshotJSON"))) {
+            return java.util.Optional.empty();
+        }
+        return jdbc.query("SELECT TOP (1) q.PricingSnapshotJSON"
+                + " FROM dbo.Quote q JOIN dbo.OrderRevision r"
+                + " ON r.RevisionID=q.RevisionID JOIN dbo.TransportOrder o"
+                + " ON o.OrderID=r.OrderID AND o.CurrentRevisionID=r.RevisionID"
+                + " WHERE o.OrderID=:order AND r.RevisionID=:revision"
+                + " AND q.PricingSnapshotJSON IS NOT NULL"
+                + " AND (q.QuoteStatus='ACCEPTED' OR (q.QuoteStatus IN"
+                + " ('DRAFT','APPROVED','ISSUED') AND q.ValidUntil>:now))"
+                + " ORDER BY q.VersionNo DESC,q.QuoteID DESC",
+                new MapSqlParameterSource("order", order)
+                        .addValue("revision", revision)
+                        .addValue("now", now.toLocalDateTime()),
+                (row, index) -> row.getString("PricingSnapshotJSON"))
+                .stream().findFirst();
+    }
+
     private String specialistProof(String alias) {
         return " AND EXISTS (SELECT 1 FROM dbo.OrderAssignment a"
                 + " JOIN dbo.StaffProfile s ON s.StaffID=a.StaffID"

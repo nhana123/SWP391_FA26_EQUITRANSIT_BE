@@ -150,7 +150,8 @@ public class QuotePricingPolicy {
         }
         BigDecimal total = lines.stream().filter(l -> l.amount() != null)
                 .map(l -> new BigDecimal(l.amount()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
 
         if (total.precision() > 18) {
             blockers.add("TOTAL_AMOUNT_REVIEW_REQUIRED");
@@ -262,7 +263,7 @@ public class QuotePricingPolicy {
             throw invalid("Pricing exceeds the supported monetary range.");
         }
         return view(row, quantity.stripTrailingZeros().toPlainString(),
-                rate.setScale(2).toPlainString(),
+                rate.setScale(2, RoundingMode.HALF_UP).toPlainString(),
                 amount.toPlainString(), "PRICED");
     }
 

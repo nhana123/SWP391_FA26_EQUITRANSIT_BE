@@ -37,6 +37,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -203,7 +204,8 @@ public class QuotationService {
                         "Unsupported included charge.");
             }
         }
-        long offer = quotes.offer(actor.staffId(), request);
+        long offer = quotes.offer(actor.staffId(), request,
+                OffsetDateTime.now(clock));
 
         touch(order);
         var receipt = new SupplierOfferReceipt(offer, parent(id).version());
@@ -364,7 +366,8 @@ public class QuotationService {
         var schedule = request.paymentSchedule().stream().map(s ->
                 new com.equitransit.backend.dto.quote.QuoteSchedule(
                         s.sequenceNo(), s.paymentStage(),
-                        new BigDecimal(s.amountDue()).setScale(2)
+                        new BigDecimal(s.amountDue())
+                                .setScale(2, RoundingMode.HALF_UP)
                                 .toPlainString(),
                         s.dueAt().withOffsetSameInstant(
                                 java.time.ZoneOffset.UTC).withNano(0)))
