@@ -710,3 +710,13 @@ Examples are documentation fixtures only. Replace sample horse/order/staff IDs
 with actual authorized IDs and use current dates/versions when trying the API.
 Restart the correctly configured local backend after switching/building this
 branch to see updated Swagger; a previously running JAR does not reload itself.
+
+## Versioned quotations — F06
+
+API contract, actor permissions, JSON command examples, pricing provenance,
+state transitions, idempotency, migration and test setup:
+[docs/quotation-api.md](docs/quotation-api.md).
+
+Migration `005_versioned_quotations.sql` must be deployed after 001–004 before
+using quotation APIs. It is not applied automatically to the real database.
+Quote acceptance commits a price; it never confirms payment or departure.

@@ -25,6 +25,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import com.equitransit.backend.dto.ApiExamples;
+import com.equitransit.backend.dto.quote.QuotePrepareRequest;
+import com.equitransit.backend.dto.quote.QuoteApiExamples;
 import com.equitransit.backend.dto.request.HorseProfileRequest;
 import com.equitransit.backend.dto.request.EmailRequest;
 import com.equitransit.backend.dto.request.LoginRequest;
@@ -75,6 +77,17 @@ public class ApiDtoContractTest {
 
         Files.writeString(Path.of("target/api-dto-contract.json"), encoded);
         for (String name : List.of(
+                "QuoteCommand",
+                "QuoteActionRequest",
+                "QuotePrepareRequest",
+                "QuoteEvidence",
+                "QuoteSchedule",
+                "QuoteLine",
+                "QuoteSummary",
+                "QuoteResponse",
+                "QuotePage",
+                "SupplierOfferRequest",
+                "SupplierOfferReceipt",
                 "EmailRequest",
                 "LoginRequest",
                 "RegisterRequest",
@@ -482,6 +495,46 @@ public class ApiDtoContractTest {
                         .as(name + "." + field.getKey()).isTrue());
         for (JsonNode parent : actual.path("allOf")) {
             assertExamples(schemas, parent, name);
+        }
+    }
+
+    /**
+     * F06 commands have usable examples, bounded text and closed states.
+     * @throws Exception if OpenAPI or example decoding fails
+     */
+    @Test
+    public void quotationSchemasMatchTheFrontendContract() throws Exception {
+        JsonNode api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        JsonNode schemas = api.at("/components/schemas");
+        String base = "/api/transport-orders/{orderId}/quotes";
+
+        assertThat(api.path("paths").has(base)).isTrue();
+        assertThat(schemas.get("QuoteResponse").toString())
+                .doesNotContain("supplierCost", "margin", "purchaseUnitPrice",
+                        "additionalProp1");
+        assertThat(schemas.at("/QuotePrepareRequest/properties/terms/minLength")
+                .asInt()).isEqualTo(1);
+        assertThat(schemas.at("/QuoteCommand/properties/recordVersion/pattern")
+                .asText()).isEqualTo("^[0-9a-fA-F]{16}$");
+        assertThat(schemas.at("/QuoteSummary/properties/status/enum")
+                .toString()).contains("DRAFT", "APPROVED", "ISSUED",
+                        "ACCEPTED", "REJECTED", "EXPIRED", "SUPERSEDED");
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            var command = mapper.readValue(
+                    QuoteApiExamples.PREPARE, QuotePrepareRequest.class);
+
+            assertThat(factory.getValidator().validate(command)).isEmpty();
+            for (String field : List.of("paymentSchedule", "assessments")) {
+                ObjectNode invalid = (ObjectNode) mapper.readTree(
+                        QuoteApiExamples.PREPARE);
+
+                invalid.set(field, mapper.readTree("[null]"));
+                assertThat(factory.getValidator().validate(
+                        mapper.treeToValue(invalid, QuotePrepareRequest.class)))
+                        .isNotEmpty();
+            }
         }
     }
 

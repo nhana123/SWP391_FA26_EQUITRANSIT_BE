@@ -106,6 +106,19 @@ public class ServiceSourceRepository {
      */
     public ItineraryPricingContext itinerary(long order, long revision,
             OffsetDateTime now) {
+        return itinerary(order, revision, now, false);
+    }
+
+    /**
+     * Reads sourced draft distances without claiming resource confirmation.
+     * @param order authorized parent
+     * @param revision exact submitted revision
+     * @param now source evaluation time
+     * @param quotation whether draft plans may supply quotation quantities
+     * @return sourced quantities; never an operational readiness result
+     */
+    public ItineraryPricingContext itinerary(long order, long revision,
+            OffsetDateTime now, boolean quotation) {
         String sql = "SELECT p.PlanID,"
                 + "SUM(CASE WHEN l.TransportMode='ROAD' THEN l.DistanceKm"
                 + " ELSE 0 END) AS RoadKm,"
@@ -118,7 +131,9 @@ public class ServiceSourceRepository {
                 + " THEN 1 ELSE 0 END) AS MissingSources"
                 + " FROM dbo.TransportOrder o JOIN dbo.TransportPlan p"
                 + " ON p.PlanID=o.CurrentPlanID AND p.OrderID=o.OrderID"
-                + " AND p.RevisionID=:revision AND p.PlanStatus='CONFIRMED'"
+                + " AND p.RevisionID=:revision AND p.PlanStatus IN ("
+                + (quotation ? "'DRAFT','PROPOSED','PLANNED','CONFIRMED'"
+                        : "'CONFIRMED'") + ")"
                 + " LEFT JOIN dbo.TripLeg l ON l.PlanID=p.PlanID"
                 + " AND l.TransportMode IN ('ROAD','AIR')"
                 + " OUTER APPLY (SELECT COUNT(*) AS ValidStaff"
