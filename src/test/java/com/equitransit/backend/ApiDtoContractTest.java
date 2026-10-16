@@ -77,6 +77,24 @@ public class ApiDtoContractTest {
 
         Files.writeString(Path.of("target/api-dto-contract.json"), encoded);
         for (String name : List.of(
+                "AllocationCommand",
+                "BankReceiptCommand",
+                "BankReceiptView",
+                "BankReportCommand",
+                "PaymentAllocationView",
+                "PaymentMutationReceipt",
+                "PaymentObligation",
+                "PaymentOverview",
+                "PaymentProofCommand",
+                "PaymentProofReceipt",
+                "PaymentProofView",
+                "PaymentReportView",
+                "PaymentRequestCommand",
+                "RefundActionCommand",
+                "RefundRequestCommand",
+                "RefundView",
+                "ReportReviewCommand",
+                "ReversalCommand",
                 "ServicePreviewRequest", "ServiceRateResponse",
                 "TariffWriteRequest", "TariffResponse", "TariffPage",
                 "QuoteCommand",
@@ -578,6 +596,32 @@ public class ApiDtoContractTest {
                 .isTrue();
         assertThat(api.path("paths").has(
                 "/api/transport-orders/{id}/services/preview")).isTrue();
+    }
+
+    /** @throws Exception if payment OpenAPI schemas cannot be generated */
+    @Test
+    public void paymentContractUsesExactTypesAndSafeReadModels()
+            throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+
+        assertThat(schemas.at("/BankReceiptCommand/properties/"
+                + "amountReceived/pattern").asText())
+                .isEqualTo("^\\d+(\\.\\d{1,2})?$");
+        assertThat(schemas.at("/RefundActionCommand/properties/action/enum")
+                .toString()).contains("APPROVE", "REJECT", "COMPLETE");
+        assertThat(schemas.at("/PaymentOverview").toString())
+                .doesNotContain("InternalNotes", "RecipientAccount",
+                        "additionalProp1");
+        assertThat(schemas.at("/PaymentRequestCommand/required").toString())
+                .contains("command");
+        assertThat(schemas.at("/BankReportCommand/properties/command/type")
+                .asText()).isNotEqualTo("null");
+        assertThat(api.path("paths").has(
+                "/api/transport-orders/{orderId}/payments/refunds"))
+                .isTrue();
     }
 
     private void assertJsonMedia(JsonNode api) {

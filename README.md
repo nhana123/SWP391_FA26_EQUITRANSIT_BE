@@ -720,3 +720,11 @@ state transitions, idempotency, migration and test setup:
 Migration `005_versioned_quotations.sql` must be deployed after 001–004 before
 using quotation APIs. It is not applied automatically to the real database.
 Quote acceptance commits a price; it never confirms payment or departure.
+
+## Manual bank payments (F07)
+
+See [F07 API contract](docs/manual-bank-payments-api.md) for Customer reporting,
+Manager reconciliation/allocation/refunds, protected image proofs and the separate
+F11 departure/F14 settlement financial facade. Requires reviewed migration007
+on an explicitly authorized target database; code never auto-migrates EquiTransit.
+Report is not paid; acceptance is not bank receipt or operational clearance.
