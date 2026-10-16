@@ -138,6 +138,8 @@ public class TransportOrderIntegrationTest {
         reset(orderRepository);
         if (!TransactionSynchronizationManager.isActualTransactionActive()) {
             for (Long user : fixtureUsers) {
+                jdbc.update("DELETE dbo.AuditEvent WHERE UserID=?"
+                        + " AND EntityType='ORDER_ACTIVITY'", user);
                 cleanupOrders(user);
                 jdbc.update("DELETE dbo.Horse WHERE CustomerID IN"
                         + " (SELECT CustomerID FROM dbo.Customer"

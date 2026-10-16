@@ -194,6 +194,8 @@ public class QuotationIntegrationTest {
         }
         for (long user : fixtureUsers) {
             jdbc.update("DELETE dbo.AuditEvent WHERE UserID=?"
+                    + " AND EntityType='ORDER_ACTIVITY'", user);
+            jdbc.update("DELETE dbo.AuditEvent WHERE UserID=?"
                     + " AND EntityType='SERVICE_TARIFF'", user);
             jdbc.update("DELETE dbo.Horse WHERE CustomerID IN"
                     + " (SELECT CustomerID FROM dbo.Customer WHERE UserID=?)",

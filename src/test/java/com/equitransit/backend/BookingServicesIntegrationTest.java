@@ -197,6 +197,8 @@ public class BookingServicesIntegrationTest {
             jdbc.update("DELETE dbo.ServiceTariff WHERE TariffID=?", id);
         }
         for (long user : fixtureUsers) {
+            jdbc.update("DELETE dbo.AuditEvent WHERE UserID=?"
+                    + " AND EntityType='ORDER_ACTIVITY'", user);
             jdbc.update("DELETE dbo.Horse WHERE CustomerID IN"
                     + " (SELECT CustomerID FROM dbo.Customer WHERE UserID=?)",
                     user);
