@@ -61,6 +61,18 @@ public class ServiceAssessmentFacade {
     }
 
     /**
+     * Supplies quoted draft distances without confirming resources or gates.
+     * @param order authorized locked order
+     * @param revision current submitted revision
+     * @param now source evaluation time
+     * @return sourced draft itinerary quantities or pending
+     */
+    public ItineraryPricingContext quotationItinerary(long order,
+            long revision, OffsetDateTime now) {
+        return sources.itinerary(order, revision, now, true);
+    }
+
+    /**
      * Keeps UNKNOWN distinct from explicitly verified NOT_REQUIRED.
      * @param order authorized parent
      * @param revision exact revision or null
