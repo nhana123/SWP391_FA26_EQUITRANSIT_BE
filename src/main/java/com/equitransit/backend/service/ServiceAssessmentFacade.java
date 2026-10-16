@@ -13,6 +13,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Optional;
+import com.equitransit.backend.entity.PublishedTariffRecord;
+import com.equitransit.backend.dto.pricing.ServiceRateResponse;
+import com.equitransit.backend.entity.pricing.PricingMode;
+import com.equitransit.backend.entity.pricing.ServiceProduct;
 import com.equitransit.backend.entity.quote.QuoteSnapshot;
 import com.equitransit.backend.exception.OrderException;
 import org.springframework.http.HttpStatus;
@@ -81,6 +85,40 @@ public class ServiceAssessmentFacade {
             }
             throw unsupportedQuote();
         });
+    }
+
+    /**
+     * Reads current unit prices for selected and unselected product options.
+     * @param now server UTC time
+     * @return retail-only bounded catalogue, without private source references
+     */
+    public List<ServiceRateResponse> retailRates(OffsetDateTime now) {
+        var products = ServiceProduct.values();
+        var catalogue = sources.tariffs(java.util.Arrays.stream(products)
+                .map(ServiceProduct::code)
+                .distinct().toList(), now);
+
+        return java.util.Arrays.stream(products).map(product -> {
+            var matches = catalogue.stream().filter(row ->
+                    row.service().equals(product.code())
+                            && row.option().equals(product.option()))
+                    .map(PublishedTariffRecord::tariff).toList();
+            var rate = matches.size() == 1 ? matches.getFirst() : null;
+            boolean usable = rate != null
+                    && rate.unit().equals(product.unit())
+                    && rate.costGroup().equals(product.group())
+                    && rate.rate().signum() >= 0
+                    && rate.rate().stripTrailingZeros().scale() <= 2
+                    && product.mode() != PricingMode.INCLUDED;
+
+            return new ServiceRateResponse(
+                    product, product.section(), product.unit(), usable
+                            ? rate.rate().setScale(2,
+                                    java.math.RoundingMode.HALF_UP)
+                                    .toPlainString() : null,
+                    "USD", product.mode(), usable ? rate.tariffId() : null,
+                    usable ? rate.version() : null);
+        }).toList();
     }
 
     private OrderException unsupportedQuote() {
