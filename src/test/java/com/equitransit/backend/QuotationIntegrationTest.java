@@ -193,6 +193,8 @@ public class QuotationIntegrationTest {
             jdbc.update("DELETE dbo.ServiceTariff WHERE TariffID=?", id);
         }
         for (long user : fixtureUsers) {
+            jdbc.update("DELETE dbo.AuditEvent WHERE UserID=?"
+                    + " AND EntityType='SERVICE_TARIFF'", user);
             jdbc.update("DELETE dbo.Horse WHERE CustomerID IN"
                     + " (SELECT CustomerID FROM dbo.Customer WHERE UserID=?)",
                     user);
@@ -811,6 +813,282 @@ public class QuotationIntegrationTest {
     private String quoteStatus(long id) {
         return jdbc.queryForObject("SELECT QuoteStatus FROM dbo.Quote"
                 + " WHERE QuoteID=?", String.class, id);
+    }
+
+    /**
+     * Publication and replacement retain historical amounts and UUID receipts.
+     * @throws Exception if API calls fail
+     */
+    @Test
+    public void managerPublishesVersionedRetailPrices() throws Exception {
+        ObjectNode body = tariffBody("GROOMING", "1.25");
+        JsonNode first = publishTariff(body);
+
+        assertThat(post(tariffs(), manager, body, 200)).isEqualTo(first);
+        assertThat(get(base() + "/services/rates", owner, 200).toString())
+                .contains("1.25").doesNotContain("Artificial price proof");
+        ObjectNode replacement = tariffBody("GROOMING", "2.50");
+
+        replacement.put("recordVersion", first.get("recordVersion").asText());
+        JsonNode next = putTariff(first.get("tariffId").asLong(), replacement,
+                200);
+
+        fixtureTariffs.add(next.get("tariffId").asLong());
+        assertThat(next.get("version").asInt()).isEqualTo(2);
+        assertThat(putTariff(first.get("tariffId").asLong(), replacement, 200))
+                .isEqualTo(next);
+        assertThat(get(tariffs() + "/" + first.get("tariffId").asLong(),
+                manager, 200).get("unitPrice").asText()).isEqualTo("1.25");
+        assertThat(get(tariffs() + "?page=0&size=1", manager, 200)
+                .get("items").size()).isEqualTo(1);
+        replacement.put("unitPrice", "2.75");
+        putTariff(first.get("tariffId").asLong(), replacement, 409);
+    }
+
+    /**
+     * Only active Managers may publish, never customers or assigned staff.
+     * @throws Exception if API calls fail
+     */
+    @Test
+    public void tariffPublicationEnforcesRolesAndInput() throws Exception {
+        ObjectNode body = tariffBody("GROOMING", "1.25");
+
+        for (String actor : List.of(owner, coordinator, specialist)) {
+            post(tariffs(), actor, body, 403);
+            get(tariffs(), actor, 403);
+        }
+        body.put("unitPrice", "-1.00");
+        post(tariffs(), manager, body, 400);
+        body.put("unitPrice", "1.234");
+        post(tariffs(), manager, body, 400);
+        body.put("unitPrice", "100000000000000.00");
+        post(tariffs(), manager, body, 409);
+        body.put("unitPrice", "1.25");
+        body.put("sourceReference", " ");
+        post(tariffs(), manager, body, 400);
+        body.put("sourceReference", "Artificial price proof");
+        body.put("product", "BASIC_CARE");
+        post(tariffs(), manager, body, 409);
+        body.put("product", "DOCUMENT_REVIEW");
+        post(tariffs(), manager, body, 409);
+        body.put("product", "GROOMING");
+        body.put("validUntil", time(-1));
+        post(tariffs(), manager, body, 409);
+    }
+
+    /**
+     * Stale replacements and duplicate active publications cannot overlap.
+     * @throws Exception if API calls fail
+     */
+    @Test
+    public void tariffVersionsRejectStaleAndDuplicateRates() throws Exception {
+        JsonNode first = publishTariff(tariffBody("GROOMING", "1.25"));
+        ObjectNode next = tariffBody("GROOMING", "2.00");
+
+        post(tariffs(), manager, next, 409);
+        next.put("recordVersion", "0000000000000000");
+        putTariff(first.get("tariffId").asLong(), next, 409);
+        next.put("recordVersion", first.get("recordVersion").asText());
+        next.put("product", "BOARDING");
+        putTariff(first.get("tariffId").asLong(), next, 409);
+        assertThat(get(tariffs() + "/" + first.get("tariffId").asLong(),
+                manager, 200).get("recordVersion"))
+                .isEqualTo(first.get("recordVersion"));
+    }
+
+    /**
+     * Preview computes changed preferences without persisting a single write.
+     * @throws Exception if API calls fail
+     */
+    @Test
+    public void servicePreviewIsReadOnlyAndUsesPublishedRates()
+            throws Exception {
+        publishTariff(tariffBody("GROOMING", "1.25"));
+        JsonNode before = get(base(), owner, 200);
+        ObjectNode preview = previewBody();
+        ObjectNode choices = (ObjectNode) preview.get("services");
+
+        choices.put("groomingDays", 3);
+        JsonNode result = post(base() + "/services/preview", owner, preview,
+                200);
+        JsonNode grooming = null;
+
+        for (JsonNode line : result.get("charges")) {
+            if ("GROOMING".equals(line.get("code").asText())) {
+                grooming = line;
+            }
+        }
+        assertThat(grooming).isNotNull();
+        assertThat(grooming.get("quantity").asText()).isEqualTo("3");
+        assertThat(grooming.get("unitRate").asText()).startsWith("1.25");
+        assertThat(grooming.get("amount").asText()).isEqualTo("3.75");
+        assertThat(result.get("payable").asBoolean()).isFalse();
+        assertThat(result.get("totalEstimate").isNull()).isTrue();
+        assertThat(get(base(), owner, 200)).isEqualTo(before);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM dbo.Quote"
+                + " WHERE RevisionID=?", Integer.class, revision)).isZero();
+        assertThat(result.get("selected").get("groomingDays").asInt())
+                .isEqualTo(3);
+        assertThat(get(base() + "/services", owner, 200)
+                .at("/selected/groomingDays").isNull()).isTrue();
+    }
+
+    /**
+     * Owner/version checks and no client prices apply to read-only estimates.
+     * @throws Exception if API calls fail
+     */
+    @Test
+    public void previewRejectsForeignStaleAndUntrustedInputs()
+            throws Exception {
+        ObjectNode body = previewBody();
+
+        post(base() + "/services/preview", other, body, 404);
+        get(base() + "/services/rates", other, 404);
+        body.put("recordVersion", "0000000000000000");
+        post(base() + "/services/preview", owner, body, 409);
+        body = previewBody();
+        body.put("horseRecordVersion", "0000000000000000");
+        post(base() + "/services/preview", owner, body, 409);
+        body = previewBody();
+        ((ObjectNode) body.get("services")).put("unitPrice", "0.01");
+        post(base() + "/services/preview", owner, body, 400);
+        body = previewBody();
+        ((ObjectNode) body.get("services")).put("airStall", "SHARED_ONE");
+        post(base() + "/services/preview", owner, body, 409);
+    }
+
+    /**
+     * Updating current rates never changes issued quote snapshots or totals.
+     * @throws Exception if API calls fail
+     */
+    @Test
+    public void publishedRateChangeDoesNotRewriteIssuedQuote()
+            throws Exception {
+        long quote = issued();
+        JsonNode first = get(tariffs() + "/" + fixtureTariffs.getFirst(),
+                manager, 200);
+        ObjectNode next = tariffBody("ROAD_TRANSPORT", "3.00");
+
+        next.put("recordVersion", first.get("recordVersion").asText());
+        JsonNode changed = putTariff(first.get("tariffId").asLong(), next,
+                200);
+
+        fixtureTariffs.add(changed.get("tariffId").asLong());
+        assertThat(get(base() + "/quotes/" + quote, owner, 200)
+                .at("/quote/total").asText()).isEqualTo("260.00");
+        assertThat(get(base() + "/services", owner, 200)
+                .get("totalEstimate").asText()).isEqualTo("260.00");
+    }
+
+    /**
+     * Competing replacement writes have exactly one version winner.
+     * @throws Exception if thread coordination fails
+     */
+    @Test
+    public void competingTariffReplacementsHaveOneWinner() throws Exception {
+        JsonNode first = publishTariff(tariffBody("GROOMING", "1.25"));
+        long id = first.get("tariffId").asLong();
+        ObjectNode a = tariffBody("GROOMING", "2.00");
+        ObjectNode b = tariffBody("GROOMING", "3.00");
+
+        a.put("recordVersion", first.get("recordVersion").asText());
+        b.put("recordVersion", first.get("recordVersion").asText());
+        var start = new CountDownLatch(1);
+        var executor = Executors.newFixedThreadPool(2);
+
+        try {
+            var one = executor.submit(() -> {
+                start.await();
+                return tariffPutStatus(id, a);
+            });
+            var two = executor.submit(() -> {
+                start.await();
+                return tariffPutStatus(id, b);
+            });
+
+            start.countDown();
+            assertThat(List.of(one.get(30, TimeUnit.SECONDS),
+                    two.get(30, TimeUnit.SECONDS)))
+                    .containsExactlyInAnyOrder(200, 409);
+        } finally {
+            executor.shutdownNow();
+            fixtureTariffs.add(jdbc.queryForObject("SELECT MAX(TariffID)"
+                    + " FROM dbo.ServiceTariff WHERE ServiceCode='GROOMING'",
+                    Long.class));
+        }
+    }
+
+    /**
+     * A catalog write rolled back by its caller leaves no rate or receipt.
+     * @throws Exception if API calls fail
+     */
+    @Test
+    public void tariffPublicationRollsBackAtomically() throws Exception {
+        ObjectNode body = tariffBody("GROOMING", "1.25");
+
+        assertThatThrownBy(() -> new TransactionTemplate(transactions)
+                .executeWithoutResult(status -> {
+                    try {
+                        post(tariffs(), manager, body, 200);
+                    } catch (Exception error) {
+                        throw new IllegalStateException(error);
+                    }
+                    throw new IllegalStateException("Artificial rollback");
+                })).isInstanceOf(IllegalStateException.class);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM dbo.ServiceTariff"
+                + " WHERE ServiceCode='GROOMING'", Integer.class)).isZero();
+        publishTariff(body);
+    }
+
+    private int tariffPutStatus(long id, ObjectNode body) throws Exception {
+        return mvc.perform(MockMvcRequestBuilders.put(tariffs() + "/" + id)
+                .header("Authorization", manager)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body.toString())).andReturn().getResponse()
+                .getStatus();
+    }
+
+    private ObjectNode previewBody() throws Exception {
+        JsonNode view = get(base() + "/services", owner, 200);
+        ObjectNode body = mapper.createObjectNode();
+
+        body.set("recordVersion", view.get("recordVersion"));
+        body.set("horseRecordVersion", view.get("horseRecordVersion"));
+        body.set("services", view.get("selected"));
+        return body;
+    }
+
+    private String tariffs() {
+        return "/api/manager/service-tariffs";
+    }
+
+    private ObjectNode tariffBody(String product, String price) {
+        ObjectNode body = mapper.createObjectNode();
+
+        body.put("product", product);
+        body.put("unitPrice", price);
+        body.put("sourceReference", "Artificial price proof");
+        body.put("operationId", UUID.randomUUID().toString());
+        return body;
+    }
+
+    private JsonNode publishTariff(ObjectNode body) throws Exception {
+        JsonNode value = post(tariffs(), manager, body, 200);
+
+        fixtureTariffs.add(value.get("tariffId").asLong());
+        return value;
+    }
+
+    private JsonNode putTariff(long id, ObjectNode body, int expected)
+            throws Exception {
+        var response = mvc.perform(MockMvcRequestBuilders.put(tariffs()
+                + "/" + id).header("Authorization", manager)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body.toString())).andReturn().getResponse();
+
+        assertThat(response.getStatus()).as(response.getContentAsString())
+                .isEqualTo(expected);
+        return mapper.readTree(response.getContentAsString());
     }
 
     private long issued() throws Exception {

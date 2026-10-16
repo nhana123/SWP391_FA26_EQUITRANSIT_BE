@@ -7,6 +7,10 @@
  */
 package com.equitransit.backend.service;
 
+import com.equitransit.backend.dto.pricing.ServiceRateResponse;
+
+import com.equitransit.backend.dto.pricing.ServicePreviewRequest;
+
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -108,9 +112,54 @@ public class BookingServicesService {
      */
     @Transactional(readOnly = true)
     public ServiceDisclosureResponse get(@Positive long id) {
+        return disclosure(id, null);
+    }
+
+    /**
+     * Computes unsaved choices without changing orders, quotes or assignments.
+     * @param id owned order
+     * @param preview observed versions and full unsaved preferences
+     * @return nonpayable live-source estimate, never an issued quote
+     */
+    @Transactional(readOnly = true)
+    public ServiceDisclosureResponse preview(@Positive long id,
+            @Valid ServicePreviewRequest
+                    preview) {
+        return disclosure(id, preview);
+    }
+
+    /**
+     * @param id owned order
+     * @return all fixed product options and effective public retail unit rates
+     */
+    @Transactional(readOnly = true)
+    public List<ServiceRateResponse> rates(
+            @Positive long id) {
+        owned(id, false);
+        return assessments.retailRates(OffsetDateTime.now(clock));
+    }
+
+    private ServiceDisclosureResponse disclosure(long id,
+            ServicePreviewRequest preview) {
         TransportOrderRecord order = owned(id, false);
         OrderDraftRequest request = request(order);
         HorseResponse horse = horse(order, request);
+        if (preview != null) {
+            if (!order.recordVersion().equalsIgnoreCase(preview.recordVersion())
+                    || (horse != null && (preview.horseRecordVersion() == null
+                            || !horse.recordVersion().equalsIgnoreCase(
+                                    preview.horseRecordVersion())))) {
+                throw failure("SERVICE_PREVIEW_VERSION_CONFLICT",
+                        "Reload and compare the current order and horse.");
+            }
+            if (horse == null && preview.services().getAirStall() != null) {
+                throw failure("AIR_STALL_ASSESSMENT_REQUIRED",
+                        "Choose a horse before checking an air stall.");
+            }
+            policy.validate(preview.services(), horse,
+                    request.getDeliveryDeadline());
+            request.setServices(preview.services());
+        }
         OffsetDateTime now = OffsetDateTime.now(clock);
         OffsetDateTime horizon =
                 policy.horizon(request.getDeliveryDeadline(), now);
@@ -122,8 +171,9 @@ public class BookingServicesService {
                 order.currentRevisionId(),
                         now, horizon),
                 assessments.bundles(order.currentRevisionId(), now), now);
-        var commercial = assessments.commercialQuote(id,
-                order.currentRevisionId(), now);
+        var commercial = preview == null ? assessments.commercialQuote(id,
+                order.currentRevisionId(), now)
+                : Optional.<QuoteSnapshot>empty();
 
         if (commercial.isPresent()) {
             rows = quotedRows(rows, commercial.get());

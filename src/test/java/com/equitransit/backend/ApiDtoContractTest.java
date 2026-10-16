@@ -77,6 +77,8 @@ public class ApiDtoContractTest {
 
         Files.writeString(Path.of("target/api-dto-contract.json"), encoded);
         for (String name : List.of(
+                "ServicePreviewRequest", "ServiceRateResponse",
+                "TariffWriteRequest", "TariffResponse", "TariffPage",
                 "QuoteCommand",
                 "QuoteActionRequest",
                 "QuotePrepareRequest",
@@ -536,6 +538,46 @@ public class ApiDtoContractTest {
                         .isNotEmpty();
             }
         }
+    }
+
+    /**
+     * Manager publication commands and read-only previews have strict schemas.
+     * @throws Exception if generated examples fail decoding
+     */
+    @Test
+    public void pricingCommandsHaveUsableValidationAndSchemas()
+            throws Exception {
+        var body = mapper.createObjectNode();
+
+        body.put("product", "GROOMING");
+        body.put("unitPrice", "1.25");
+        body.put("sourceReference", "Artificial test publication");
+        body.put("operationId", java.util.UUID.randomUUID().toString());
+        var type = com.equitransit.backend.dto.pricing.TariffWriteRequest.class;
+
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            assertThat(factory.getValidator().validate(
+                    mapper.treeToValue(body, type))).isEmpty();
+            body.put("unitPrice", "1.234");
+            assertThat(factory.getValidator().validate(
+                    mapper.treeToValue(body, type))).isNotEmpty();
+        }
+        JsonNode api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        assertThat(api.at("/components/schemas/TariffResponse/properties/"
+                + "product/anyOf/1/type").asText()).isEqualTo("null");
+        var schema = api.at("/components/schemas/ServicePreviewRequest");
+
+        assertThat(schema.path("required").toString()).contains("services");
+        assertThat(schema.at("/properties/services/type").asText())
+                .isNotEqualTo("null");
+        assertThat(api.at("/components/schemas/ServiceRateResponse")
+                .toString()).doesNotContain("sourceReference", "purchase");
+        assertThat(api.path("paths").has("/api/manager/service-tariffs"))
+                .isTrue();
+        assertThat(api.path("paths").has(
+                "/api/transport-orders/{id}/services/preview")).isTrue();
     }
 
     private void assertJsonMedia(JsonNode api) {
