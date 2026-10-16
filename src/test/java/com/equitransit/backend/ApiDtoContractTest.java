@@ -62,6 +62,41 @@ public class ApiDtoContractTest {
     @Autowired
     private ObjectMapper mapper;
 
+    /** @throws Exception if the F16 HTTP schemas cannot be generated */
+    @Test
+    public void activityContractsAreTypedScopedAndBounded() throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+
+        assertThat(schemas.at("/DashboardResponse/properties/role/enum")
+                .toString()).contains("CUSTOMER", "DRIVER", "MANAGER");
+        assertThat(schemas.path("DashboardOrder").toString())
+                .doesNotContain("actualCost", "internalNotes", "unitPrice");
+        assertThat(schemas.path("TimelinePoint").toString())
+                .contains("CLEARED", "DEPARTED", "DELIVERED", "CLOSED");
+        for (String name : List.of("quotedValue", "reportedTransfers",
+                "netBankReceipts", "netAllocated", "actualCost")) {
+            var field = schemas.path("FinancialReport")
+                    .path("properties").path(name);
+
+            assertThat(field.path("type").asText()).isEqualTo("string");
+            assertThat(field.path("pattern").asText())
+                    .isEqualTo("^\\d+(\\.\\d{1,2})?$");
+        }
+        for (var parameter : api.path("paths").path("/api/dashboard")
+                .path("get").path("parameters")) {
+            var schema = parameter.path("schema");
+
+            if ("size".equals(parameter.path("name").asText())) {
+                assertThat(schema.path("minimum").asInt()).isEqualTo(1);
+                assertThat(schema.path("maximum").asInt()).isEqualTo(100);
+                assertThat(schema.path("example").asInt()).isEqualTo(20);
+            }
+        }
+    }
+
     /**
      * Checks real Swagger output and saves an ignored diagnostic artifact.
      * @throws Exception if schema generation fails
@@ -77,6 +112,18 @@ public class ApiDtoContractTest {
 
         Files.writeString(Path.of("target/api-dto-contract.json"), encoded);
         for (String name : List.of(
+                "AuditPage",
+                "AuditView",
+                "DashboardOrder",
+                "DashboardResponse",
+                "EmailPreference",
+                "FinancialReport",
+                "NotificationPage",
+                "NotificationView",
+                "StatusCount",
+                "TimelinePoint",
+                "TaskView", "TaskPage",
+                "TimelineResponse",
                 "AllocationCommand",
                 "BankReceiptCommand",
                 "BankReceiptView",
@@ -630,7 +677,11 @@ public class ApiDtoContractTest {
                     || path.getKey().contains("transport-orders")
                     || path.getKey().startsWith("/api/auth/")
                     || path.getKey().startsWith("/api/customers/")
-                    || path.getKey().equals("/api/health")) {
+                    || path.getKey().equals("/api/health")
+                    || path.getKey().startsWith("/api/dashboard")
+                    || path.getKey().startsWith("/api/activity/")
+                    || path.getKey().startsWith("/api/notifications")
+                    || path.getKey().startsWith("/api/manager/")) {
                 path.getValue().properties().forEach(method ->
                         method.getValue().path("responses").properties()
                                 .forEach(response -> {

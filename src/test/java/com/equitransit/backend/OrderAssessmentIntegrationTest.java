@@ -178,6 +178,8 @@ public class OrderAssessmentIntegrationTest {
             jdbc.update("DELETE dbo.TransportOrder WHERE OrderID=?", id);
         }
         for (long user : fixtureUsers) {
+            jdbc.update("DELETE dbo.AuditEvent WHERE UserID=?"
+                    + " AND EntityType='ORDER_ACTIVITY'", user);
             jdbc.update("DELETE dbo.Horse WHERE CustomerID IN"
                     + " (SELECT CustomerID FROM dbo.Customer WHERE UserID=?)",
                     user);

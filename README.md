@@ -728,3 +728,23 @@ Manager reconciliation/allocation/refunds, protected image proofs and the separa
 F11 departure/F14 settlement financial facade. Requires reviewed migration007
 on an explicitly authorized target database; code never auto-migrates EquiTransit.
 Report is not paid; acceptance is not bank receipt or operational clearance.
+
+## F16 — Dashboards, notifications and audit
+
+Authenticated actor dashboard: `GET /api/dashboard` and `/api/dashboard/tasks`.
+Customer orders remain private; staff see active case/leg assignments only.
+`GET /api/activity/orders/{orderId}/timeline` returns observed milestones.
+`GET /api/notifications` and `PUT /api/notifications/{id}/read` are recipient scoped.
+Customer ordinary-mail preference: GET/PUT
+`/api/customers/me/notification-preferences`; security emails are independent.
+Manager-only `/api/manager/audit-events` and `/api/manager/reports/financial`
+separate quoted value, customer claims, reconciled cash and net allocations.
+All list APIs use `page=0&size=20`, max100; every response is JSON.
+
+See [F16 API and producer contract](docs/activity-api.md) for privacy, exact
+financial semantics, AuditWriter/NotificationWriter integration and retry rules.
+Deploy migration008 after007 in an explicitly authorized database. It is not run
+automatically; existing audit history establishes the notification watermark.
+Missing008 returns503 for F16; legacy booking submission remains compatible.
+For native SQL verification use EQ_ACTIVITY_TEST_ENABLED=true and
+EQ_ACTIVITY_TEST_DB_URL targeting only the documented isolated test catalog.

@@ -63,6 +63,8 @@ public class TransportOrderService {
     private final OrderJsonCodec json;
     private final Clock clock;
     private final ServicePreferencePolicy selections;
+    private final AuditWriter activity;
+    private final com.equitransit.backend.repository.ActivityRepository events;
 
     /**
      * Creates the customer request lifecycle facade.
@@ -75,12 +77,16 @@ public class TransportOrderService {
      * @param json the supported JSON schema codec
      * @param clock the application's UTC clock
      * @param selections actual source-backed service selection policy
+     * @param activity append-only producer facade
+     * @param events feature deployment check
      */
     public TransportOrderService(OrderRepository orders,
             CurrentActorService actors, HorseService horses,
             OrderDraftPolicy drafts, OrderServiceIntentFactory intents,
             OrderCommitmentPolicy commitments, OrderJsonCodec json,
-            Clock clock, ServicePreferencePolicy selections) {
+            Clock clock, ServicePreferencePolicy selections,
+            AuditWriter activity,
+            com.equitransit.backend.repository.ActivityRepository events) {
         this.orders = orders;
         this.actors = actors;
         this.horses = horses;
@@ -90,6 +96,8 @@ public class TransportOrderService {
         this.json = json;
         this.clock = clock;
         this.selections = selections;
+        this.activity = activity;
+        this.events = events;
     }
 
     /**
@@ -350,6 +358,11 @@ public class TransportOrderService {
                 draft.getSpecialNeeds()));
         orders.saveIntents(revision, services);
         replace(order, draft, "SUBMITTED", revision);
+        if (events.ready()) {
+            activity.append(order.orderId(),
+                    com.equitransit.backend.entity.activity.ActivityCode
+                            .SUBMITTED, operation, null);
+        }
         return revisionResponse(orders.revision(order.orderId(), revision)
                 .orElseThrow());
     }
