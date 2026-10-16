@@ -8,6 +8,15 @@
 package com.equitransit.backend.service;
 
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Map;
+import com.equitransit.backend.entity.quote.FinancialObligation;
+import com.equitransit.backend.repository.PaymentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Propagation;
@@ -25,15 +34,19 @@ public class QuotationCommitmentFacade {
 
     private final AssessmentRepository orders;
     private final QuoteRepository quotes;
+    private final PaymentRepository ledger;
 
     /**
      * @param orders shared parent-lock boundary
      * @param quotes immutable commercial evidence
+     * @param ledger net financial evidence
      */
     public QuotationCommitmentFacade(AssessmentRepository orders,
-            QuoteRepository quotes) {
+            QuoteRepository quotes,
+            PaymentRepository ledger) {
         this.orders = orders;
         this.quotes = quotes;
+        this.ledger = ledger;
     }
 
     /**
@@ -56,7 +69,54 @@ public class QuotationCommitmentFacade {
                 || accepted.acceptedAt() == null || accepted.total() == null) {
             throw conflict();
         }
-        return new CommercialReadiness(quote, revision, accepted.total());
+        return readiness(order, revision, quote,
+                OffsetDateTime.now(Clock.systemUTC()));
+    }
+
+    /**
+     * Consumer must authorize access and retain the order lock to its commit.
+     * @param order authorized parent
+     * @param revision exact contractual revision
+     * @param quote accepted quote
+     * @param asOf explicit F11/F14 evaluation instant
+     * @return separate departure and settlement financial evidence
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public CommercialReadiness readiness(long order, long revision,
+            long quote, OffsetDateTime asOf) {
+        var parent = orders.order(order, true).orElseThrow(this::conflict);
+        var accepted = quotes.find(order, quote).orElseThrow(this::conflict);
+
+        if (parent.revisionId() == null || parent.revisionId() != revision
+                || accepted.revision() != revision
+                || accepted.status() != QuoteStatus.ACCEPTED
+                || accepted.acceptedAt() == null || accepted.total() == null) {
+            throw conflict();
+        }
+        if (!ledger.ready()) {
+            return new CommercialReadiness(quote, revision, accepted.total(),
+                    BigDecimal.ZERO, asOf, List.of(),
+                    List.of("PAYMENT_SCHEMA_PENDING"),
+                    List.of("PAYMENT_SCHEMA_PENDING"));
+        }
+        ledger.rows("quote", Map.of("order", order));
+        ledger.lockLedger();
+        var rows = ledger.rows("balances", Map.of("quote", quote,
+                "asOf", Timestamp.from(asOf.toInstant())));
+        var obligations = rows.stream().map(row -> {
+            var at = (Timestamp) row.get("DueAt");
+
+            return new FinancialObligation(
+                    ((Number) row.get("ScheduleID")).longValue(),
+                    (BigDecimal) row.get("AmountDue"),
+                    (BigDecimal) row.get("PaidAmount"), at == null
+                            ? null : at.toInstant().atOffset(
+                                    ZoneOffset.UTC));
+        }).toList();
+        return FinancialReadinessPolicy.evaluate(quote, revision,
+                accepted.total(), obligations, asOf,
+                ledger.number("pendingRefunds",
+                        Map.of("quote", quote)) > 0);
     }
 
     private OrderException conflict() {
