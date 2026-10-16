@@ -56,7 +56,11 @@ public class BookingServicesController {
                     + "quantity/rate is null and pending, not zero. Air "
                 + "options "
                     + "use captured horse measurements and approved policies; "
-                    + "measurement eligibility is not carrier confirmation.")
+                    + "measurement eligibility is not carrier confirmation. "
+                    + "A usable current-revision F06 quotation supplies its "
+                    + "retail snapshot and commercial assessments; PRICED "
+                    + "quote rows are shown as ESTIMATED here. Supplier "
+                    + "purchase costs and internal evidence stay private.")
     public ServiceDisclosureResponse get(@PathVariable @Positive long id) {
         return services.get(id);
     }

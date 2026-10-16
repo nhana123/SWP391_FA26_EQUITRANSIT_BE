@@ -41,6 +41,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrint;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.dao.DataAccessException;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -81,6 +83,8 @@ public class QuotationIntegrationTest {
     private JdbcTemplate jdbc;
     @Autowired
     private DataSource dataSource;
+    @Autowired
+    private PlatformTransactionManager transactions;
     @Autowired
     private UserAccountRepository users;
     @Autowired
@@ -584,6 +588,229 @@ public class QuotationIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body.toString()))
                 .andReturn().getResponse().getStatus();
+    }
+
+    /**
+     * F03 invalidates every unaccepted quote state through the shared policy.
+     * @throws Exception if API calls fail
+     */
+    @Test
+    public void revisionSupersedesAllUnacceptedQuoteStates() throws Exception {
+        long draft = post(base() + "/quotes", manager, prepare(), 200)
+                .at("/quote/quoteId").asLong();
+        long approved = post(base() + "/quotes", manager, prepare(), 200)
+                .at("/quote/quoteId").asLong();
+
+        action(approved, "APPROVE", manager, 200);
+        long issued = issued();
+
+        // Restore concurrent historical preparation states for this fixture.
+        jdbc.update("UPDATE dbo.Quote SET QuoteStatus='DRAFT' WHERE QuoteID=?",
+                draft);
+        jdbc.update("UPDATE dbo.Quote SET QuoteStatus='APPROVED'"
+                + " WHERE QuoteID=?", approved);
+        JsonNode current = get(base(), owner, 200);
+        ObjectNode request = ((ObjectNode) current.get("draft")).deepCopy();
+
+        request.put("recordVersion", current.get("recordVersion").asText());
+        request.put("operationId", UUID.randomUUID().toString());
+        request.put("changeReason", "Replace the commercial request");
+        post(base() + "/revisions", owner, request, 200);
+        for (long id : List.of(draft, approved, issued)) {
+            assertThat(quoteStatus(id)).isEqualTo("SUPERSEDED");
+        }
+        assertThat(post(base() + "/revisions", owner, request, 200)
+                .get("revisionId")).isNotNull();
+        assertThat(get(base() + "/services", owner, 200)
+                .get("totalEstimate").isNull()).isTrue();
+    }
+
+    /**
+     * A failed outer write rolls revision and quote invalidation back together.
+     * @throws Exception if API calls fail
+     */
+    @Test
+    public void supersessionRollsBackWithTheRevisionTransaction()
+            throws Exception {
+        long id = issued();
+        JsonNode current = get(base(), owner, 200);
+        ObjectNode request = ((ObjectNode) current.get("draft")).deepCopy();
+
+        request.put("recordVersion", current.get("recordVersion").asText());
+        request.put("operationId", UUID.randomUUID().toString());
+        request.put("changeReason", "Artificial rollback fixture");
+        assertThatThrownBy(() -> new TransactionTemplate(transactions)
+                .executeWithoutResult(status -> {
+                    try {
+                        post(base() + "/revisions", owner, request, 200);
+                    } catch (Exception error) {
+                        throw new IllegalStateException(error);
+                    }
+                    throw new IllegalStateException("Artificial rollback");
+                })).isInstanceOf(IllegalStateException.class);
+        assertThat(quoteStatus(id)).isEqualTo("ISSUED");
+        assertThat(get(base(), owner, 200).get("currentRevisionId").asLong())
+                .isEqualTo(revision);
+        action(id, "ACCEPT", owner, 200);
+    }
+
+    /**
+     * F05 confirmation inherits atomic supersession and safe UUID replay.
+     * @throws Exception if API calls fail
+     */
+    @Test
+    public void serviceConfirmationSupersedesIssuedQuote() throws Exception {
+        long id = issued();
+        ObjectNode request = serviceConfirmation();
+        JsonNode first = post(base() + "/services/confirm", owner, request,
+                200);
+
+        assertThat(quoteStatus(id)).isEqualTo("SUPERSEDED");
+        assertThat(post(base() + "/services/confirm", owner, request, 200))
+                .isEqualTo(first);
+        action(id, "ACCEPT", owner, 409);
+    }
+
+    /**
+     * Accepted commitments cannot be superseded through service confirmation.
+     * @throws Exception if API calls fail
+     */
+    @Test
+    public void serviceConfirmationCannotSupersedeAcceptedQuote()
+            throws Exception {
+        long id = issued();
+
+        action(id, "ACCEPT", owner, 200);
+        post(base() + "/services/confirm", owner, serviceConfirmation(), 409);
+        assertThat(quoteStatus(id)).isEqualTo("ACCEPTED");
+    }
+
+    /**
+     * F05 shows F06 quantities, retail rates and NOT_REQUIRED evidence exactly.
+     * @throws Exception if API calls fail
+     */
+    @Test
+    public void disclosureUsesCommercialRetailSnapshot() throws Exception {
+        assertThat(get(base() + "/services", owner, 200)
+                .get("totalEstimate").isNull()).isTrue();
+        ObjectNode offer = mapper.createObjectNode();
+
+        offer.set("command", command());
+        offer.put("revisionId", revision);
+        offer.put("serviceCode", "GOVERNMENT_DUTY");
+        offer.put("providerName", "Artificial supplier");
+        offer.put("offerReference", "ARTIFICIAL-RETAIL-SOURCE");
+        offer.put("unitCode", "ASSESSMENT");
+        offer.put("quantity", "0.015");
+        offer.put("purchaseUnitPrice", "0.50");
+        offer.put("retailUnitPrice", "1.00");
+        offer.put("validUntil", time(5));
+        offer.put("evidenceFileKey", "test-only/source.pdf");
+        offer.put("includesStall", false);
+        offer.set("includedCharges", mapper.createArrayNode());
+        long source = post(base() + "/supplier-offers", coordinator, offer,
+                200).get("offerId").asLong();
+
+        assertThat(get(base() + "/services", owner, 200)
+                .get("totalEstimate").isNull()).isTrue();
+        ObjectNode body = prepare();
+        var evidence = mapper.createArrayNode();
+
+        for (JsonNode item : body.get("assessments")) {
+            if (!"GOVERNMENT_DUTY".equals(item.get("code").asText())) {
+                evidence.add(item);
+            }
+        }
+        evidence.add(mapper.valueToTree(Map.of("code", "GOVERNMENT_DUTY",
+                "status", "PRICED", "quantity", "0.015", "offerId", source,
+                "sourceReference", "Artificial assessed scope", "validUntil",
+                time(4), "reason", "Artificial commercial assessment")));
+        body.set("assessments", evidence);
+        ((ObjectNode) body.at("/paymentSchedule/0"))
+                .put("amountDue", "260.02");
+        JsonNode quote = post(base() + "/quotes", manager, body, 200);
+        long id = quote.at("/quote/quoteId").asLong();
+
+        assertCommercialDisclosure(quote);
+        action(id, "APPROVE", manager, 200);
+        action(id, "ISSUE", manager, 200);
+        jdbc.update("UPDATE dbo.ServiceTariff SET UnitPrice=3"
+                + " WHERE TariffID=?", fixtureTariffs.getFirst());
+        assertCommercialDisclosure(quote);
+        get(base() + "/services", other, 404);
+        action(id, "ACCEPT", owner, 200);
+        jdbc.update("UPDATE dbo.Quote SET IssuedAt=DATEADD(day,-2,"
+                + "SYSUTCDATETIME()),ValidUntil=DATEADD(day,-1,"
+                + "SYSUTCDATETIME()) WHERE QuoteID=?", id);
+        assertCommercialDisclosure(quote);
+    }
+
+    /**
+     * Pending, rejected and expired commercial versions do not fake estimates.
+     * @throws Exception if API calls fail
+     */
+    @Test
+    public void disclosureExcludesUnusableCommercialVersions()
+            throws Exception {
+        ObjectNode request = prepare();
+
+        request.set("assessments", mapper.createArrayNode());
+        long id = post(base() + "/quotes", manager, request, 200)
+                .at("/quote/quoteId").asLong();
+        assertThat(get(base() + "/services", owner, 200)
+                .get("totalEstimate").isNull()).isTrue();
+        action(id, "REJECT", manager, 200);
+        assertThat(get(base() + "/services", owner, 200)
+                .get("totalEstimate").isNull()).isTrue();
+        long issued = issued();
+
+        jdbc.update("UPDATE dbo.Quote SET IssuedAt=DATEADD(day,-2,"
+                + "SYSUTCDATETIME()),ValidUntil=DATEADD(day,-1,"
+                + "SYSUTCDATETIME()) WHERE QuoteID=?", issued);
+        assertThat(get(base() + "/services", owner, 200)
+                .get("totalEstimate").isNull()).isTrue();
+    }
+
+    private void assertCommercialDisclosure(JsonNode quote) throws Exception {
+        JsonNode view = get(base() + "/services", owner, 200);
+
+        assertThat(view.get("totalEstimate").asText())
+                .as("Commercial disclosure: %s", view).isEqualTo("260.02");
+        assertThat(view.get("payable").asBoolean()).isFalse();
+        assertThat(view.toString()).doesNotContain("purchaseUnitPrice",
+                "supplierCost", "internalNotes", "ARTIFICIAL-RETAIL-SOURCE",
+                "test-only/source.pdf");
+        for (JsonNode line : quote.get("items")) {
+            JsonNode row = null;
+
+            for (JsonNode charge : view.get("charges")) {
+                if (charge.get("code").equals(line.get("code"))) {
+                    row = charge;
+                }
+            }
+            assertThat(row).isNotNull();
+            for (String field : List.of("quantity", "unitRate", "amount")) {
+                assertThat(row.get(field)).isEqualTo(line.get(field));
+            }
+        }
+    }
+
+    private ObjectNode serviceConfirmation() throws Exception {
+        JsonNode view = get(base() + "/services", owner, 200);
+        ObjectNode body = mapper.createObjectNode();
+
+        body.put("recordVersion", view.get("recordVersion").asText());
+        body.put("horseRecordVersion",
+                view.get("horseRecordVersion").asText());
+        body.put("operationId", UUID.randomUUID().toString());
+        body.put("changeReason", "Customer changed requested services");
+        body.set("services", view.get("selected"));
+        return body;
+    }
+
+    private String quoteStatus(long id) {
+        return jdbc.queryForObject("SELECT QuoteStatus FROM dbo.Quote"
+                + " WHERE QuoteID=?", String.class, id);
     }
 
     private long issued() throws Exception {

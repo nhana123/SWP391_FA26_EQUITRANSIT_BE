@@ -9,6 +9,7 @@ package com.equitransit.backend.service;
 
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -38,6 +39,7 @@ import com.equitransit.backend.dto.response.ServiceConfirmationResponse;
 import com.equitransit.backend.dto.response.ServiceDisclosureResponse;
 import com.equitransit.backend.dto.response.OrderSnapshot;
 import com.equitransit.backend.entity.TransportOrderRecord;
+import com.equitransit.backend.entity.quote.QuoteSnapshot;
 import com.equitransit.backend.exception.OrderException;
 import com.equitransit.backend.json.OrderJsonCodec;
 import com.equitransit.backend.repository.OrderRepository;
@@ -120,13 +122,23 @@ public class BookingServicesService {
                 order.currentRevisionId(),
                         now, horizon),
                 assessments.bundles(order.currentRevisionId(), now), now);
+        var commercial = assessments.commercialQuote(id,
+                order.currentRevisionId(), now);
+
+        if (commercial.isPresent()) {
+            rows = quotedRows(rows, commercial.get());
+        }
         BigDecimal known = rows.stream().filter(row -> row.amount() != null)
                 .map(row -> new BigDecimal(row.amount()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
         boolean unresolved = rows.stream().anyMatch(row -> row.selected()
-                && row.amount() == null && !List.of("INCLUDED", "NOT_REQUIRED",
+                && row.amount() == null && !List.of("INCLUDED", "NOT_SELECTED",
+                        "NOT_REQUIRED",
                         "EXTERNAL_PROVIDER", "EVENT_ONLY")
                         .contains(row.pricingStatus()));
+        unresolved |= commercial.isPresent()
+                && !commercial.get().blockers().isEmpty();
         List<StallFitResult> options = horse == null ? List.of()
                 : policy.options(horse, request.getDeliveryDeadline());
 
@@ -215,6 +227,44 @@ public class BookingServicesService {
                 "operationId", command.operationId(), "requestHash", hash,
                 "response", receipt)));
         return receipt;
+    }
+
+    private List<ServiceChargeResponse> quotedRows(
+            List<ServiceChargeResponse> rows, QuoteSnapshot quote) {
+        return rows.stream().map(row -> {
+            var line = quote.lines().stream()
+                    .filter(item -> item.code().equals(row.code()))
+                    .findFirst().orElse(null);
+
+            if (line == null) {
+                return row;
+            }
+            var evidence = quote.request().assessments().stream()
+                    .filter(item -> item.code().name().equals(row.code()))
+                    .findFirst().orElse(null);
+            Long tariff = evidence == null ? row.tariffId()
+                    : evidence.tariffId();
+            var source = quote.sources().stream()
+                    .filter(item -> !item.offer() && tariff != null
+                            && item.id() == tariff).findFirst().orElse(null);
+            String state = switch (line.pricingStatus()) {
+                case "PRICED" -> "ESTIMATED";
+                case "PENDING" -> "RATE_AND_QUANTITY_PENDING";
+                default -> line.pricingStatus();
+            };
+
+            return new ServiceChargeResponse(row.code(), row.uiSection(),
+                    line.costGroup(), line.description(), row.mandatory(),
+                    row.selected() && !"NOT_SELECTED".equals(state),
+                    line.unit(), line.quantity(),
+                    line.unitRate(), line.amount(), state,
+                    source == null ? null : source.id(),
+                    source == null ? null : source.version(),
+                    evidence == null ? row.formula()
+                            : "Assessed quantity x quoted retail rate; "
+                                    + "HALF_UP (2 decimals)",
+                    line.blockers());
+        }).toList();
     }
 
     private OrderDraftRequest request(TransportOrderRecord order) {

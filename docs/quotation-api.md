@@ -156,3 +156,32 @@ Quotation transactions have a 15-second timeout and the quotation/source SQL
 adapters use a 10-second statement timeout. These are finite failure limits,
 not a measured latency/capacity SLA. Source-producer queries remain in the same
 transaction and inherit its timeout; no external HTTP/mail call holds its locks.
+
+## F05 charge disclosure alignment
+
+GET /api/transport-orders/{orderId}/services reads the latest usable F06
+commercial snapshot for the exact current revision. The captured quantity,
+retail unit rate, amount and assessed NOT_REQUIRED/included states are shared
+with Show all charges. PRICED maps to F05 ESTIMATED; DTO fields are unchanged.
+SupplierOffer.RetailUnitPrice is captured by F06, never inferred from purchase
+cost. An unassessed offer alone does not select a charge or complete an estimate.
+
+DRAFT/APPROVED/ISSUED snapshots must be within their quote validity. ACCEPTED
+snapshots retain the committed retail breakdown after that validity date;
+changing a tariff/offer never rewrites these captured prices. Rejected, expired,
+superseded or other-revision quotes are excluded. Without a usable snapshot,
+the existing source-based estimate/pending calculation applies. Snapshot
+blockers still prevent totalEstimate from becoming payable or falsely complete.
+No supplier cost, offer proof/reference or internal assessment reason is exposed.
+This read-only disclosure is not quote acceptance or payment authorization.
+
+F03 revision and F05 submitted service confirmation both invalidate all
+DRAFT/APPROVED/ISSUED quotes through the existing shared commitment policy in
+the same parent-locked transaction. Rollback restores the quote/revision pair;
+UUID replay does not create another revision. Accepted commitments still block
+direct rewrites. No new SQL migration is required for this audit patch.
+
+Monetary scale reductions explicitly use HALF_UP. Quantity remains exact to
+three decimals; SQL precision checks do not round invalid input into acceptance.
+Supplier offer RecordedAt is truncated to UTC seconds before persistence,
+avoiding SQL datetime2(0) rounding a newly created source into the future.

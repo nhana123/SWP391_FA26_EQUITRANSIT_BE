@@ -16,6 +16,7 @@ import com.equitransit.backend.entity.quote.QuoteSnapshot;
 import com.equitransit.backend.entity.quote.QuoteStatus;
 import com.equitransit.backend.json.OrderJsonCodec;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -298,9 +299,11 @@ public class QuoteRepository {
     /**
      * @param staff trusted recorder StaffID
      * @param request validated supplier cost and separate retail price
+     * @param now server UTC recording time, truncated to SQL seconds
      * @return immutable offer key; no reservation is confirmed
      */
-    public long offer(long staff, SupplierOfferRequest request) {
+    public long offer(long staff, SupplierOfferRequest request,
+            OffsetDateTime now) {
         var args = new MapSqlParameterSource("revision", request.revisionId())
                 .addValue("staff", staff)
                 .addValue("provider", request.providerName())
@@ -310,6 +313,7 @@ public class QuoteRepository {
                 .addValue("quantity", new BigDecimal(request.quantity()))
                 .addValue("cost", new BigDecimal(request.purchaseUnitPrice()))
                 .addValue("retail", new BigDecimal(request.retailUnitPrice()))
+                .addValue("recordedAt", utc(now))
                 .addValue("expiry", utc(request.validUntil()))
                 .addValue("evidence", request.evidenceFileKey())
                 .addValue("stall", request.includesStall())
@@ -324,7 +328,7 @@ public class QuoteRepository {
                 + "RecordedBy,RecordedAt) OUTPUT INSERTED.OfferID"
                 + " VALUES (:revision,:provider,:reference,:code,:unit,"
                 + ":quantity,:cost,:retail,'USD',:stall,:includes,:expiry,"
-                + "'RECEIVED',:evidence,:staff,SYSUTCDATETIME())", args,
+                + "'RECEIVED',:evidence,:staff,:recordedAt)", args,
                 Long.class);
     }
 
@@ -360,7 +364,8 @@ public class QuoteRepository {
     public static BigDecimal total(QuoteSnapshot snapshot) {
         return snapshot.lines().stream().filter(l -> l.amount() != null)
                 .map(l -> new BigDecimal(l.amount()))
-                .reduce(BigDecimal.ZERO, BigDecimal::add).setScale(2);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
     }
 
     private MapSqlParameterSource args(long order) {
