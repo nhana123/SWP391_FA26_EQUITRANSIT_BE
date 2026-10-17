@@ -62,6 +62,44 @@ public class ApiDtoContractTest {
     @Autowired
     private ObjectMapper mapper;
 
+    /** @throws Exception if F09 schemas or media types drift */
+    @Test
+    public void resourceContractsAreTypedAndDocumented() throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+        int fields = 0;
+        int operations = 0;
+
+        for (var entry : schemas.properties()) {
+            if (!entry.getKey().startsWith("Resource")) {
+                continue;
+            }
+            assertActivityModel(entry.getValue(), schemas,
+                    new java.util.HashSet<>(), false);
+            for (var field : entry.getValue().path("properties")) {
+                assertThat(field.has("example")).as(entry.getKey()).isTrue();
+                fields++;
+            }
+        }
+        for (var entry : api.path("paths").properties()) {
+            if (!entry.getKey().startsWith("/api/manager/resources")
+                    && !entry.getKey().startsWith("/api/resources")) {
+                continue;
+            }
+            for (var operation : entry.getValue().properties()) {
+                assertThat(operation.getValue().path("security").toString())
+                        .contains("bearerAuth");
+                assertThat(operation.getValue().at("/responses/200/content")
+                        .has("application/json")).isTrue();
+                operations++;
+            }
+        }
+        assertThat(fields).isGreaterThan(70);
+        assertThat(operations).isEqualTo(17);
+    }
+
     /** @throws Exception if F08 schemas or operations drift */
     @Test
     public void complianceContractsAreTypedPrivateAndDocumented()

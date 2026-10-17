@@ -780,3 +780,23 @@ implementation; no real EquiTransit deployment is implied. Until deployed, F08
 returns `COMPLIANCE_SCHEMA_PENDING`. No legal rules or permits are seeded.
 Native F08 tests require `EQ_COMPLIANCE_TEST_ENABLED=true` and
 `EQ_COMPLIANCE_TEST_DB_URL` pointing to the guarded isolated database.
+
+### F09: resource catalogues, availability and fit
+
+See [F09 API and F10 consumer contract](docs/resources-api.md).
+Manager manages vehicles, physical stalls, suppliers and versioned fit policies
+under `/api/manager/resources`; archival preserves operational history.
+Manager/assigned Coordinator probes current-revision availability through
+`POST /api/resources/{kind}/{id}/availability`. Missing evidence stays PENDING;
+maintenance, expiry, buffered overlap and unsuitable fit block availability.
+ROAD vehicles remain separate from AIR equipment and prices are unchanged.
+
+Migration `010_resources_availability_fit.sql` follows 001..009. It was tested
+only on the isolated SQL test catalog, with no real database deployment.
+F10 must retain a transaction through the strict `requireAvailable` facade and
+assignment write. A probe is neither a reservation nor carrier acceptance;
+automatic shared-stall matching is outside this flow.
+
+Verified with Java21 `mvnw.cmd clean verify`: 249 tests (140 native SQL),
+zero failures/errors/skips and zero Checkstyle violations. Migration010 reapply
+passed on the isolated test catalog; all 30 checked business tables had 0 rows.
