@@ -184,8 +184,8 @@ public class ApiDtoContractTest {
                 "RegisterRequest", "ResetPasswordRequest", "TokenRequest",
                 "CaseAssignmentRequest", "EndCaseAssignmentRequest",
                 "AssessmentRequest")) {
-            for (var fields = schemas.path(name).path("properties").fields();
-                    fields.hasNext();) {
+            for (var fields = schemas.path(name).path("properties")
+                    .properties().iterator(); fields.hasNext();) {
                 JsonNode field = fields.next().getValue();
                 String types = field.path("type").toString();
 
@@ -323,7 +323,8 @@ public class ApiDtoContractTest {
 
         assertThat(decision.path("example").asText())
                 .isEqualTo("CHANGES_REQUESTED");
-        for (var paths = api.path("paths").fields(); paths.hasNext();) {
+        for (var paths = api.path("paths").properties().iterator();
+                paths.hasNext();) {
             var path = paths.next();
 
             if (!path.getKey().startsWith("/api/manager/")
@@ -508,5 +509,79 @@ public class ApiDtoContractTest {
                                 }));
             }
         });
+    }
+
+    /** @throws Exception if F09 schemas or media types drift */
+    @Test
+    public void resourceContractsAreTypedAndDocumented() throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+        int fields = 0;
+        int operations = 0;
+
+        for (var entry : schemas.properties()) {
+            if (!entry.getKey().startsWith("Resource")) {
+                continue;
+            }
+            assertActivityModel(entry.getValue(), schemas,
+                    new java.util.HashSet<>(), false);
+            for (var field : entry.getValue().path("properties")) {
+                assertThat(field.has("example")).as(entry.getKey()).isTrue();
+                fields++;
+            }
+        }
+        for (var entry : api.path("paths").properties()) {
+            if (!entry.getKey().startsWith("/api/manager/resources")
+                    && !entry.getKey().startsWith("/api/resources")) {
+                continue;
+            }
+            for (var operation : entry.getValue().properties()) {
+                assertThat(operation.getValue().path("security").toString())
+                        .contains("bearerAuth");
+                assertThat(operation.getValue().at("/responses/200/content")
+                        .has("application/json")).isTrue();
+                operations++;
+            }
+        }
+        assertThat(fields).isGreaterThan(70);
+        assertThat(operations).isEqualTo(21);
+    }
+
+    private void assertActivityModel(JsonNode node, JsonNode schemas,
+            java.util.Set<String> visited, boolean customer) {
+        if (node.isObject()) {
+            assertThat(node.toString()).doesNotContain("additionalProp1");
+            if (node.has("$ref")) {
+                assertThat(node.path("type").toString())
+                        .doesNotContain("null");
+                String name = node.path("$ref").asText()
+                        .replace("#/components/schemas/", "");
+
+                if (visited.add(name)) {
+                    assertActivityModel(schemas.path(name), schemas, visited,
+                            customer);
+                }
+            }
+            if (node.has("additionalProperties")) {
+                assertThat(node.path("additionalProperties").isBoolean())
+                        .isTrue();
+                assertThat(node.path("additionalProperties").asBoolean())
+                        .isFalse();
+            }
+            if (customer) {
+                for (String field : List.of("actualCost", "supplierCost",
+                        "unitPrice", "margin", "internalNotes",
+                        "sourceReference", "recipientAccount")) {
+                    assertThat(node.path("properties").has(field))
+                            .as(field).isFalse();
+                }
+            }
+        }
+        if (node.isContainerNode()) {
+            node.forEach(child -> assertActivityModel(child, schemas,
+                    visited, customer));
+        }
     }
 }

@@ -1,6 +1,13 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
   datasource:
     url: jdbc:sqlserver://localhost:1433;databaseName=EquiTransit;encrypt=true;trustServerCertificate=true;integratedSecurity=true
 app:
   mail:
     mode: file
+be2:
+  compliance:
+    api-enabled: true

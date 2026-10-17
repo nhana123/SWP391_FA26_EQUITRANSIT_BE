@@ -5,7 +5,7 @@ $env:JAVA_HOME = [Environment]::GetEnvironmentVariable('JAVA_HOME', 'User')
 if (-not $env:JAVA_HOME) { throw 'Configure JAVA_HOME for JDK 21 first.' }
 $env:Path = (Join-Path $env:JAVA_HOME 'bin') + ';' + $env:Path
 $nativeDir = Join-Path $env:LOCALAPPDATA 'EquiTransit\tools\sqljdbc-native'
-if (-not (Test-Path -LiteralPath (Join-Path $nativeDir 'mssql-jdbc_auth-12.10.0.x64.dll'))) {
+if (-not (Test-Path -LiteralPath (Join-Path $nativeDir 'mssql-jdbc_auth-12.10.2.x64.dll'))) {
     throw 'Run tools\setup-java.ps1 first.'
 }
 $localDir = Join-Path $PSScriptRoot '.local'
