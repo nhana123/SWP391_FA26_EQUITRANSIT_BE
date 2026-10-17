@@ -32,13 +32,13 @@ public record ComplianceAssessmentRequest(
                 nullable = true)
         @Min(1) @Max(3650) Integer requiredDays,
         @Schema(example = "1")
-        @Min(0) @Max(10000) int visitCount,
+        @NotNull @Min(0) @Max(10000) Integer visitCount,
         @Schema(example = "2")
-        @Min(0) @Max(10000) int testCount,
+        @NotNull @Min(0) @Max(10000) Integer testCount,
         @Schema(example = "1")
-        @Min(0) @Max(10000) int doseCount,
+        @NotNull @Min(0) @Max(10000) Integer doseCount,
         @Schema(example = "1")
-        @Min(0) @Max(10000) int certificateCount,
+        @NotNull @Min(0) @Max(10000) Integer certificateCount,
         @Schema(example = "Specialist assessment with authority references")
         @NotBlank @Size(min = 1, max = 1000) String sourceReference,
         @Schema(example = "2027-02-20T12:00:00Z")

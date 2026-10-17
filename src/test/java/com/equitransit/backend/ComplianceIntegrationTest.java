@@ -570,6 +570,10 @@ public class ComplianceIntegrationTest {
         request.put("certificateCount", 1);
         request.put("sourceReference", "Test Specialist clinical evidence");
         request.put("validUntil", time(40));
+        var incomplete = request.deepCopy();
+
+        incomplete.remove("doseCount");
+        post(legal() + "/assessments", specialist, incomplete, 400);
         post(legal() + "/assessments", specialist, request, 200);
         var at = OffsetDateTime.now(ZoneOffset.UTC);
         var horizon = at.plusDays(20);
@@ -596,6 +600,10 @@ public class ComplianceIntegrationTest {
     public void retryIsStableAndChangedInputOrStaleVersionIsRejected()
             throws Exception {
         var request = ruleBody("PRE_EXPORT");
+        var missingDecision = request.deepCopy();
+
+        missingDecision.remove("authorityRequired");
+        post(legal() + "/rules", specialist, missingDecision, 400);
         var first = post(legal() + "/rules", specialist, request, 200);
 
         fixtureRules.add(first.path("entityId").asLong());

@@ -49,5 +49,5 @@ public record ComplianceRuleRequest(
         @com.equitransit.backend.dto.validation.OptionalText
         @Size(min = 1, max = 2000) String instructions,
         @Schema(example = "true")
-        boolean authorityRequired) {
+        @NotNull Boolean authorityRequired) {
 }

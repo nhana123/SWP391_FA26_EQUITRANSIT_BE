@@ -46,7 +46,8 @@ boundary is unchanged. Terminal/cancelled cases cannot accept new legal writes.
    reason. These are recorded external facts, not an API issuing a legal permit.
    The latest result for that rule/phase wins; older approvals cannot bypass it.
 7. Specialist POST `/assessments` records sourced applicability/requiredDays and
-   clinical visit/test/dose/certificate counts with validUntil. REQUIRED needs
+   clinical visit/test/dose/certificate counts with validUntil. All four counts
+   are required; missing JSON values never silently become assessed zeros. REQUIRED needs
    positive days; NOT_REQUIRED needs null, never0. Positive days are synchronized
    to QuarantineChoice with StaffID/time; NOT_REQUIRED clears its days and
    confirmation metadata. F05/F06 consume the revision assessments with their
@@ -59,7 +60,8 @@ boundary is unchanged. Terminal/cancelled cases cannot accept new legal writes.
    expiry cannot exceed the earliest evidence/checklist/rule expiry. Optional
    rule EffectiveTo=null represents an open-ended rule, bounded by checklist
    validity; it is not a missing-rule exemption. AuthorityRequired=false must
-   be explicitly recorded in the sourced rule. Every new rule otherwise defaults
+   be explicitly recorded in the sourced rule. The API requires an explicit
+   authorityRequired boolean; omission is rejected. Existing rows default
    to authority evidence required at the SQL schema level.
 
 Every POST includes `command`: `{recordVersion, operationId}`. Version is the
