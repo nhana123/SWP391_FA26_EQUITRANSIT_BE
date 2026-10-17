@@ -106,7 +106,7 @@ public class QuotePricingPolicy {
         var veterinary = assessments.veterinary(order, request.revisionId(),
                 now, horizon);
         var rows = builder.build(chosen, route,
-                quarantine, veterinary, bundle, now);
+                quarantine, veterinary, bundle, now, snapshot.request());
         com.equitransit.backend.entity.StallFitResult fit = null;
 
         if (route.airKm() == null) {
@@ -195,7 +195,9 @@ public class QuotePricingPolicy {
 
     private QuoteLine line(ServiceChargeResponse row, QuoteEvidence evidence,
             List<QuotePriceSource> rates, OffsetDateTime expiry) {
-        if (FREE.contains(row.pricingStatus())) {
+        if (FREE.contains(row.pricingStatus())
+                && !("INCLUDED".equals(row.pricingStatus())
+                        && evidence != null)) {
             if (evidence != null) {
                 throw invalid("Do not price included or unselected services.");
             }
@@ -220,7 +222,7 @@ public class QuotePricingPolicy {
                                     && s.id() == evidence.tariffId())
                     .findFirst().orElse(null);
             if (source == null || !source.code().equals(row.code())
-                    || !source.unit().equals(row.unit())
+                    || !supportedUnit(row, source.unit())
                     || (!source.offer()
                             && !row.costGroup().equals(source.group()))
                     || (source.validUntil() != null
@@ -232,7 +234,12 @@ public class QuotePricingPolicy {
             if (source.offer() && quantity.compareTo(source.quantity()) != 0) {
                 throw invalid("Offer quantity does not match its scope.");
             }
-            return priced(row, quantity, source.rate());
+            QuoteLine priced = priced(row, quantity, source.rate());
+
+            return new QuoteLine(priced.code(), priced.costGroup(),
+                    priced.description(), source.unit(), priced.quantity(),
+                    priced.unitRate(), priced.amount(), priced.pricingStatus(),
+                    priced.blockers());
         }
         if (!"ESTIMATED".equals(row.pricingStatus())) {
             return view(row, null, null, null, "PENDING");
@@ -251,9 +258,9 @@ public class QuotePricingPolicy {
     private QuoteLine priced(ServiceChargeResponse row, BigDecimal quantity,
             BigDecimal rate) {
         if (quantity.signum() <= 0 || quantity.stripTrailingZeros().scale() > 3
-                || quantity.setScale(4).precision() > 18
+                || quantity.setScale(4, RoundingMode.HALF_UP).precision() > 18
                 || rate.signum() < 0 || rate.stripTrailingZeros().scale() > 2
-                || rate.setScale(4).precision() > 18) {
+                || rate.setScale(4, RoundingMode.HALF_UP).precision() > 18) {
             throw invalid("Positive quantity and exact units are required.");
         }
         BigDecimal amount = quantity.multiply(rate)
@@ -275,18 +282,35 @@ public class QuotePricingPolicy {
                         : List.of());
     }
 
+    private boolean supportedUnit(ServiceChargeResponse row, String unit) {
+        return switch (row.code()) {
+            case "AIR_STALL" -> Set.of("SLOT_KM", "SHIPMENT").contains(unit);
+            case "DOCUMENT_COORDINATION" -> Set.of("ROUTE_KM", "SHIPMENT")
+                    .contains(unit);
+            case "HORSE_CARE" -> Set.of("HORSE_KM", "SHIPMENT").contains(unit);
+            default -> row.unit().equals(unit);
+        };
+    }
+
     private BundleResult bundle(QuotePrepareRequest request,
             List<QuotePriceSource> rates) {
         Set<String> included = new HashSet<>();
+        boolean uncertain = false;
 
         for (var source : rates) {
-            if (!source.offer() || !"AIRFARE".equals(source.code())) {
+            if (!source.offer() || !"AIRFARE".equals(source.code())
+                    || request.assessments().stream().noneMatch(e ->
+                            e.status() == QuoteEvidenceStatus.PRICED
+                                    && e.code().name().equals("AIRFARE")
+                                    && e.offerId() != null
+                                    && e.offerId() == source.id())) {
                 continue;
             }
             if (source.includesStall()) {
                 included.add("AIR_STALL");
             }
             if (source.inclusions() == null) {
+                uncertain |= source.includesStall();
                 continue;
             }
             try {
@@ -302,11 +326,15 @@ public class QuotePricingPolicy {
                     }
                     included.add(code.asText());
                 }
+                uncertain |= (source.includesStall()
+                        || !node.path("services").isEmpty())
+                        && !"ENTIRE_ROUTE".equals(node.path("coverage")
+                                .asText());
             } catch (com.fasterxml.jackson.core.JsonProcessingException error) {
                 return new BundleResult(Set.of(), true);
             }
         }
-        return new BundleResult(Set.copyOf(included), false);
+        return new BundleResult(Set.copyOf(included), uncertain);
     }
 
     private OrderException invalid(String message) {

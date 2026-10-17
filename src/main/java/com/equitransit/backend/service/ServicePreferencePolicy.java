@@ -66,6 +66,20 @@ public class ServicePreferencePolicy {
     }
 
     /**
+     * Returns a recommendation only; explicit writes still use validate.
+     * @param horse captured measurements
+     * @param deadline requested delivery horizon
+     * @return justified wide default or null
+     */
+    public AirStallPreference defaultAirStall(HorseResponse horse,
+            OffsetDateTime deadline) {
+        OffsetDateTime now = OffsetDateTime.now(clock);
+
+        return fit.defaultOption(horse, sources.fitPolicies(now,
+                horizon(deadline, now)), now);
+    }
+
+    /**
      * Rechecks each write, including direct F03 submission/revision endpoints.
      * @param preferences requested options
      * @param horse owned profile captured in the submission transaction
@@ -132,6 +146,8 @@ public class ServicePreferencePolicy {
     }
 
     private OrderException failure(String code, String message) {
-        return new OrderException(HttpStatus.CONFLICT, code, message);
+        return new OrderException("AIR_STALL_UNSUITABLE".equals(code)
+                ? HttpStatus.UNPROCESSABLE_ENTITY : HttpStatus.CONFLICT,
+                code, message);
     }
 }

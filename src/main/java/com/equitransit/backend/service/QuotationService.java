@@ -184,11 +184,14 @@ public class QuotationService {
         editable(order, request.command(), request.revisionId());
         future(request.validUntil());
         if (new BigDecimal(request.quantity()).signum() <= 0
-                || new BigDecimal(request.quantity()).setScale(4)
+                || new BigDecimal(request.quantity())
+                        .setScale(4, RoundingMode.HALF_UP)
                         .precision() > 18
-                || new BigDecimal(request.purchaseUnitPrice()).setScale(4)
+                || new BigDecimal(request.purchaseUnitPrice())
+                        .setScale(4, RoundingMode.HALF_UP)
                         .precision() > 18
-                || new BigDecimal(request.retailUnitPrice()).setScale(4)
+                || new BigDecimal(request.retailUnitPrice())
+                        .setScale(4, RoundingMode.HALF_UP)
                         .precision() > 18) {
             throw conflict("QUOTE_SOURCE_INVALID", "Invalid offer amount.");
         }

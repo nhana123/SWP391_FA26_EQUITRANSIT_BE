@@ -52,10 +52,18 @@ import com.equitransit.backend.repository.ServiceSourceRepository;
 import com.equitransit.backend.repository.UserAccountRepository;
 import com.equitransit.backend.security.JwtTokenService;
 import com.equitransit.backend.security.TokenTools;
+import com.equitransit.backend.service.ServiceAssessmentFacade;
+import com.equitransit.backend.entity.quote.QuoteSnapshot;
+import com.equitransit.backend.dto.quote.QuoteLine;
+import com.equitransit.backend.dto.quote.QuoteCommand;
+import com.equitransit.backend.dto.quote.QuotePrepareRequest;
+import com.equitransit.backend.dto.quote.QuoteSchedule;
+import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.verify;
@@ -113,6 +121,8 @@ public class BookingServicesIntegrationTest {
     private ServiceSelectionAuditRepository audit;
     @MockitoSpyBean
     private ServiceSourceRepository sources;
+    @MockitoSpyBean
+    private ServiceAssessmentFacade assessments;
 
     private Account owner;
     private Account other;
@@ -130,7 +140,8 @@ public class BookingServicesIntegrationTest {
     public void prepare() throws Exception {
         try (var connection = dataSource.getConnection()) {
             assertThat(connection.getCatalog())
-                    .startsWith("EquiTransit_FigmaMigrationTest_");
+                    .isEqualTo("EquiTransit_FigmaMigrationTest_"
+                            + "20261013_143729");
         }
         owner = account("CUSTOMER");
         other = account("CUSTOMER");
@@ -153,6 +164,7 @@ public class BookingServicesIntegrationTest {
     @AfterEach
     public void cleanup() {
         reset(audit);
+        reset(assessments);
         for (long id : fixtureOrders) {
             String revisions = " IN (SELECT RevisionID FROM dbo.OrderRevision"
                     + " WHERE OrderID=?)";
@@ -290,7 +302,7 @@ public class BookingServicesIntegrationTest {
 
         assertThat(view.get("airStalls").toString())
                 .doesNotContain("SHARED_ONE");
-        assertThat(confirm(order, command, owner.token(), 409).get("code")
+        assertThat(confirm(order, command, owner.token(), 422).get("code")
                 .asText())
                 .isEqualTo("AIR_STALL_UNSUITABLE");
         direct.set("services", mapper.valueToTree(Map.of("airStall", "WIDE")));
@@ -301,7 +313,7 @@ public class BookingServicesIntegrationTest {
                 .header("Authorization", owner.token())
                 .contentType(MediaType.APPLICATION_JSON)
                         .content(direct.toString()))
-                .andExpect(status().isConflict());
+                .andExpect(status().isUnprocessableEntity());
         assertThat(revisionCount(order)).isEqualTo(1);
     }
 
@@ -480,7 +492,8 @@ public class BookingServicesIntegrationTest {
                 + " (?,'Test provider','AIRFARE','SHIPMENT',1,123456.78,"
                         + "'USD',1,"
                 + "?,DATEADD(day,30,SYSUTCDATETIME()),'SELECTED','test-proof')",
-                revision, "{\"schemaVersion\":1,\"services\":["
+                revision, "{\"schemaVersion\":1,\"coverage\":\"ENTIRE_ROUTE\","
+                        + "\"services\":["
                         + "\"AIRPORT_HANDLING\",\"TERMINAL_HANDLING\"]}");
         JsonNode view = disclosure(order);
 
@@ -493,6 +506,36 @@ public class BookingServicesIntegrationTest {
                 .isEqualTo("INCLUDED");
         assertThat(view.toString()).doesNotContain("123456.78", "unitCost",
                 "margin", "test-proof");
+    }
+
+    /** Partial and legacy coverage never waive an entire multi-leg charge. */
+    @Test
+    public void partialOrUnknownBundleCannotMakeWholeRouteFree()
+            throws Exception {
+        long revision = disclosure(order).get("revisionId").asLong();
+
+        jdbc.update("INSERT dbo.SupplierOffer (RevisionID,ProviderName,"
+                + "ServiceCode,UnitCode,Quantity,UnitPrice,Currency,"
+                + "IncludesStall,IncludedCharges,ValidUntil,Status,"
+                + "EvidenceFileKey) VALUES (?,'Test provider','AIRFARE',"
+                + "'SHIPMENT',1,10,'USD',1,?,DATEADD(day,30,SYSUTCDATETIME()),"
+                + "'SELECTED','test-proof')", revision,
+                "{\"schemaVersion\":1,\"coverage\":\"PARTIAL_ROUTE\","
+                        + "\"services\":[\"TERMINAL_HANDLING\"]}");
+        var view = disclosure(order);
+
+        for (String code : List.of("AIR_STALL", "TERMINAL_HANDLING")) {
+            assertThat(charge(view, code).path("pricingStatus").asText())
+                    .isEqualTo("BUNDLE_REVIEW_REQUIRED");
+        }
+        assertThat(charge(view, "AIRPORT_HANDLING").path("quantity").asText())
+                .isEqualTo("2");
+        jdbc.update("UPDATE dbo.SupplierOffer SET IncludedCharges="
+                + "'{\"schemaVersion\":1,\"services\":[]}' WHERE RevisionID=?",
+                revision);
+        assertThat(charge(disclosure(order), "AIR_STALL")
+                .path("pricingStatus").asText())
+                .isEqualTo("BUNDLE_REVIEW_REQUIRED");
     }
 
     /** Unverifiable bundle metadata is a blocker, not an inclusion guess. */
@@ -773,6 +816,166 @@ public class BookingServicesIntegrationTest {
         assertThat(revisionCount(order)).isEqualTo(revisions);
         assertThat(disclosure(order).get("recordVersion"))
                 .isEqualTo(before.get("recordVersion"));
+    }
+
+    /** The view default never mutates a submitted snapshot or its version. */
+    @Test
+    public void oversizedHorseGetsWideViewDefaultOnly() throws Exception {
+        fitPolicy("1", 450, 30);
+        fitPolicy("1.5", 600, 30);
+        JsonNode before = customerCurrent(order);
+        JsonNode view = disclosure(order);
+
+        assertThat(view.at("/selected/airStall").asText()).isEqualTo("WIDE");
+        assertThat(customerCurrent(order)).isEqualTo(before);
+        assertThat(revisionCount(order)).isEqualTo(1);
+        confirm(order, command(view, Map.of("airStall", "SHARED_ONE")),
+                owner.token(), 422);
+        assertThat(customerCurrent(order)).isEqualTo(before);
+    }
+
+    /** A pending wide policy is a suggestion, never carrier eligibility. */
+    @Test
+    public void wideDefaultMayRemainPendingWithoutWidePolicy()
+            throws Exception {
+        fitPolicy("1", 450, 30);
+        JsonNode view = disclosure(order);
+
+        assertThat(view.at("/selected/airStall").asText()).isEqualTo("WIDE");
+        assertThat(view.get("airStalls").toString()).contains("PENDING");
+        assertThat(view.get("carrierConfirmation").asText())
+                .isEqualTo("NOT_CONFIRMED");
+    }
+
+    /** Confirmation saves request sharing without creating a booking. */
+    @Test
+    public void wideDefaultIsSavedOnlyThroughAnExplicitConfirmation()
+            throws Exception {
+        fitPolicy("1", 450, 30);
+        var before = disclosure(order);
+
+        confirm(order, command(before, Map.of("groomingDays", 2)),
+                owner.token(), 200);
+        var after = disclosure(order);
+        long revision = after.path("revisionId").asLong();
+
+        assertThat(after.at("/selected/airStall").asText()).isEqualTo("WIDE");
+        assertThat(jdbc.queryForObject("SELECT s.SharingCode FROM "
+                + "dbo.StallChoice s JOIN dbo.OrderServiceChoice c ON "
+                + "c.ChoiceID=s.ChoiceID WHERE c.RevisionID=?", String.class,
+                revision)).isEqualTo("SHARED");
+        assertThat(jdbc.queryForObject("SELECT s.SlotQuantity FROM "
+                + "dbo.StallChoice s JOIN dbo.OrderServiceChoice c ON "
+                + "c.ChoiceID=s.ChoiceID WHERE c.RevisionID=?",
+                BigDecimal.class, revision)).isEqualByComparingTo("1.5");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM "
+                + "dbo.StallAssignment", Long.class)).isZero();
+    }
+
+    /** Fixed fees and route counts work without TripLeg distance fixtures. */
+    @Test
+    public void shipmentAndRouteEstimatesAppearBeforePlanning()
+            throws Exception {
+        confirm(order, command(disclosure(order), Map.of("airStall", "WIDE",
+                "enhancedCare", true, "escortNotes", "Requested groom")),
+                owner.token(), 200);
+        tariff("AIR_STALL", "DEFAULT", "SHIPMENT",
+                "HORSE_ACCOMMODATION", "100");
+        tariff("DOCUMENT_COORDINATION", "DEFAULT", "SHIPMENT",
+                "DOCUMENTATION_QUARANTINE", "50");
+        tariff("HORSE_CARE", "ENHANCED", "SHIPMENT", "HORSE_CARE", "25");
+        tariff("AIRPORT_HANDLING", "DEFAULT", "HORSE_AIRPORT",
+                "AIRPORT_CUSTOMS", "10");
+        tariff("TERMINAL_HANDLING", "DEFAULT", "HORSE_AIRPORT",
+                "AIRPORT_CUSTOMS", "20");
+        tariff("CUSTOMS_DECLARATION", "DEFAULT", "DECLARATION",
+                "AIRPORT_CUSTOMS", "30");
+        tariff("ESCORT", "REQUESTED", "PERSON_LEG", "HORSE_CARE", "40");
+        JsonNode view = disclosure(order);
+
+        for (var expected : Map.of("AIR_STALL", "150.00",
+                "DOCUMENT_COORDINATION", "50.00", "HORSE_CARE", "25.00",
+                "AIRPORT_HANDLING", "20.00", "TERMINAL_HANDLING", "40.00",
+                "CUSTOMS_DECLARATION", "60.00", "ESCORT", "40.00")
+                .entrySet()) {
+            assertThat(charge(view, expected.getKey()).get("amount").asText())
+                    .isEqualTo(expected.getValue());
+        }
+        assertThat(charge(view, "AIRFARE").get("amount").isNull()).isTrue();
+        assertThat(view.get("payable").asBoolean()).isFalse();
+    }
+
+    /** Real HTTP/SQL preview retains unchanged evidenced snapshot amounts. */
+    @Test
+    public void previewKeepsUnchangedQuoteLinesAndRepricesDependencies()
+            throws Exception {
+        confirm(order, command(disclosure(order), Map.of("airStall", "WIDE",
+                "insurance", "MORTALITY", "declaredValue", "10000.00",
+                "groomingDays", 2)), owner.token(), 200);
+        tariff("GROOMING", "EXTRA", "PERSON_DAY", "HORSE_CARE", "10");
+        JsonNode view = disclosure(order);
+        long revision = view.get("revisionId").asLong();
+        var until = OffsetDateTime.now(ZoneOffset.UTC).plusDays(30);
+        var request = new QuotePrepareRequest(new QuoteCommand(
+                view.get("recordVersion").asText(), UUID.randomUUID()),
+                revision, until, "TEST", "Test terms", "Test cancellation",
+                List.of(new QuoteSchedule(1, "FULL", "1175.00", until)),
+                List.of());
+        var snapshot = new QuoteSnapshot(1, request, List.of(
+                quoted("AIRFARE", "1000.00"), quoted("INSURANCE", "75.00"),
+                quoted("GOVERNMENT_DUTY", "80.00"),
+                quoted("GROOMING", "20.00")), List.of(), List.of(), null);
+
+        doReturn(Optional.of(snapshot)).when(assessments)
+                .commercialQuote(anyLong(), any(), any());
+        JsonNode saved = disclosure(order);
+        long revisions = revisionCount(order);
+        JsonNode preview = preview(saved, Map.of("groomingDays", 3));
+
+        assertThat(charge(preview, "GROOMING").get("amount").asText())
+                .isEqualTo("30.00");
+        for (String code : List.of("AIRFARE", "INSURANCE",
+                "GOVERNMENT_DUTY")) {
+            assertThat(charge(preview, code)).isEqualTo(charge(saved, code));
+        }
+        JsonNode insurance = preview(saved, Map.of("declaredValue",
+                "20000.00"));
+
+        assertThat(charge(insurance, "INSURANCE").get("amount").isNull())
+                .isTrue();
+        assertThat(charge(insurance, "AIRFARE").get("amount").asText())
+                .isEqualTo("1000.00");
+        JsonNode stall = preview(saved, Map.of("airStall", "PRIVATE"));
+
+        assertThat(charge(stall, "AIRFARE").get("amount").isNull()).isTrue();
+        assertThat(charge(stall, "GOVERNMENT_DUTY").get("amount").asText())
+                .isEqualTo("80.00");
+        assertThat(disclosure(order).get("recordVersion"))
+                .isEqualTo(saved.get("recordVersion"));
+        assertThat(revisionCount(order)).isEqualTo(revisions);
+        assertThat(preview.get("payable").asBoolean()).isFalse();
+    }
+
+    private QuoteLine quoted(String code, String amount) {
+        return new QuoteLine(code, "TEST", "Test retail snapshot", "SHIPMENT",
+                "1", amount, amount, "PRICED", List.of());
+    }
+
+    private JsonNode preview(JsonNode view, Map<String, Object> changes)
+            throws Exception {
+        ObjectNode body = mapper.createObjectNode();
+        ObjectNode selected = view.get("selected").deepCopy();
+
+        changes.forEach((key, value) -> selected.set(key,
+                mapper.valueToTree(value)));
+        body.put("recordVersion", view.get("recordVersion").asText());
+        body.put("horseRecordVersion", view.get("horseRecordVersion").asText());
+        body.set("services", selected);
+        return read(mvc.perform(post(CUSTOMER + "/{id}/services/preview", order)
+                .header("Authorization", owner.token())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body.toString())).andExpect(status().isOk())
+                .andReturn());
     }
 
     private ObjectNode command(JsonNode view, Map<String, Object> preferences) {

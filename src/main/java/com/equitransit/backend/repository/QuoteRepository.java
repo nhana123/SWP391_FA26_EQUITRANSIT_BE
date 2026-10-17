@@ -318,6 +318,7 @@ public class QuoteRepository {
                 .addValue("evidence", request.evidenceFileKey())
                 .addValue("stall", request.includesStall())
                 .addValue("includes", json.write(java.util.Map.of(
+                        "coverage", request.effectiveCoverage(),
                         "schemaVersion", 1, "services",
                         request.includedCharges())));
 

@@ -14,6 +14,7 @@ package com.equitransit.backend.entity.quote;
 /** Closed quotation domain codes. */
 public enum QuoteChargeCode {
     AIRFARE,
+    AIR_STALL,
     AIRPORT_HANDLING,
     TERMINAL_HANDLING,
     CUSTOMS_DECLARATION,

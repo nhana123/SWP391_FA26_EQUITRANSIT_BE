@@ -165,3 +165,32 @@ EquiTransit_FigmaMigrationTest_20261013_143729. They cover role/input validation
 publication/replacement/replay, concurrent replacement, rollback, read-only preview,
 foreign/stale input, existing quotes and exact calculations. Fixtures are removed
 by their created IDs. No load/capacity SLA is inferred from functional checks.
+
+## Pricing update — 17/10/2026
+
+Manager tariff writes accept optional `unitCode`. AIR_STALL supports SLOT_KM
+or SHIPMENT; ENHANCED_CARE supports HORSE_KM or SHIPMENT; document coordination
+supports ROUTE_KM or SHIPMENT. Omit the field on create for the legacy default;
+omit it on replacement to retain the current unit. `/services/rates` includes
+`allowedUnits` and reports the effective published unit. Other product units
+remain fixed. PUT still creates a new version with rowversion/UUID protection.
+
+Supplier offers accept optional `bundleCoverage`: ENTIRE_ROUTE, PARTIAL_ROUTE,
+or UNKNOWN. Omission means UNKNOWN. This is stored in existing IncludedCharges
+JSON, without a migration. Only verified ENTIRE_ROUTE inclusions automatically
+waive the entire charge. Partial/legacy coverage needs assessment; separately
+priced AIR_STALL/handling evidence may charge only the uncovered scope.
+Existing agreed quote snapshots remain immutable.
+
+F05 infers handling airports=2+transits, international declarations=2 and
+requested escort legs=1+transits while sourced AIR=0 suppresses air quantities.
+These are commercial estimates. F06 evidenced values override estimates.
+Unchanged preview inputs retain the usable F06 line; changed inputs recalculate.
+WIDE is a view default only after proven one-slot exclusion, and explicit
+confirmation saves the request. Shared/wide requests remain SHARED 1/1.5 slots;
+PRIVATE requests remain PRIVATE 3 slots. STALLION carries a compatibility review
+warning, not an invented measurement rejection. Unsuitable writes return422.
+This update does not implement automatic stall matching or confirm a booking.
+
+Verified:119 focused tests (60 native SQL), zero failures/errors/skips and zero
+Checkstyle violations. Test database only;14 checked business tables empty.

@@ -1060,6 +1060,92 @@ public class QuotationIntegrationTest {
         return body;
     }
 
+    /** Manager changes units while retaining the same service identity. */
+    @Test
+    public void publishesShipmentUnitsForAllFlexibleProducts()
+            throws Exception {
+        var history = get(tariffs() + "?page=0&size=100", manager, 200);
+
+        for (String product : List.of("AIR_STALL", "ENHANCED_CARE",
+                "DOCUMENT_COORDINATION")) {
+            var body = tariffBody(product, "100.00");
+            JsonNode previous = null;
+
+            for (var row : history.path("items")) {
+                if (product.equals(row.path("product").asText())) {
+                    previous = row;
+                }
+            }
+            body.put("unitCode", "SHIPMENT");
+            JsonNode result;
+
+            if (previous == null) {
+                result = publishTariff(body);
+            } else {
+                body.put("recordVersion", previous.path("recordVersion")
+                        .asText());
+                result = putTariff(previous.path("tariffId").asLong(), body,
+                        200);
+                fixtureTariffs.add(result.path("tariffId").asLong());
+                assertThat(result.path("version").asInt())
+                        .isEqualTo(previous.path("version").asInt() + 1);
+            }
+            assertThat(result.path("unit").asText())
+                    .isEqualTo("SHIPMENT");
+            assertThat(get(tariffs() + "/" + result.path("tariffId").asLong(),
+                    manager, 200).path("unit").asText())
+                    .isEqualTo("SHIPMENT");
+            var legacyUpdate = tariffBody(product, "101.00");
+
+            legacyUpdate.put("recordVersion", result.path("recordVersion")
+                    .asText());
+            var successor = putTariff(result.path("tariffId").asLong(),
+                    legacyUpdate, 200);
+
+            fixtureTariffs.add(successor.path("tariffId").asLong());
+            assertThat(successor.path("unit").asText()).isEqualTo("SHIPMENT");
+        }
+        var invalid = tariffBody("GROOMING", "100.00");
+
+        invalid.put("unitCode", "SHIPMENT");
+        assertThat(post(tariffs(), manager, invalid, 400).path("code").asText())
+                .isEqualTo("TARIFF_UNIT_INVALID");
+        var rates = get(base() + "/services/rates", owner, 200);
+
+        assertThat(rates.toString()).contains("allowedUnits", "SHIPMENT");
+    }
+
+    /** Offer scope uses existing JSON; legacy retries remain idempotent. */
+    @Test
+    public void supplierOfferCoverageIsPersistedWithoutSchemaChanges()
+            throws Exception {
+        for (String scope : List.of("ENTIRE_ROUTE", "PARTIAL_ROUTE",
+                "UNKNOWN")) {
+            ObjectNode body = (ObjectNode) mapper.readTree(
+                    com.equitransit.backend.dto.quote.QuoteApiExamples.OFFER);
+
+            body.set("command", command());
+            body.put("revisionId", revision);
+            body.put("offerReference", "COVERAGE-" + scope);
+            body.put("validUntil", time(5));
+            body.put("includesStall", true);
+            if (scope.equals("UNKNOWN")) {
+                body.remove("bundleCoverage");
+            } else {
+                body.put("bundleCoverage", scope);
+            }
+            JsonNode receipt = post(base() + "/supplier-offers", coordinator,
+                    body, 200);
+
+            assertThat(post(base() + "/supplier-offers", coordinator, body,
+                    200)).isEqualTo(receipt);
+            assertThat(jdbc.queryForObject("SELECT JSON_VALUE(IncludedCharges,"
+                    + "'$.coverage') FROM dbo.SupplierOffer WHERE OfferID=?",
+                    String.class, receipt.path("offerId").asLong()))
+                    .isEqualTo(scope);
+        }
+    }
+
     private String tariffs() {
         return "/api/manager/service-tariffs";
     }

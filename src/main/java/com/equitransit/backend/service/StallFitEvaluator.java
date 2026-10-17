@@ -68,7 +68,11 @@ public class StallFitEvaluator {
                     "HORSE_EXCEEDS_APPROVED_LIMITS");
         }
         return new StallFitResult(option.name(), slots, "ELIGIBLE",
-                policy.policyId(), policy.version(), List.of());
+                policy.policyId(), policy.version(),
+                horse.sexCode() == com.equitransit.backend.entity.HorseSex
+                        .STALLION && option != AirStallPreference.PRIVATE
+                        ? List.of("STALLION_COMPATIBILITY_REVIEW_REQUIRED")
+                        : List.of());
     }
 
     /**
@@ -83,6 +87,24 @@ public class StallFitEvaluator {
             case PRIVATE -> new BigDecimal("3");
             default -> throw new IllegalArgumentException("Unknown slot type.");
         };
+    }
+
+    /**
+     * Suggests a view-only default after a proven one-slot exclusion.
+     * @param horse captured measurements
+     * @param policies sourced policies for the same journey horizon
+     * @param now server time
+     * @return wide unless ruled out, or null if no default is justified
+     */
+    public AirStallPreference defaultOption(HorseResponse horse,
+            List<FitPolicyRecord> policies, OffsetDateTime now) {
+        var shared = evaluate(AirStallPreference.SHARED_ONE, horse,
+                policies, now);
+        var wide = evaluate(AirStallPreference.WIDE, horse, policies, now);
+
+        return "UNSUITABLE".equals(shared.status())
+                && !"UNSUITABLE".equals(wide.status())
+                ? AirStallPreference.WIDE : null;
     }
 
     private StallFitResult result(AirStallPreference option, BigDecimal slots,
