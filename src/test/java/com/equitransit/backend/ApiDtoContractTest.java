@@ -100,6 +100,46 @@ public class ApiDtoContractTest {
         assertThat(operations).isEqualTo(17);
     }
 
+    /** @throws Exception if F10 planning schemas or operations drift */
+    @Test
+    public void operationalPlanContractsAreTypedAndDocumented()
+            throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+        int fields = 0;
+        int operations = 0;
+
+        for (var entry : schemas.properties()) {
+            if (!entry.getKey().startsWith("Plan")) {
+                continue;
+            }
+            assertActivityModel(entry.getValue(), schemas,
+                    new java.util.HashSet<>(), false);
+            for (var field : entry.getValue().path("properties")) {
+                assertThat(field.has("example")).as(entry.getKey()).isTrue();
+                fields++;
+            }
+        }
+        String root = "/api/transport-orders/{orderId}/plans";
+
+        for (var entry : api.path("paths").properties()) {
+            if (!entry.getKey().startsWith(root)) {
+                continue;
+            }
+            for (var operation : entry.getValue().properties()) {
+                assertThat(operation.getValue().path("security").toString())
+                        .contains("bearerAuth");
+                assertThat(operation.getValue().at("/responses/200/content")
+                        .has("application/json")).isTrue();
+                operations++;
+            }
+        }
+        assertThat(fields).isGreaterThan(100);
+        assertThat(operations).isEqualTo(9);
+    }
+
     /** @throws Exception if F08 schemas or operations drift */
     @Test
     public void complianceContractsAreTypedPrivateAndDocumented()

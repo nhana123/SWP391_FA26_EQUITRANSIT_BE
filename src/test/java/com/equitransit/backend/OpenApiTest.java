@@ -261,4 +261,37 @@ public class OpenApiTest {
         }
         org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(16);
     }
+
+    /** @throws Exception if any F10 operation admits an anonymous caller */
+    @Test
+    public void allOperationalPlanOperationsRequireAuthentication()
+            throws Exception {
+        var response = mvc.perform(get("/v3/api-docs"))
+                .andReturn().getResponse().getContentAsString();
+        var api = new com.fasterxml.jackson.databind.ObjectMapper()
+                .readTree(response);
+        int checked = 0;
+
+        for (var entry : api.path("paths").properties()) {
+            if (!entry.getKey().startsWith(
+                    "/api/transport-orders/{orderId}/plans")) {
+                continue;
+            }
+            String route = entry.getKey().replace("{orderId}", "101")
+                    .replace("{planId}", "311").replace("{legId}", "401");
+
+            for (var operation : entry.getValue().properties()) {
+                mvc.perform(org.springframework.test.web.servlet.request.
+                        MockMvcRequestBuilders.request(
+                                org.springframework.http.HttpMethod.valueOf(
+                                        operation.getKey().toUpperCase(
+                                                java.util.Locale.ROOT)),
+                                route).contentType("application/json")
+                                        .content("{}"))
+                        .andExpect(status().isUnauthorized());
+                checked++;
+            }
+        }
+        org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(9);
+    }
 }
