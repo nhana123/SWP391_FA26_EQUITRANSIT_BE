@@ -196,6 +196,8 @@ public class ManualPaymentService {
             var allocation = one("allocation", args(order,
                     body.allocationId()));
             bank(id(allocation, "TransactionID"));
+            allocation = one("allocationForUpdate", args(order,
+                    body.allocationId()));
             var amount = money(body.amount());
             var reserved = ledger.amount("refundReserved",
                     Map.of("id", body.allocationId()));
@@ -224,6 +226,8 @@ public class ManualPaymentService {
                     id(row, "AllocationID")));
 
             bank(id(allocation, "TransactionID"));
+            allocation = one("allocationForUpdate", args(order,
+                    id(row, "AllocationID")));
             var args = args(order, refund);
 
             args.put("staff", context.actor().staffId());

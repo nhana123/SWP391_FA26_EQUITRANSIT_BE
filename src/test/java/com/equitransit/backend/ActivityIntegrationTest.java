@@ -640,6 +640,17 @@ public class ActivityIntegrationTest {
                 + "IncurredAt,RecordedBy,Description) VALUES (?,"
                 + "'TEST-COST',40,'USD',SYSUTCDATETIME(),?,'Private supplier')",
                 plan, managerId);
+        long historical = jdbc.queryForObject("SET NOCOUNT ON; DECLARE @ids"
+                + " TABLE(ID BIGINT); INSERT dbo.TransportPlan (OrderID,"
+                + "RevisionID,CreatedBy,VersionNo,FinancialGateStatus,"
+                + "OperationalGateStatus,DocGateStatus,PlanStatus)"
+                + " OUTPUT INSERTED.PlanID INTO @ids VALUES (?,?,?,2,"
+                + "'PENDING','PENDING','PENDING','DRAFT'); SELECT ID FROM @ids",
+                Long.class, order, revision, coordinatorId);
+
+        jdbc.update("INSERT dbo.ActualCost (PlanID,CostCode,Amount,Currency,"
+                + "IncurredAt,RecordedBy) VALUES (?,'OLD-PLAN',500,'USD',"
+                + "SYSUTCDATETIME(),?)", historical, managerId);
         assertThat(get("/api/manager/reports/financial", manager, 200)
                 .path("actualCost").asText()).isEqualTo("40.00");
         long allocation = jdbc.queryForObject("SELECT TOP(1) AllocationID"
@@ -784,6 +795,53 @@ public class ActivityIntegrationTest {
         assertThat(get("/api/activity/orders/" + order + "/timeline", owner,
                 200).toString()).contains("ACCEPTED", "PAID", "SUBMITTED")
                 .doesNotContain("CLEARED", "DEPARTED", "CLOSED");
+    }
+
+    /** @throws Exception if a partial F16 deployment is incorrectly enabled */
+    @Test
+    public void readinessRejectsMissingColumnsIndexesAndJsonConstraint()
+            throws Exception {
+        assertThat(activity.ready()).isTrue();
+        var mutations = List.of(
+                "DROP INDEX UQ_AuditEvent_EventKey ON dbo.AuditEvent;"
+                        + " EXEC sys.sp_rename 'dbo.AuditEvent.EventKey',"
+                        + "'MissingEventKey','COLUMN'",
+                "EXEC sys.sp_rename 'dbo.NotificationProjection',"
+                        + "'MissingProjection'",
+                "ALTER INDEX UQ_AuditEvent_EventKey"
+                        + " ON dbo.AuditEvent DISABLE",
+                "ALTER INDEX UQ_Notification_EventRecipient"
+                        + " ON dbo.Notification DISABLE",
+                "ALTER TABLE dbo.AuditEvent NOCHECK CONSTRAINT"
+                        + " CK_AuditEvent_ChangeSnapshot_JSON");
+        var changes = new ArrayList<>(mutations);
+
+        for (String field : List.of("SourceEventID", "EmailState",
+                "EmailLeaseUntil", "EmailAttempts")) {
+            String prefix = "SourceEventID".equals(field)
+                    ? "DROP INDEX UQ_Notification_EventRecipient"
+                            + " ON dbo.Notification; " : "";
+
+            changes.add(prefix + "EXEC sys.sp_rename 'dbo.Notification."
+                    + field + "','Missing" + field + "','COLUMN'");
+        }
+        for (String sql : changes) {
+            new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+                jdbc.execute(sql);
+                assertThat(activity.ready()).as(sql).isFalse();
+                try {
+                    var response = get("/api/dashboard", owner, 503);
+
+                    assertThat(response.path("code").asText())
+                            .isEqualTo("ACTIVITY_SCHEMA_PENDING");
+                } catch (Exception error) {
+                    throw new IllegalStateException(error);
+                } finally {
+                    tx.setRollbackOnly();
+                }
+            });
+            assertThat(activity.ready()).isTrue();
+        }
     }
 
     private JsonNode put(String path, String token, String body, int status)

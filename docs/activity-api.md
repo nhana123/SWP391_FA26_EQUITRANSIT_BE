@@ -112,7 +112,8 @@ Backups/runtime secrets/mail settings remain deployment configuration, not code.
   transaction, not once per allocation/report.
 - netAllocated: actual reconciled allocations less their completed refunds;
   reversed transactions excluded. Does not equate to unallocated bank cash.
-- actualCost: Manager-only recorded USD ActualCost amount, not a customer surcharge.
+- actualCost: Manager-only recorded USD ActualCost for each order's current plan.
+  Historical/unlinked plans are excluded; this is not lifetime project cost.
 - operationallyCompletedOrders: persisted DELIVERED/COMPLETED/CLOSED states.
 - closedOrders: explicitly persisted CLOSED state; not inferred from a payment
   report or delivery alone. Financial correctness of a closure is enforced by F14

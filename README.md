@@ -20,7 +20,7 @@ Java 21, Spring Boot 3.5.16, Maven Wrapper 3.9.9. Kiến trúc monolith phân l�
 .\run-local.ps1
 ```
 
-API ở `http://127.0.0.1:8080`; kiểm tra `GET /api/health`. Thư viện Windows JDBC native nằm trong `%LOCALAPPDATA%\EquiTransit\tools\sqljdbc-native`. Local profile tin chứng chỉ SQL Server tự ký chỉ để phát triển; profile mặc định yêu cầu xác thực chứng chỉ.
+API ở `http://127.0.0.1:8080`; kiểm tra `GET /api/health`. Thư viện Windows JDBC native nằm trong `.local/tools/sqljdbc-native` (tạo bằng `./tools/setup-java.ps1`; không cần Maven cài riêng, dùng Maven Wrapper). Local profile tin chứng chỉ SQL Server tự ký chỉ để phát triển; profile mặc định yêu cầu xác thực chứng chỉ.
 
 Nếu bản backend chạy nền để kiểm tra đang dùng cổng 8080, chạy `.\tools\stop-local.ps1` trước khi Run trong IntelliJ. Với ứng dụng chạy bằng run-local.ps1, nhấn Ctrl+C ở terminal để dừng.
 
@@ -114,8 +114,9 @@ Default tests dùng H2 trong bộ nhớ. `AuthFlowTest` có guard từ chối cl
 ```powershell
 $env:EQ_TEST_DB_URL = 'jdbc:sqlserver://localhost:1433;databaseName=EquiTransit_AuthTest;encrypt=true;trustServerCertificate=true;integratedSecurity=true'
 $env:EQ_TEST_DDL = 'validate'
-$nativeDir = Join-Path $env:LOCALAPPDATA 'EquiTransit\tools\sqljdbc-native'
-.\mvnw.cmd verify "-DargLine=-Djava.library.path=$nativeDir"
+$nativeDir = Join-Path (Get-Location) '.local\tools\sqljdbc-native'
+$env:JAVA_TOOL_OPTIONS = '"-Djava.library.path=' + $nativeDir + '"'
+.\mvnw.cmd verify
 ```
 
 Mở terminal mới hoặc xóa hai EQ_TEST_* env vars để quay lại H2. Không đổi tên database test thành EquiTransit: các test xóa fixture trong database test.
@@ -198,8 +199,9 @@ không dùng EquiTransit thật hay AuthTest tối giản. Ví dụ Windows Auth
 $env:EQ_HORSE_TEST_ENABLED = 'true'
 $env:EQ_HORSE_TEST_DB_URL = 'jdbc:sqlserver://localhost:1433;databaseName=EquiTransit_FigmaMigrationTest_<stamp>;encrypt=true;trustServerCertificate=true;integratedSecurity=true'
 $env:EQ_TEST_DB_USERNAME = ''
-$nativeDir = 'C:/Users/thang/AppData/Local/EquiTransit/tools/sqljdbc-native'
-.\mvnw.cmd test -Dtest=HorseProfileIntegrationTest "-DargLine=-Djava.library.path=$nativeDir"
+$nativeDir = Join-Path (Get-Location) '.local\tools\sqljdbc-native'
+$env:JAVA_TOOL_OPTIONS = '"-Djava.library.path=' + $nativeDir + '"'
+.\mvnw.cmd test -Dtest=HorseProfileIntegrationTest
 ```
 
 Thay `<stamp>` bằng test copy của máy. Fixtures thường rollback; test cạnh tranh
@@ -748,3 +750,14 @@ automatically; existing audit history establishes the notification watermark.
 Missing008 returns503 for F16; legacy booking submission remains compatible.
 For native SQL verification use EQ_ACTIVITY_TEST_ENABLED=true and
 EQ_ACTIVITY_TEST_DB_URL targeting only the documented isolated test catalog.
+
+### F07/F16 schema and report checks
+
+Payment/activity endpoints fail closed when required tables, columns or trusted
+constraints/indexes are missing or disabled. Check the reviewed baseline plus
+migration007/008 on the authorized deployment target; table presence is not enough.
+Refund mutations retain the ledger lock and lock the bank transaction before
+locking the target allocation. Refund proof keys are optional for APPROVE/REJECT
+and bounded when supplied; COMPLETE still requires validated payment evidence.
+Manager ActualCost reports include USD costs of each order's current plan only.
+See docs/activity-api.md for the exact report population and customer isolation.

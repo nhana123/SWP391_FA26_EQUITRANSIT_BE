@@ -30,7 +30,8 @@ public record RefundActionCommand(
         @Size(min = 1, max = 150) String bankRefundReference,
         @Schema(example = "d86b4f63-5acc-4f20-8da3-e24323268814",
                 nullable = true)
-        @Pattern(regexp = "^[0-9a-fA-F-]{36}$") String proofFileKey,
+        @Pattern(regexp = "^[0-9a-fA-F-]{36}$")
+        @Size(min = 1, max = 1024) String proofFileKey,
         @Schema(example = "2026-10-17T08:00:00Z", nullable = true)
         OffsetDateTime refundedAt) {
 }

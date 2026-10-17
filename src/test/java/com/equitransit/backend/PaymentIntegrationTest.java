@@ -740,6 +740,107 @@ public class PaymentIntegrationTest {
                 .isEqualTo(original);
     }
 
+    /** Partial F07 schema must fail closed; all test DDL is rolled back. */
+    @Test
+    public void readinessRejectsMissingLedgerColumnsAndConstraints()
+            throws Exception {
+        paymentFixture();
+        var ledger = new com.equitransit.backend.repository.PaymentRepository(
+                dataSource);
+        var changes = new ArrayList<String>();
+
+        for (String table : List.of("PaymentProof", "PaymentOperation")) {
+            changes.add("EXEC sys.sp_rename 'dbo." + table
+                    + "','Missing" + table + "'");
+        }
+        for (String field : List.of("ReversalReason", "ReversedAt",
+                "ReversedBy", "ReversalProofFileKey")) {
+            changes.add("EXEC sys.sp_rename 'dbo.PaymentTransaction." + field
+                    + "','Missing" + field + "','COLUMN'");
+        }
+        changes.add("ALTER INDEX UQ_PaymentRequest_Schedule"
+                + " ON dbo.PaymentRequest DISABLE");
+        changes.add("ALTER INDEX UQ_Refund_BankReference"
+                + " ON dbo.Refund DISABLE");
+        changes.add("ALTER INDEX UQ_PaymentTransaction_BankReference"
+                + " ON dbo.PaymentTransaction DISABLE");
+        changes.add("ALTER TABLE dbo.PaymentRequest NOCHECK CONSTRAINT"
+                + " FK_Figma_PaymentRequest_ScheduleID");
+        changes.add("ALTER TABLE dbo.PaymentProof NOCHECK CONSTRAINT"
+                + " CK_PaymentProof_Size");
+        changes.add("ALTER TABLE dbo.PaymentProof NOCHECK CONSTRAINT"
+                + " CK_PaymentProof_Mime");
+        assertThat(ledger.ready()).isTrue();
+        for (String sql : changes) {
+            new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+                jdbc.execute(sql);
+                assertThat(ledger.ready()).as(sql).isFalse();
+                var readiness = ready();
+
+                assertThat(readiness.departureBlockers())
+                        .contains("PAYMENT_SCHEMA_PENDING");
+                assertThat(readiness.settlementBlockers())
+                        .contains("PAYMENT_SCHEMA_PENDING");
+                try {
+                    var response = get(pay(), owner, 503);
+
+                    assertThat(response.path("code").asText())
+                            .isEqualTo("PAYMENT_SCHEMA_PENDING");
+                } catch (Exception error) {
+                    throw new IllegalStateException(error);
+                } finally {
+                    tx.setRollbackOnly();
+                }
+            });
+            assertThat(ledger.ready()).isTrue();
+        }
+    }
+
+    /** @throws Exception if the allocation update lock is not retained */
+    @Test
+    public void refundAllocationIsLockedUntilTransactionCompletes()
+            throws Exception {
+        paymentFixture();
+        long allocation = post(pay() + "/allocations", manager,
+                allocationBody(receive("260.00"), "260.00"), 200)
+                .path("entityId").asLong();
+        var ledger = new com.equitransit.backend.repository.PaymentRepository(
+                dataSource);
+
+        try (var pool = Executors.newSingleThreadExecutor()) {
+            new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+                assertThat(ledger.rows("allocationForUpdate", Map.of(
+                        "order", order, "id", allocation))).hasSize(1);
+                var blocked = pool.submit(() -> {
+                    try (var connection = dataSource.getConnection();
+                            var statement = connection.createStatement()) {
+                        connection.setAutoCommit(false);
+                        statement.execute("SET LOCK_TIMEOUT 500");
+                        try {
+                            statement.executeUpdate("UPDATE"
+                                    + " dbo.PaymentAllocation SET"
+                                    + " AllocatedAmount=AllocatedAmount"
+                                    + " WHERE AllocationID=" + allocation);
+                            return 0;
+                        } catch (java.sql.SQLException error) {
+                            return error.getErrorCode();
+                        } finally {
+                            connection.rollback();
+                            statement.execute("SET LOCK_TIMEOUT -1");
+                        }
+                    }
+                });
+
+                try {
+                    assertThat(blocked.get(10, TimeUnit.SECONDS))
+                            .isEqualTo(1222);
+                } catch (Exception error) {
+                    throw new IllegalStateException(error);
+                }
+            });
+        }
+    }
+
     private int paymentStatus(CountDownLatch start, String path,
             ObjectNode body, String token) throws Exception {
         start.await(10, TimeUnit.SECONDS);

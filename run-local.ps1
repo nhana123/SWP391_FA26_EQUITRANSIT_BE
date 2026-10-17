@@ -4,9 +4,9 @@ Set-Location -LiteralPath $PSScriptRoot
 $env:JAVA_HOME = [Environment]::GetEnvironmentVariable('JAVA_HOME', 'User')
 if (-not $env:JAVA_HOME) { throw 'Configure JAVA_HOME for JDK 21 first.' }
 $env:Path = (Join-Path $env:JAVA_HOME 'bin') + ';' + $env:Path
-$nativeDir = Join-Path $env:LOCALAPPDATA 'EquiTransit\tools\sqljdbc-native'
+$nativeDir = Join-Path $PSScriptRoot '.local\tools\sqljdbc-native'
 if (-not (Test-Path -LiteralPath (Join-Path $nativeDir 'mssql-jdbc_auth-12.10.0.x64.dll'))) {
-    throw 'Run tools\setup-java.ps1 first.'
+    throw "Missing JDBC DLL in '$nativeDir'. Run .\tools\setup-java.ps1."
 }
 $localDir = Join-Path $PSScriptRoot '.local'
 New-Item -ItemType Directory -Force -Path $localDir | Out-Null
@@ -23,9 +23,16 @@ $secretProperties = Join-Path $localDir 'application-secrets.properties'
 [IO.File]::WriteAllText($secretProperties, 'app.jwt.secret=' + $env:EQ_JWT_SECRET)
 $env:SPRING_PROFILES_ACTIVE = 'local'
 $maven = Join-Path $PSScriptRoot 'mvnw.cmd'
-if ($Verify) {
-    & $maven -B verify
-} else {
-    & $maven -B spring-boot:run "-Dspring-boot.run.jvmArguments=-Djava.library.path=`"$nativeDir`""
+$previousJavaOptions = $env:JAVA_TOOL_OPTIONS
+$env:JAVA_TOOL_OPTIONS = ($previousJavaOptions +
+    ' "-Djava.library.path=' + $nativeDir + '"').Trim()
+try {
+    if ($Verify) {
+        & $maven -B verify
+    } else {
+        & $maven -B spring-boot:run
+    }
+    if ($LASTEXITCODE -ne 0) { throw "Maven exited with code $LASTEXITCODE." }
+} finally {
+    $env:JAVA_TOOL_OPTIONS = $previousJavaOptions
 }
-if ($LASTEXITCODE -ne 0) { throw "Maven exited with code $LASTEXITCODE." }

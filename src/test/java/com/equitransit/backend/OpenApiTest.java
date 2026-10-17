@@ -177,4 +177,51 @@ public class OpenApiTest {
         mvc.perform(get("/api/transport-orders/1/services"))
                 .andExpect(status().isUnauthorized());
     }
+    /** @throws Exception if F16 documentation/security is incomplete */
+    @Test
+    public void allActivityOperationsRequireBearerAndProduceJson()
+            throws Exception {
+        var api = new com.fasterxml.jackson.databind.ObjectMapper()
+                .readTree(mvc.perform(get("/v3/api-docs"))
+                        .andExpect(status().isOk()).andReturn().getResponse()
+                        .getContentAsString());
+        var gets = java.util.List.of("/api/dashboard", "/api/dashboard/tasks",
+                "/api/notifications", "/api/activity/orders/{orderId}/timeline",
+                "/api/manager/audit-events", "/api/manager/reports/financial",
+                "/api/customers/me/notification-preferences");
+        int count = 0;
+
+        for (String path : gets) {
+            var operation = api.path("paths").path(path).path("get");
+
+            org.assertj.core.api.Assertions.assertThat(
+                    operation.path("security").path(0).has("bearerAuth"))
+                    .as(path).isTrue();
+            org.assertj.core.api.Assertions.assertThat(operation
+                    .path("responses").path("200").path("content")
+                    .has("application/json")).as(path).isTrue();
+            mvc.perform(get(path.replace("{orderId}", "1")))
+                    .andExpect(status().isUnauthorized());
+            count++;
+        }
+        for (String path : java.util.List.of("/api/notifications/{id}/read",
+                "/api/customers/me/notification-preferences")) {
+            var operation = api.path("paths").path(path).path("put");
+
+            org.assertj.core.api.Assertions.assertThat(operation
+                    .path("security").path(0).has("bearerAuth"))
+                    .as(path).isTrue();
+            org.assertj.core.api.Assertions.assertThat(operation
+                    .path("responses").path("200").path("content")
+                    .has("application/json")).as(path).isTrue();
+            mvc.perform(org.springframework.test.web.servlet.request
+                    .MockMvcRequestBuilders.put(path.replace("{id}", "1"))
+                    .contentType(org.springframework.http.MediaType
+                            .APPLICATION_JSON).content("{\"enabled\":true}"))
+                    .andExpect(status().isUnauthorized());
+            count++;
+        }
+        org.assertj.core.api.Assertions.assertThat(count).isEqualTo(9);
+    }
+
 }

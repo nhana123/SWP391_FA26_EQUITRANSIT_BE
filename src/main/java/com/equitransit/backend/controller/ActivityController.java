@@ -18,6 +18,7 @@ import com.equitransit.backend.dto.activity.FinancialReport;
 import com.equitransit.backend.dto.activity.EmailPreference;
 import com.equitransit.backend.service.ActivityService;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 /** Thin role-isolated activity transport; no public audit writer endpoint. */
 @RestController
+@SecurityRequirement(name = "bearerAuth")
 @Validated
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 public class ActivityController {
