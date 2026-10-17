@@ -39,6 +39,8 @@ import org.junit.jupiter.api.Test;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -149,7 +151,8 @@ public class QuotePricingPolicyTest {
                 OffsetDateTime.parse("2026-11-01T00:00:00Z"),
                 "Verified retail offer");
 
-        when(builder.build(any(), any(), any(), any(), any(), any()))
+        when(builder.build(any(), any(), any(), any(), any(), any(),
+                any()))
                 .thenReturn(List.of(row));
         when(sources.read(anyLong(), anyList(), anyList(), any()))
                 .thenReturn(List.of(offer));
@@ -165,7 +168,8 @@ public class QuotePricingPolicyTest {
                 quantity, rate, null, status, 1L, 1, "ROAD km x rate",
                 List.of());
 
-        when(builder.build(any(), any(), any(), any(), any(), any()))
+        when(builder.build(any(), any(), any(), any(), any(), any(),
+                any()))
                 .thenReturn(List.of(row));
     }
 
@@ -185,7 +189,8 @@ public class QuotePricingPolicyTest {
                 "HORSE_VISIT", "VETERINARY", new BigDecimal(rate), null,
                 null, null, false, 1);
 
-        when(builder.build(any(), any(), any(), any(), any(), any()))
+        when(builder.build(any(), any(), any(), any(), any(), any(),
+                any()))
                 .thenReturn(List.of(first, second));
         when(sources.read(anyLong(), anyList(), anyList(), any()))
                 .thenReturn(List.of(source(rate, null), veterinary));
@@ -198,6 +203,123 @@ public class QuotePricingPolicyTest {
         return new QuotePriceSource(1, false, "ROAD_TRANSPORT", "KM",
                 "TRANSPORTATION", new BigDecimal(rate), null, expiry,
                 null, false, 1);
+    }
+
+    /** Inferred route counts can be priced without commercial overrides. */
+    @Test
+    public void routeEstimateUsesTariffUntilEvidenceOverridesIt() {
+        var row = new ServiceChargeResponse("AIRPORT_HANDLING",
+                "ADDITIONAL_CHARGES", "AIRPORT_CUSTOMS", "Handling", true,
+                true, "HORSE_AIRPORT", "3", "10.00", "30.00", "ESTIMATED",
+                1L, 1, "Route estimate", List.of());
+        var tariff = new QuotePriceSource(1, false, "AIRPORT_HANDLING",
+                "HORSE_AIRPORT", "AIRPORT_CUSTOMS", new BigDecimal("10"),
+                null, null, null, false, 1);
+
+        when(builder.build(any(), any(), any(), any(), any(), any(),
+                any())).thenReturn(List.of(row));
+        when(sources.read(anyLong(), anyList(), anyList(), any()))
+                .thenReturn(List.of(tariff));
+        var inferred = policy.prepare(1, snapshot, request(List.of()));
+
+        assertThat(inferred.lines().getFirst().amount()).isEqualTo("30.00");
+        var evidence = new QuoteEvidence(QuoteChargeCode.AIRPORT_HANDLING,
+                QuoteEvidenceStatus.PRICED, "4", 1L, null,
+                "Verified handling scope",
+                OffsetDateTime.parse("2026-11-01T00:00:00Z"),
+                "Actual handling includes an extra airport visit");
+        var assessed = policy.prepare(1, snapshot, request(List.of(evidence)));
+
+        assertThat(assessed.lines().getFirst().quantity()).isEqualTo("4");
+        assertThat(assessed.lines().getFirst().amount()).isEqualTo("40.00");
+        assertThat(assessed.blockers()).isEmpty();
+    }
+
+    /** Shipment slot quantities retain exact decimal arithmetic in F06. */
+    @Test
+    public void shipmentSlotRateCanBeCapturedInQuote() {
+        var row = new ServiceChargeResponse("AIR_STALL", "AIR_STALL",
+                "HORSE_ACCOMMODATION", "Wide stall", true, true,
+                "SHIPMENT", "1.5", "100.00", "150.00", "ESTIMATED",
+                1L, 1, "slots x shipment rate", List.of());
+        var tariff = new QuotePriceSource(1, false, "AIR_STALL", "SHIPMENT",
+                "HORSE_ACCOMMODATION", new BigDecimal("100"), null, null,
+                null, false, 1);
+
+        when(builder.build(any(), any(), any(), any(), any(), any(),
+                any())).thenReturn(List.of(row));
+        when(sources.read(anyLong(), anyList(), anyList(), any()))
+                .thenReturn(List.of(tariff));
+        var result = policy.prepare(1, snapshot, request(List.of()));
+
+        assertThat(result.lines().getFirst().unit()).isEqualTo("SHIPMENT");
+        assertThat(result.lines().getFirst().quantity()).isEqualTo("1.5");
+        assertThat(result.lines().getFirst().amount()).isEqualTo("150.00");
+    }
+
+    /** An evidenced supplemental lease overrides partial inclusion. */
+    @Test
+    public void supplementalStallUsesItsOwnSourceUnitAndAmount() {
+        for (String status : List.of("INCLUDED", "BUNDLE_REVIEW_REQUIRED")) {
+            var row = new ServiceChargeResponse("AIR_STALL", "AIR_STALL",
+                    "HORSE_ACCOMMODATION", "Supplemental stall", true, true,
+                    "SLOT_KM", null, null, null, status, null, null,
+                    "Assess remaining uncovered scope", List.of());
+            var source = new QuotePriceSource(7, false, "AIR_STALL",
+                    "SHIPMENT", "HORSE_ACCOMMODATION",
+                    new BigDecimal("100.00"), null, null, null, false, 1);
+            var evidence = new QuoteEvidence(QuoteChargeCode.AIR_STALL,
+                    QuoteEvidenceStatus.PRICED, "1.5", 7L, null,
+                    "Second flight lease evidence",
+                    OffsetDateTime.parse("2026-11-01T00:00:00Z"),
+                    "Only the uncovered second leg");
+
+            when(builder.build(any(), any(), any(), any(), any(), any(),
+                    any())).thenReturn(List.of(row));
+            when(sources.read(anyLong(), anyList(), anyList(), any()))
+                    .thenReturn(List.of(source));
+            var line = policy.prepare(1, snapshot, request(List.of(evidence)))
+                    .lines().getFirst();
+
+            assertThat(line.pricingStatus()).isEqualTo("PRICED");
+            assertThat(line.unit()).isEqualTo("SHIPMENT");
+            assertThat(line.quantity()).isEqualTo("1.5");
+            assertThat(line.amount()).isEqualTo("150.00");
+        }
+    }
+
+    /** Only selected full-route airfare can waive an entire service charge. */
+    @Test
+    public void onlyEntireRouteCoverageSuppressesTheFullCharge() {
+        for (String scope : List.of("ENTIRE_ROUTE", "PARTIAL_ROUTE",
+                "UNKNOWN")) {
+            var offer = new QuotePriceSource(5, true, "AIRFARE", "SHIPMENT",
+                    null, new BigDecimal("1000"), BigDecimal.ONE,
+                    OffsetDateTime.parse("2026-11-01T00:00:00Z"),
+                    "{\"schemaVersion\":1,\"coverage\":\"" + scope
+                            + "\",\"services\":[\"TERMINAL_HANDLING\"]}",
+                    true, null);
+            var evidence = new QuoteEvidence(QuoteChargeCode.AIRFARE,
+                    QuoteEvidenceStatus.PRICED, "1", null, 5L,
+                    "Verified route coverage", offer.validUntil(),
+                    "Supplier attests the recorded scope");
+
+            when(builder.build(any(), any(), any(), any(), any(), any(),
+                    any())).thenReturn(List.of());
+            when(sources.read(anyLong(), anyList(), anyList(), any()))
+                    .thenReturn(List.of(offer));
+            policy.prepare(1, snapshot, request(List.of(evidence)));
+            var capture = org.mockito.ArgumentCaptor.forClass(
+                    com.equitransit.backend.entity.BundleResult.class);
+
+            verify(builder, atLeastOnce())
+                    .build(any(), any(), any(), any(), capture.capture(), any(),
+                            any());
+            assertThat(capture.getValue().included())
+                    .contains("AIR_STALL", "TERMINAL_HANDLING");
+            assertThat(capture.getValue().ambiguous())
+                    .isEqualTo(!scope.equals("ENTIRE_ROUTE"));
+        }
     }
 
     private QuotePrepareRequest request(List<QuoteEvidence> evidence) {

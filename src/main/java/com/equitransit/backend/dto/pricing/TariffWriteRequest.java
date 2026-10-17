@@ -16,6 +16,7 @@ import jakarta.validation.constraints.Pattern;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 import com.equitransit.backend.entity.pricing.ServiceProduct;
+import com.equitransit.backend.entity.pricing.TariffUnit;
 
 
 /**
@@ -39,5 +40,15 @@ public record TariffWriteRequest(
         @Schema(example = "000000000001A2B3", nullable = true,
                 pattern = "^[0-9a-fA-F]{16}$")
         @Pattern(regexp = "^[0-9a-fA-F]{16}$")
-        String recordVersion) {
+        String recordVersion,
+        @Schema(example = "KM", description = "Omit for the legacy create "
+                + "default, or to preserve the unit when replacing a version")
+        @com.fasterxml.jackson.annotation.JsonInclude(
+                com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+        TariffUnit unitCode) {
+
+    /** @return selected unit or the backward-compatible product default */
+    public String effectiveUnit() {
+        return unitCode == null ? product.unit() : unitCode.name();
+    }
 }

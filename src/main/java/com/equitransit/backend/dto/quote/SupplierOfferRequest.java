@@ -9,6 +9,7 @@ package com.equitransit.backend.dto.quote;
 
 
 import com.equitransit.backend.entity.quote.QuoteChargeCode;
+import com.equitransit.backend.entity.quote.BundleCoverage;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -70,5 +71,15 @@ public record SupplierOfferRequest(
         boolean includesStall,
         @Schema(example = "[]")
         @NotNull @Size(max = 4)
-        List<@NotNull QuoteChargeCode> includedCharges) {
+        List<@NotNull QuoteChargeCode> includedCharges,
+        @Schema(example = "ENTIRE_ROUTE",
+                description = "Missing coverage is UNKNOWN, never full route")
+        @com.fasterxml.jackson.annotation.JsonInclude(
+                com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+        BundleCoverage bundleCoverage) {
+
+    /** @return explicit coverage, preserving legacy commands as unknown */
+    public BundleCoverage effectiveCoverage() {
+        return bundleCoverage == null ? BundleCoverage.UNKNOWN : bundleCoverage;
+    }
 }

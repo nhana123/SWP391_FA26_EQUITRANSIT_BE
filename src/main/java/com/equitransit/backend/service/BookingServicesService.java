@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Objects;
+import java.util.Set;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import com.equitransit.backend.dto.request.OrderDraftRequest;
+import com.equitransit.backend.dto.request.OrderServicePreferences;
 import com.equitransit.backend.dto.request.OrderDraftUpdateRequest;
 import com.equitransit.backend.dto.request.OrderRevisionRequest;
 import com.equitransit.backend.dto.request.ServiceConfirmationRequest;
@@ -43,6 +46,7 @@ import com.equitransit.backend.dto.response.ServiceConfirmationResponse;
 import com.equitransit.backend.dto.response.ServiceDisclosureResponse;
 import com.equitransit.backend.dto.response.OrderSnapshot;
 import com.equitransit.backend.entity.TransportOrderRecord;
+import com.equitransit.backend.entity.BundleResult;
 import com.equitransit.backend.entity.quote.QuoteSnapshot;
 import com.equitransit.backend.exception.OrderException;
 import com.equitransit.backend.json.OrderJsonCodec;
@@ -142,8 +146,11 @@ public class BookingServicesService {
     private ServiceDisclosureResponse disclosure(long id,
             ServicePreviewRequest preview) {
         TransportOrderRecord order = owned(id, false);
-        OrderDraftRequest request = request(order);
+        OrderDraftRequest request = mapper.convertValue(request(order),
+                OrderDraftRequest.class);
         HorseResponse horse = horse(order, request);
+        defaultStall(request, horse);
+        OrderServicePreferences saved = request.getServices();
         if (preview != null) {
             if (!order.recordVersion().equalsIgnoreCase(preview.recordVersion())
                     || (horse != null && (preview.horseRecordVersion() == null
@@ -158,25 +165,33 @@ public class BookingServicesService {
             }
             policy.validate(preview.services(), horse,
                     request.getDeliveryDeadline());
-            request.setServices(preview.services());
+            request.setServices(mapper.convertValue(preview.services(),
+                    OrderServicePreferences.class));
+            defaultStall(request, horse);
         }
         OffsetDateTime now = OffsetDateTime.now(clock);
         OffsetDateTime horizon =
                 policy.horizon(request.getDeliveryDeadline(), now);
         var quarantine = assessments.quarantine(id, order.currentRevisionId(),
                 now, horizon);
+        var bundle = assessments.bundles(order.currentRevisionId(), now);
+
+        if (preview != null && !unchanged("AIR_STALL", saved,
+                request.getServices())) {
+            bundle = new BundleResult(Set.of(), false);
+        }
         List<ServiceChargeResponse> rows = charges.build(request.getServices(),
                 assessments.itinerary(id, order.currentRevisionId(), now),
                 quarantine, assessments.veterinary(id,
                 order.currentRevisionId(),
                         now, horizon),
-                assessments.bundles(order.currentRevisionId(), now), now);
-        var commercial = preview == null ? assessments.commercialQuote(id,
-                order.currentRevisionId(), now)
-                : Optional.<QuoteSnapshot>empty();
+                bundle, now, request);
+        var commercial = assessments.commercialQuote(id,
+                order.currentRevisionId(), now);
 
         if (commercial.isPresent()) {
-            rows = quotedRows(rows, commercial.get());
+            rows = quotedRows(rows, commercial.get(), saved,
+                    preview == null ? null : request.getServices());
         }
         BigDecimal known = rows.stream().filter(row -> row.amount() != null)
                 .map(row -> new BigDecimal(row.amount()))
@@ -188,7 +203,8 @@ public class BookingServicesService {
                         "EXTERNAL_PROVIDER", "EVENT_ONLY")
                         .contains(row.pricingStatus()));
         unresolved |= commercial.isPresent()
-                && !commercial.get().blockers().isEmpty();
+                && unresolvedSnapshot(commercial.get(), saved,
+                        preview == null ? null : request.getServices());
         List<StallFitResult> options = horse == null ? List.of()
                 : policy.options(horse, request.getDeliveryDeadline());
 
@@ -248,9 +264,11 @@ public class BookingServicesService {
                     "Refresh the request revision with your updated horse "
                             + "profile before confirming services.");
         }
-        policy.validate(command.services(), horse,
+        request.setServices(mapper.convertValue(command.services(),
+                OrderServicePreferences.class));
+        defaultStall(request, horse);
+        policy.validate(request.getServices(), horse,
                 request.getDeliveryDeadline());
-        request.setServices(command.services());
         if ("DRAFT".equals(order.orderStatus())) {
             OrderDraftUpdateRequest update = mapper.convertValue(request,
                     OrderDraftUpdateRequest.class);
@@ -280,8 +298,12 @@ public class BookingServicesService {
     }
 
     private List<ServiceChargeResponse> quotedRows(
-            List<ServiceChargeResponse> rows, QuoteSnapshot quote) {
+            List<ServiceChargeResponse> rows, QuoteSnapshot quote,
+            OrderServicePreferences saved, OrderServicePreferences preview) {
         return rows.stream().map(row -> {
+            if (preview != null && !unchanged(row.code(), saved, preview)) {
+                return row;
+            }
             var line = quote.lines().stream()
                     .filter(item -> item.code().equals(row.code()))
                     .findFirst().orElse(null);
@@ -315,6 +337,65 @@ public class BookingServicesService {
                                     + "HALF_UP (2 decimals)",
                     line.blockers());
         }).toList();
+    }
+
+    private void defaultStall(OrderDraftRequest request, HorseResponse horse) {
+        if (horse == null) {
+            return;
+        }
+        var selected = request.getServices();
+
+        if (selected == null) {
+            selected = new OrderServicePreferences();
+            request.setServices(selected);
+        }
+        if (selected.getAirStall() == null) {
+            selected.setAirStall(policy.defaultAirStall(horse,
+                    request.getDeliveryDeadline()));
+        }
+    }
+
+    private boolean unchanged(String code, OrderServicePreferences saved,
+            OrderServicePreferences preview) {
+        List<String> fields = switch (code) {
+            case "ROAD_TRANSPORT" -> List.of("roadArrangement",
+                    "roadProviderName", "roadProviderContact");
+            case "AIRFARE", "AIR_STALL", "AIRPORT_HANDLING",
+                    "TERMINAL_HANDLING", "CUSTOMS_DECLARATION" ->
+                    List.of("airStall");
+            case "HORSE_CARE" -> List.of("enhancedCare");
+            case "GROOMING" -> List.of("groomingDays");
+            case "BOARDING" -> List.of("boardingNights");
+            case "VETERINARY_EXAM", "VETERINARY_TEST", "VETERINARY_VACCINE",
+                    "VETERINARY_CERTIFICATE" ->
+                    List.of("veterinaryArrangement", "veterinaryProviderName",
+                            "veterinaryProviderContact");
+            case "QUARANTINE" -> List.of("quarantinePackage");
+            case "INSURANCE" -> List.of("insurance", "declaredValue",
+                    "existingPolicyReference");
+            case "ESCORT" -> List.of("escortNotes");
+            default -> List.of();
+        };
+        JsonNode before = mapper.valueToTree(saved == null
+                ? new OrderServicePreferences() : saved);
+        JsonNode after = mapper.valueToTree(preview);
+
+        return fields.stream().allMatch(field ->
+                Objects.equals(before.path(field), after.path(field))
+                        || "declaredValue".equals(field)
+                        && before.path(field).isTextual()
+                        && after.path(field).isTextual()
+                        && new BigDecimal(before.path(field).asText())
+                                .compareTo(new BigDecimal(after.path(field)
+                                        .asText())) == 0);
+    }
+
+    private boolean unresolvedSnapshot(QuoteSnapshot quote,
+            OrderServicePreferences saved, OrderServicePreferences preview) {
+        return quote.blockers().stream().anyMatch(blocker -> preview == null
+                || quote.lines().stream().noneMatch(line ->
+                        blocker.equals(line.code() + "_PENDING")
+                                && !unchanged(line.code(), saved, preview)));
     }
 
     private OrderDraftRequest request(TransportOrderRecord order) {

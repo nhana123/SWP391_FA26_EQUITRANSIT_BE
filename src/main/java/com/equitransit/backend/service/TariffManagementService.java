@@ -150,15 +150,22 @@ public class TariffManagementService {
             throw conflict("TARIFF_INCLUDED",
                     "Included services cannot be charged a second time.");
         }
+        if (!request.product().supportsUnit(request.effectiveUnit())) {
+            throw new OrderException(HttpStatus.BAD_REQUEST,
+                    "TARIFF_UNIT_INVALID",
+                    "Unsupported unit for this product.");
+        }
         BigDecimal price = new BigDecimal(request.unitPrice());
 
-        if (price.setScale(4).precision() > 18) {
+        if (price.setScale(4, java.math.RoundingMode.HALF_UP)
+                .precision() > 18) {
             throw conflict("TARIFF_AMOUNT_INVALID",
                     "The rate exceeds supported SQL precision.");
         }
         var latest = tariffs.latest(request.product());
         OffsetDateTime at = OffsetDateTime.now(clock).withNano(0);
         int version = latest.map(TariffResponse::version).orElse(0) + 1;
+        String unit = request.effectiveUnit();
 
         if (previous == null) {
             if (request.recordVersion() != null
@@ -168,6 +175,10 @@ public class TariffManagementService {
             }
         } else {
             var prior = find(previous);
+
+            if (request.unitCode() == null) {
+                unit = prior.unit();
+            }
 
             if (prior.product() != request.product() || latest.isEmpty()
                     || latest.get().tariffId() != previous
@@ -183,6 +194,10 @@ public class TariffManagementService {
                 at = prior.effectiveFrom().plusSeconds(1);
             }
         }
+        if (!request.product().supportsUnit(unit)) {
+            throw new OrderException(HttpStatus.BAD_REQUEST,
+                    "TARIFF_UNIT_INVALID", "Review the legacy tariff unit.");
+        }
         if (request.validUntil() != null
                 && !request.validUntil().withNano(0).isAfter(at)) {
             throw conflict("TARIFF_EXPIRY_INVALID",
@@ -191,7 +206,7 @@ public class TariffManagementService {
         if (previous != null) {
             tariffs.end(find(previous), at);
         }
-        long id = tariffs.insert(request, version, actor.staffId(), at);
+        long id = tariffs.insert(request, version, actor.staffId(), at, unit);
         var response = find(id);
 
         tariffs.audit(actor.userId(), id, json.write(Map.of("schemaVersion", 1,

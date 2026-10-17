@@ -24,4 +24,11 @@ public record ServiceRateResponse(
         @Schema(example = "RATE") PricingMode pricingMode,
         @Schema(example = "31", nullable = true) Long tariffId,
         @Schema(example = "1", nullable = true) Integer tariffVersion) {
+
+    /** @return units the Manager may publish for this product */
+    @Schema(example = "[\"KM\"]")
+    public java.util.List<com.equitransit.backend.entity.pricing.TariffUnit>
+            getAllowedUnits() {
+        return product.allowedUnits();
+    }
 }

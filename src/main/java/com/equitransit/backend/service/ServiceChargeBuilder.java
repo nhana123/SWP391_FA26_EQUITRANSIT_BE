@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
 import com.equitransit.backend.dto.request.OrderServicePreferences;
+import com.equitransit.backend.dto.request.OrderDraftRequest;
 import com.equitransit.backend.dto.response.ServiceChargeResponse;
 import com.equitransit.backend.entity.BundleResult;
 import com.equitransit.backend.entity.PublishedTariffRecord;
@@ -70,10 +71,50 @@ public class ServiceChargeBuilder {
             QuarantineAssessmentResult quarantine,
             VeterinaryAssessmentResult veterinary, BundleResult bundle,
             OffsetDateTime now) {
+        return build(preferences, itinerary, quarantine, veterinary, bundle,
+                now, null);
+    }
+
+    /**
+     * Adds route-based commercial estimates without claiming legal approval.
+     * @param preferences explicit or view-default preferences
+     * @param itinerary sourced distances, including explicit road-only routes
+     * @param quarantine clinical applicability
+     * @param veterinary clinical counts
+     * @param bundle evidenced inclusions
+     * @param now calculation time
+     * @param request route and transit inputs, null for legacy callers
+     * @return one disclosed row per charge
+     */
+    public List<ServiceChargeResponse> build(
+            OrderServicePreferences preferences,
+            ItineraryPricingContext itinerary,
+            QuarantineAssessmentResult quarantine,
+            VeterinaryAssessmentResult veterinary, BundleResult bundle,
+            OffsetDateTime now, OrderDraftRequest request) {
         OrderServicePreferences selected = preferences == null
                 ? new OrderServicePreferences() : preferences;
         List<ServiceChargeResponse> rows = new ArrayList<>();
         List<PublishedTariffRecord> catalogue = sources.tariffs(CODES, now);
+        boolean international = request != null
+                && request.getOriginCountryCode() != null
+                && request.getDestinationCountryCode() != null
+                && !request.getOriginCountryCode().isBlank()
+                && !request.getDestinationCountryCode().isBlank()
+                && !request.getOriginCountryCode().equals(
+                        request.getDestinationCountryCode());
+        boolean airRoute = itinerary.airKm() == null ? international
+                : itinerary.airKm().signum() > 0;
+        int transits = request == null || request.getTransitAirports() == null
+                ? 0 : request.getTransitAirports().size();
+        BigDecimal airports = airRoute
+                ? BigDecimal.valueOf(2L + transits) : null;
+        String stallUnit = unit(catalogue, "AIR_STALL", "DEFAULT",
+                "SLOT_KM");
+        String careUnit = unit(catalogue, "HORSE_CARE", "ENHANCED",
+                "HORSE_KM");
+        String documentUnit = unit(catalogue, "DOCUMENT_COORDINATION",
+                "DEFAULT", "ROUTE_KM");
         BigDecimal route = itinerary.roadKm() == null
                 || itinerary.airKm() == null ? null
                 : itinerary.roadKm().add(itinerary.airKm());
@@ -81,6 +122,10 @@ public class ServiceChargeBuilder {
                 || itinerary.airKm() == null ? null : itinerary.airKm()
                         .multiply(StallFitEvaluator.slots(
                                 selected.getAirStall()));
+        if ("SHIPMENT".equals(stallUnit)
+                && selected.getAirStall() != null) {
+            slotKm = StallFitEvaluator.slots(selected.getAirStall());
+        }
         boolean companyRoad = selected.getRoadArrangement()
                 != ServiceArrangement.CUSTOMER;
         boolean companyVet = selected.getVeterinaryArrangement()
@@ -97,7 +142,8 @@ public class ServiceChargeBuilder {
                         && itinerary.airKm().signum() == 0
                         ? "NOT_REQUIRED" : "AIRFARE_PENDING");
         add(rows, "AIR_STALL", "DEFAULT", "AIR_STALL", "HORSE_ACCOMMODATION",
-                "Air stall", "SLOT_KM", "slots × AIR km × rate",
+                "Air stall", stallUnit, "SHIPMENT".equals(stallUnit)
+                        ? "slots × shipment rate" : "slots × AIR km × rate",
                 true, true, slotKm, catalogue,
                 itinerary.airKm() != null && itinerary.airKm().signum() == 0
                         ? "NOT_REQUIRED" : selected.getAirStall() == null
@@ -108,9 +154,11 @@ public class ServiceChargeBuilder {
                 "Basic care", "INCLUDED", "Included; no duplicate charge",
                 true, true, null, catalogue, "INCLUDED");
         add(rows, "HORSE_CARE", "ENHANCED", "HORSE_CARE", "HORSE_CARE",
-                "Enhanced care", "HORSE_KM", "1 horse × route km × rate",
+                "Enhanced care", careUnit, "SHIPMENT".equals(careUnit)
+                        ? "1 shipment × rate" : "1 horse × route km × rate",
                 Boolean.TRUE.equals(selected.getEnhancedCare()), false,
-                route, catalogue, null);
+                "SHIPMENT".equals(careUnit) ? BigDecimal.ONE : route,
+                catalogue, null);
         add(rows, "GROOMING", "EXTRA", "HORSE_CARE", "HORSE_CARE",
                 "Extra groom", "PERSON_DAY", "requested groom days × rate",
                 positive(selected.getGroomingDays()), false,
@@ -155,27 +203,30 @@ public class ServiceChargeBuilder {
         add(rows, "DOCUMENT_COORDINATION", "DEFAULT", "ADDITIONAL_CHARGES",
                 "DOCUMENTATION_QUARANTINE",
                 "Document processing and coordination",
-                "ROUTE_KM", "(ROAD km + AIR km) × rate; once per booking",
-                true, true, route, catalogue, null);
+                documentUnit, "SHIPMENT".equals(documentUnit)
+                        ? "1 shipment × rate; once per booking"
+                        : "(ROAD km + AIR km) × rate; once per booking",
+                true, true, "SHIPMENT".equals(documentUnit)
+                        ? BigDecimal.ONE : route, catalogue, null);
         add(rows, "DOCUMENT_REVIEW", "DEFAULT", "ADDITIONAL_CHARGES",
                 "DOCUMENTATION_QUARANTINE", "Document review and follow-up",
                 "INCLUDED", "Included in coordination; no processing fee twice",
                 true, true, null, catalogue, "INCLUDED");
         add(rows, "AIRPORT_HANDLING", "DEFAULT", "ADDITIONAL_CHARGES",
                 "AIRPORT_CUSTOMS", "Airport handling", "HORSE_AIRPORT",
-                "1 horse × assessed handling airports × rate",
-                true, true, null, catalogue,
+                "Route estimate: (2 + transit airports) × rate",
+                true, true, airports, catalogue,
                 inclusion("AIRPORT_HANDLING", bundle));
         add(rows, "TERMINAL_HANDLING", "DEFAULT", "ADDITIONAL_CHARGES",
                 "AIRPORT_CUSTOMS", "Terminal handling", "HORSE_AIRPORT",
-                "Review bundled terminal scope before charging separately",
-                true, true, null, catalogue, bundle.included()
-                        .contains("TERMINAL_HANDLING") ? "INCLUDED"
-                                : "BUNDLE_REVIEW_REQUIRED");
+                "Route estimate: (2 + transit airports) × rate",
+                true, true, airports, catalogue,
+                inclusion("TERMINAL_HANDLING", bundle));
         add(rows, "CUSTOMS_DECLARATION", "DEFAULT", "ADDITIONAL_CHARGES",
                 "AIRPORT_CUSTOMS", "Customs declaration service", "DECLARATION",
-                "assessed declarations × rate; excludes government duty",
-                true, true, null, catalogue, inclusion("CUSTOMS_DECLARATION",
+                "Route estimate: 2 declarations × rate; excludes duty",
+                true, true, international ? new BigDecimal("2") : null,
+                catalogue, inclusion("CUSTOMS_DECLARATION",
                 bundle));
         add(rows, "GOVERNMENT_DUTY", "DEFAULT", "ADDITIONAL_CHARGES",
                 "AIRPORT_CUSTOMS", "Government duties and taxes", "ASSESSMENT",
@@ -187,12 +238,13 @@ public class ServiceChargeBuilder {
                 false, false, null, catalogue, "EVENT_ONLY");
         add(rows, "ESCORT", "REQUESTED", "HORSE_CARE", "HORSE_CARE",
                 "Requested escort support", "PERSON_LEG",
-                "Verified scope and provider confirmation required",
+                "Route estimate: (1 + transit airports) × rate",
                 selected.getEscortNotes() != null
                         && !selected.getEscortNotes().isBlank(), false,
-                null, catalogue, selected.getEscortNotes() == null
+                airRoute ? BigDecimal.valueOf(1L + transits) : null,
+                catalogue, selected.getEscortNotes() == null
                         || selected.getEscortNotes().isBlank()
-                        ? "NOT_SELECTED" : "SUPPLIER_CONFIRMATION_PENDING");
+                        ? "NOT_SELECTED" : null);
         return List.copyOf(rows);
     }
 
@@ -226,8 +278,18 @@ public class ServiceChargeBuilder {
                 .map(PublishedTariffRecord::tariff).toList();
     }
 
+    private String unit(List<PublishedTariffRecord> catalogue, String code,
+            String option, String fallback) {
+        var matching = rates(catalogue, code, option);
+
+        return matching.size() == 1
+                && "SHIPMENT".equals(matching.getFirst().unit())
+                ? "SHIPMENT" : fallback;
+    }
+
     private String inclusion(String code, BundleResult bundle) {
-        return bundle.ambiguous() ? "BUNDLE_REVIEW_REQUIRED"
+        return bundle.ambiguous() && (bundle.included().isEmpty()
+                || bundle.included().contains(code)) ? "BUNDLE_REVIEW_REQUIRED"
                 : bundle.included().contains(code) ? "INCLUDED" : null;
     }
 

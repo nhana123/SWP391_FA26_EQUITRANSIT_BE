@@ -105,14 +105,15 @@ public class ServiceAssessmentFacade {
                     .map(PublishedTariffRecord::tariff).toList();
             var rate = matches.size() == 1 ? matches.getFirst() : null;
             boolean usable = rate != null
-                    && rate.unit().equals(product.unit())
+                    && product.supportsUnit(rate.unit())
                     && rate.costGroup().equals(product.group())
                     && rate.rate().signum() >= 0
                     && rate.rate().stripTrailingZeros().scale() <= 2
                     && product.mode() != PricingMode.INCLUDED;
 
             return new ServiceRateResponse(
-                    product, product.section(), product.unit(), usable
+                    product, product.section(), usable ? rate.unit()
+                            : product.unit(), usable
                             ? rate.rate().setScale(2,
                                     java.math.RoundingMode.HALF_UP)
                                     .toPlainString() : null,
@@ -205,7 +206,7 @@ public class ServiceAssessmentFacade {
             included.add("AIR_STALL");
         }
         if (source.includedCharges() == null) {
-            return new BundleResult(Set.copyOf(included), false);
+            return new BundleResult(Set.copyOf(included), !included.isEmpty());
         }
         try {
             node = mapper.readTree(source.includedCharges());
@@ -220,7 +221,8 @@ public class ServiceAssessmentFacade {
                 }
                 included.add(code.asText());
             }
-            return new BundleResult(Set.copyOf(included), false);
+            return new BundleResult(Set.copyOf(included), !included.isEmpty()
+                    && !"ENTIRE_ROUTE".equals(node.path("coverage").asText()));
         } catch (JsonProcessingException error) {
             return new BundleResult(Set.of(), true);
         }

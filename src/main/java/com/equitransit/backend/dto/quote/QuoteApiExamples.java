@@ -66,7 +66,8 @@ public final class QuoteApiExamples {
              "purchaseUnitPrice":"900.00","retailUnitPrice":"1000.00",
              "validUntil":"2027-02-01T08:00:00Z",
              "evidenceFileKey":"evidence/verified-offer-001.pdf",
-             "includesStall":false,"includedCharges":[]}
+             "includesStall":false,"includedCharges":[],
+             "bundleCoverage":"ENTIRE_ROUTE"}
             """;
 
     private QuoteApiExamples() {

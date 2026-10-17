@@ -48,6 +48,12 @@ public class ChargeCalculator {
         BigDecimal amount = null;
         String status;
 
+        if (quantity != null && (quantity.signum() < 0
+                || quantity.stripTrailingZeros().scale() > 3)) {
+            quantity = null;
+            blockers.add("QUANTITY_CONFIGURATION_INVALID");
+        }
+
         if (tariff != null && (!unit.equals(tariff.unit())
                 || !group.equals(tariff.costGroup())
                 || tariff.rate() == null || tariff.rate().signum() < 0

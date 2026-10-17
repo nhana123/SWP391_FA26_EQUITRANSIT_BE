@@ -878,6 +878,21 @@ public class ApiDtoContractTest {
                 .isNotEqualTo("null");
         assertThat(api.at("/components/schemas/ServiceRateResponse")
                 .toString()).doesNotContain("sourceReference", "purchase");
+        var schemas = api.at("/components/schemas");
+
+        assertThat(schemas.at("/TariffWriteRequest/properties/unitCode")
+                .toString())
+                .contains("SHIPMENT", "SLOT_KM", "HORSE_KM", "ROUTE_KM");
+        assertThat(schemas.at("/SupplierOfferRequest/properties/bundleCoverage")
+                .toString())
+                .contains("ENTIRE_ROUTE", "PARTIAL_ROUTE", "UNKNOWN");
+        assertThat(schemas.at("/ServiceRateResponse/properties/allowedUnits")
+                .toString()).contains("SHIPMENT");
+        for (String name : List.of("TariffWriteRequest",
+                "SupplierOfferRequest", "ServicePreviewRequest")) {
+            assertActivityModel(schemas.path(name), schemas,
+                    new java.util.HashSet<>(), false);
+        }
         assertThat(api.path("paths").has("/api/manager/service-tariffs"))
                 .isTrue();
         assertThat(api.path("paths").has(

@@ -143,13 +143,14 @@ public class TariffRepository {
      * @param version next family version allocated under the catalog lock
      * @param staff trusted Manager StaffID
      * @param from activation time
+     * @param unit resolved supported unit, preserving omitted replacement input
      * @return new immutable retail price version
      */
     public long insert(TariffWriteRequest request, int version, long staff,
-            OffsetDateTime from) {
+            OffsetDateTime from, String unit) {
         var args = args(request.product()).addValue("group",
                 request.product().group()).addValue("unit",
-                request.product().unit()).addValue("rate",
+                unit).addValue("rate",
                     new BigDecimal(request.unitPrice()))
                 .addValue("source", request.sourceReference().trim())
                 .addValue("staff", staff).addValue("version", version)

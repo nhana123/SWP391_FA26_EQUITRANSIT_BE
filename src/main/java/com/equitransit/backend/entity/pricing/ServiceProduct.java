@@ -124,6 +124,21 @@ public enum ServiceProduct {
         return unit;
     }
 
+    /** @return permitted retail units, including the legacy default */
+    public java.util.List<TariffUnit> allowedUnits() {
+        return switch (this) {
+            case AIR_STALL, ENHANCED_CARE, DOCUMENT_COORDINATION ->
+                    java.util.List.of(TariffUnit.valueOf(unit),
+                            TariffUnit.SHIPMENT);
+            default -> java.util.List.of(TariffUnit.valueOf(unit));
+        };
+    }
+
+    /** @param value proposed persisted unit @return supported unit */
+    public boolean supportsUnit(String value) {
+        return allowedUnits().stream().anyMatch(v -> v.name().equals(value));
+    }
+
     /** @return server-owned mode */
     public PricingMode mode() {
         return mode;
