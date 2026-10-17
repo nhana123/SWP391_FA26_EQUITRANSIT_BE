@@ -292,7 +292,7 @@ public class OpenApiTest {
                 checked++;
             }
         }
-        org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(9);
+        org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(10);
     }
 
     /** @throws Exception if any F11 operation admits an anonymous caller */

@@ -422,6 +422,81 @@ public class OperationalPlanIntegrationTest {
                 .isEqualTo("HORSE_SCHEDULE_OVERLAP");
     }
 
+    /** Two 1.5-slot SHARED orders share a 3.0-slot stall on the same flight. */
+    @Test
+    public void sharedAirStallAllowsTwoWideOrdersOnSameFlightAndBlocksOverflow()
+            throws Exception {
+        var c1 = createApprovedCase(createHorse(), "WIDE");
+        var c2 = createApprovedCase(createHorse(), "WIDE");
+        var c3 = createApprovedCase(createHorse(), "WIDE");
+        var dep = OffsetDateTime.now(ZoneOffset.UTC).plusDays(12).withNano(0);
+        var arr = dep.plusHours(8);
+        var airLegs = List.of(Map.of("sequenceNo", 1, "transportMode", "AIR",
+                "startPoint", "Noi Bai", "endPoint", "London Heathrow",
+                "distanceKm", "9200.000", "distanceSource", "IATA Route",
+                "plannedDeparture", dep.toString(), "plannedArrival",
+                arr.toString(), "plannedFlightNumber", "VN0051"));
+        var p1 = postJson(base(c1.orderId()), Map.of("command",
+                command(c1.orderId()), "revisionId", c1.revisionId(),
+                "setAsCurrentDraft", true, "legs", airLegs),
+                actor("COORDINATOR").token(), 200);
+        var p2 = postJson(base(c2.orderId()), Map.of("command",
+                command(c2.orderId()), "revisionId", c2.revisionId(),
+                "setAsCurrentDraft", true, "legs", airLegs),
+                actor("COORDINATOR").token(), 200);
+        var p3 = postJson(base(c3.orderId()), Map.of("command",
+                command(c3.orderId()), "revisionId", c3.revisionId(),
+                "setAsCurrentDraft", true, "legs", airLegs),
+                actor("COORDINATOR").token(), 200);
+        var candidates = read(mvc.perform(get(base(c1.orderId())
+                + "/shared-stall-candidates")
+                .header("Authorization", actor("COORDINATOR").token()))
+                .andExpect(status().isOk()).andReturn());
+
+        assertThat(candidates.toString()).contains(
+                "\"candidateOrderId\":" + c2.orderId(),
+                "\"candidateOrderId\":" + c3.orderId(),
+                "\"combinedSlotQuantity\":3.0");
+        var stall = createResource("stalls");
+        var policy = body("fit-policies");
+
+        ((ObjectNode) policy.get("data")).put("status", "APPROVED");
+        createResource("fit-policies", policy);
+        long stallId = stall.get("id").asLong();
+        String stallVer = stall.get("recordVersion").asText();
+
+        postJson(base(c1.orderId()) + "/" + p1.get("planId").asLong()
+                + "/legs/" + p1.at("/legs/0/legId").asLong()
+                + "/stall-assignment", Map.of("command", command(c1.orderId()),
+                        "stallId", stallId, "stallRecordVersion", stallVer,
+                        "carrierAcceptanceStatus", "ACCEPTED",
+                        "status", "CONFIRMED",
+                        "carrierApprovalFileKey", "proof-1.pdf"),
+                actor("COORDINATOR").token(), 200);
+        var shared = postJson(base(c2.orderId()) + "/"
+                + p2.get("planId").asLong() + "/legs/"
+                + p2.at("/legs/0/legId").asLong() + "/stall-assignment",
+                Map.of("command", command(c2.orderId()), "stallId", stallId,
+                        "stallRecordVersion", stallVer,
+                        "carrierAcceptanceStatus", "ACCEPTED",
+                        "status", "CONFIRMED",
+                        "carrierApprovalFileKey", "proof-2.pdf"),
+                actor("COORDINATOR").token(), 200);
+
+        assertThat(shared.at("/legs/0/stallAssignments/0/sharingCode")
+                .asText()).isEqualTo("SHARED");
+        assertThat(shared.at("/legs/0/stallAssignments/0/slotQuantity")
+                .asText()).isEqualTo("1.5");
+        postJson(base(c3.orderId()) + "/" + p3.get("planId").asLong()
+                + "/legs/" + p3.at("/legs/0/legId").asLong()
+                + "/stall-assignment", Map.of("command", command(c3.orderId()),
+                        "stallId", stallId, "stallRecordVersion", stallVer,
+                        "carrierAcceptanceStatus", "ACCEPTED",
+                        "status", "CONFIRMED",
+                        "carrierApprovalFileKey", "proof-3.pdf"),
+                actor("COORDINATOR").token(), 409);
+    }
+
     private int raceRoad(long orderId, long planId, long legId, long vehicleId,
             String vehicleVer, long driverId, CountDownLatch ready,
             CountDownLatch go) throws Exception {
@@ -525,6 +600,11 @@ public class OperationalPlanIntegrationTest {
     }
 
     private CaseFixture createApprovedCase(long horseId) throws Exception {
+        return createApprovedCase(horseId, "WIDE");
+    }
+
+    private CaseFixture createApprovedCase(long horseId, String airStall)
+            throws Exception {
         var now = OffsetDateTime.now(ZoneOffset.UTC).withNano(0);
         var fields = new HashMap<String, Object>();
 
@@ -539,7 +619,7 @@ public class OperationalPlanIntegrationTest {
         fields.put("preferredDepartureAt", now.plusDays(7).toString());
         fields.put("deliveryDeadline", now.plusDays(30).toString());
         fields.put("services", Map.of("roadArrangement", "EQUITRANSIT",
-                "airStall", "WIDE", "quarantinePackage", "STANDARD",
+                "airStall", airStall, "quarantinePackage", "STANDARD",
                 "insurance", "COMBINED", "declaredValue", 50000));
         var draft = postJson("/api/transport-orders", fields,
                 actor("CUSTOMER").token(), 201);

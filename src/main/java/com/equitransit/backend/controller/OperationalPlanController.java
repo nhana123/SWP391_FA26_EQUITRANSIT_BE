@@ -17,6 +17,7 @@ import com.equitransit.backend.dto.plan.PlanModels.
         PlanQuarantineReservationRequest;
 import com.equitransit.backend.dto.plan.PlanModels.PlanRoadAssignmentRequest;
 import com.equitransit.backend.dto.plan.PlanModels.PlanStallAssignmentRequest;
+import com.equitransit.backend.dto.plan.PlanModels.SharedStallCandidateView;
 import com.equitransit.backend.service.OperationalPlanService;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,6 +27,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Positive;
+import java.util.List;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,6 +64,14 @@ public class OperationalPlanController {
             @Parameter(schema = @Schema(example = "20"))
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return service.list(orderId, page, size);
+    }
+
+    /** @param orderId parent order ID
+     * @return compatible shared air stall candidate orders */
+    @GetMapping("/shared-stall-candidates")
+    public List<SharedStallCandidateView> sharedStallCandidates(
+            @Parameter(example = "101") @PathVariable @Positive long orderId) {
+        return service.sharedStallCandidates(orderId);
     }
 
     /** @param orderId parent @param planId plan ID @return full plan detail */

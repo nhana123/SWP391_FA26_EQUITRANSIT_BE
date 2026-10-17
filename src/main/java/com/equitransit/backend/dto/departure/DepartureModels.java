@@ -42,18 +42,21 @@ public final class DepartureModels {
 
     /** Command to evaluate and persist real-time 3-gate departure readiness. */
     public record DepartureGateEvaluateRequest(
-            @Schema(description = "Idempotency and concurrency command")
+            @Schema(description = "Idempotency and concurrency command",
+                    example = DepartureExamples.COMMAND)
             @NotNull @Valid DepartureCommand command) { }
 
     /** Manager command to authorize departure when all 3 gates are PASS. */
     public record DepartureAuthorizeRequest(
-            @Schema(description = "Idempotency and concurrency command")
+            @Schema(description = "Idempotency and concurrency command",
+                    example = DepartureExamples.COMMAND)
             @NotNull @Valid DepartureCommand command,
             @Schema(example = "801") @Positive long planId) { }
 
     /** Assigned road driver command to physically inspect/receive the horse. */
     public record HorseReceiptRequest(
-            @Schema(description = "Idempotency and concurrency command")
+            @Schema(description = "Idempotency and concurrency command",
+                    example = DepartureExamples.COMMAND)
             @NotNull @Valid DepartureCommand command,
             @Schema(example = "801") @Positive long planId,
             @Schema(example = "901") @Positive long legId,
@@ -71,7 +74,8 @@ public final class DepartureModels {
 
     /** Assigned road driver command to start first-leg physical departure. */
     public record LegDepartRequest(
-            @Schema(description = "Idempotency and concurrency command")
+            @Schema(description = "Idempotency and concurrency command",
+                    example = DepartureExamples.COMMAND)
             @NotNull @Valid DepartureCommand command,
             @Schema(example = "801") @Positive long planId,
             @Schema(example = "901") @Positive long legId,
@@ -111,7 +115,8 @@ public final class DepartureModels {
     public record DepartureReadinessResponse(
             @Schema(example = "101") @Positive long orderId,
             @Schema(example = "000000000001A2B7")
-            @NotBlank @Size(min = 16, max = 16) String recordVersion,
+            @NotBlank @Size(min = 16, max = 16)
+            @Pattern(regexp = "^[0-9a-fA-F]{16}$") String recordVersion,
             @Schema(example = "IN_TRANSIT")
             @NotBlank @Size(min = 1, max = 50) String orderStatus,
             @Schema(example = "501") @Positive Long currentRevisionId,
@@ -127,11 +132,14 @@ public final class DepartureModels {
             @NotNull OffsetDateTime asOf,
             @Schema(example = "2027-02-01T05:30:00Z")
             OffsetDateTime gatesCheckedAt,
-            @Schema(description = "Financial gate readiness")
+            @Schema(description = "Financial gate readiness",
+                    example = DepartureExamples.GATE_PASS)
             @NotNull @Valid GateDetailView financialGate,
-            @Schema(description = "Legal and document gate readiness")
+            @Schema(description = "Legal and document gate readiness",
+                    example = DepartureExamples.GATE_PASS)
             @NotNull @Valid GateDetailView legalGate,
-            @Schema(description = "Operational plan and resource readiness")
+            @Schema(description = "Operational plan and resource readiness",
+                    example = DepartureExamples.GATE_PASS)
             @NotNull @Valid GateDetailView operationalGate,
             @Schema(example = "true") boolean readyForAuthorization,
             @Schema(example = "11") @Positive Long departureAuthorizedBy,
@@ -141,6 +149,7 @@ public final class DepartureModels {
             @Schema(example = "[]")
             @NotNull List<@NotBlank @Size(min = 1, max = 80) String>
                     departureBlockers,
-            @Schema(description = "Physical horse receipts on current plan")
+            @Schema(description = "Physical horse receipts on current plan",
+                    example = "[" + DepartureExamples.RECEIPT_VIEW + "]")
             @NotNull List<@Valid HorseReceiptView> receipts) { }
 }

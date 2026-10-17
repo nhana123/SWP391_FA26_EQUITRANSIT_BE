@@ -29,8 +29,10 @@ import com.equitransit.backend.dto.plan.PlanModels.PlanState;
 import com.equitransit.backend.dto.plan.PlanModels.PlanSummaryView;
 import com.equitransit.backend.dto.plan.PlanModels.PlanTripAssignmentView;
 import com.equitransit.backend.dto.plan.PlanModels.ReservationState;
+import com.equitransit.backend.dto.plan.PlanModels.SharedStallCandidateView;
 import com.equitransit.backend.dto.plan.PlanModels.StallSharing;
 import com.equitransit.backend.dto.plan.PlanModels.TripRole;
+import com.equitransit.backend.exception.OrderException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.ResultSet;
@@ -43,6 +45,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import javax.sql.DataSource;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -62,15 +65,26 @@ public class PlanRepository {
         this.jdbc = new NamedParameterJdbcTemplate(template);
     }
 
-    /** @return whether migration 011 and its triggers are deployed */
+    /** @return whether migration 011, composite FKs and triggers are ready */
     public boolean ready() {
         return jdbc.getJdbcTemplate().queryForObject("SELECT CASE WHEN "
                 + "OBJECT_ID('dbo.PlanOperation','U') IS NOT NULL AND "
-                + "(SELECT COUNT(*) FROM sys.triggers WHERE name IN "
-                + "('TR_Plan_DriverSchedule','TR_Resource_PlanActivation') "
-                + "AND is_disabled=0)=2 AND EXISTS (SELECT 1 FROM "
-                + "sys.check_constraints WHERE name='CK_PlanOperation_JSON' "
-                + "AND is_disabled=0 AND is_not_trusted=0) THEN 1 ELSE 0 END",
+                + "OBJECT_ID('dbo.TransportPlan','U') IS NOT NULL AND "
+                + "OBJECT_ID('dbo.TripLeg','U') IS NOT NULL AND "
+                + "(SELECT COUNT(*) FROM sys.foreign_keys WHERE name IN "
+                + "('FK_Figma_TransportPlan_RevisionID',"
+                + "'FK_Figma_TransportPlan_AcceptedQuoteID',"
+                + "'FK_Figma_TransportOrder_CurrentPlanID') AND is_disabled=0 "
+                + "AND is_not_trusted=0)=3 AND (SELECT COUNT(*) FROM "
+                + "sys.check_constraints WHERE name IN "
+                + "('CK_PlanOperation_JSON','CK_TripLeg_DistanceSource') "
+                + "AND is_disabled=0 AND is_not_trusted=0)=2 AND "
+                + "(SELECT COUNT(*) FROM sys.indexes WHERE name IN "
+                + "('IX_Plan_StaffWindow','IX_Plan_OrderSchedule') "
+                + "AND is_disabled=0)=2 AND (SELECT COUNT(*) FROM "
+                + "sys.triggers WHERE name IN ('TR_Plan_DriverSchedule',"
+                + "'TR_Resource_PlanActivation','TR_Resource_StallSchedule') "
+                + "AND is_disabled=0)=3 THEN 1 ELSE 0 END",
                 Integer.class) == 1;
     }
 
@@ -333,9 +347,57 @@ public class PlanRepository {
     public void assignStall(long leg, PlanStallAssignmentRequest req,
             BigDecimal slots, String sharing, String fit, OffsetDateTime start,
             OffsetDateTime end, OffsetDateTime now) {
+        BigDecimal capacity = jdbc.queryForObject("SELECT CapacitySlots FROM "
+                + "dbo.StallEquipment WITH (UPDLOCK,HOLDLOCK) "
+                + "WHERE StallID=:stall", Map.of("stall", req.stallId()),
+                BigDecimal.class);
         jdbc.update("UPDATE dbo.StallAssignment SET Status='CANCELLED' "
                 + "WHERE LegID=:leg AND Status NOT IN "
                 + "('CANCELLED','CANCELED','INACTIVE')", Map.of("leg", leg));
+        var lockArgs = Map.of("leg", leg, "stall", req.stallId(),
+                "share", sharing, "from", utc(start), "to", utc(end));
+        int incompatible = jdbc.queryForObject("SELECT COUNT(*) FROM "
+                + "dbo.StallAssignment a WITH (UPDLOCK,HOLDLOCK) "
+                + "JOIN dbo.TripLeg l ON l.LegID=a.LegID "
+                + "JOIN dbo.TransportPlan p ON p.PlanID=l.PlanID "
+                + "JOIN dbo.TripLeg tl ON tl.LegID=:leg "
+                + "JOIN dbo.TransportPlan tp ON tp.PlanID=tl.PlanID "
+                + "WHERE a.StallID=:stall AND a.LegID<>:leg AND a.Status "
+                + "NOT IN ('CANCELLED','CANCELED','INACTIVE') AND l.LegStatus "
+                + "NOT IN ('CANCELLED','CANCELED') AND p.PlanStatus NOT IN "
+                + "('CANCELLED','CANCELED','SUPERSEDED','REJECTED') AND "
+                + "(a.AssignedFrom IS NULL OR a.AssignedTo IS NULL OR "
+                + "(:from<a.AssignedTo AND a.AssignedFrom<:to)) AND ("
+                + ":share<>'SHARED' OR a.SharingCode<>'SHARED' OR "
+                + "l.TransportMode<>'AIR' OR tl.TransportMode<>'AIR' OR "
+                + "tl.PlannedFlightNumber IS NULL OR l.PlannedFlightNumber IS "
+                + "NULL OR l.PlannedFlightNumber<>tl.PlannedFlightNumber OR "
+                + "l.StartPoint<>tl.StartPoint OR l.EndPoint<>tl.EndPoint OR "
+                + "l.PlannedDeparture<>tl.PlannedDeparture OR "
+                + "l.PlannedArrival<>tl.PlannedArrival OR "
+                + "p.OrderID=tp.OrderID)", lockArgs, Integer.class);
+        if (incompatible > 0) {
+            throw new OrderException(HttpStatus.CONFLICT,
+                    "RESOURCE_SCHEDULE_OVERLAP",
+                    "Stall has an incompatible or private schedule overlap.");
+        }
+        BigDecimal used = jdbc.queryForObject("SELECT ISNULL(SUM("
+                + "a.SlotQuantity),0) FROM dbo.StallAssignment a "
+                + "JOIN dbo.TripLeg l ON l.LegID=a.LegID "
+                + "JOIN dbo.TransportPlan p ON p.PlanID=l.PlanID "
+                + "WHERE a.StallID=:stall AND a.LegID<>:leg AND a.Status "
+                + "NOT IN ('CANCELLED','CANCELED','INACTIVE') AND l.LegStatus "
+                + "NOT IN ('CANCELLED','CANCELED') AND p.PlanStatus NOT IN "
+                + "('CANCELLED','CANCELED','SUPERSEDED','REJECTED') AND "
+                + "(a.AssignedFrom IS NULL OR a.AssignedTo IS NULL OR "
+                + "(:from<a.AssignedTo AND a.AssignedFrom<:to))",
+                lockArgs, BigDecimal.class);
+        if (capacity != null && used != null
+                && used.add(slots).compareTo(capacity) > 0) {
+            throw new OrderException(HttpStatus.CONFLICT,
+                    "STALL_CAPACITY_EXCEEDED",
+                    "Shared air stall slot quantity exceeds stall capacity.");
+        }
         boolean accepted = req.carrierAcceptanceStatus()
                 == CarrierAcceptanceState.ACCEPTED;
         var args = new MapSqlParameterSource("leg", leg)
@@ -355,6 +417,87 @@ public class PlanRepository {
                 + "CarrierApprovalFileKey,CarrierApprovedAt,CarrierContact) "
                 + "VALUES (:leg,:stall,:slots,:share,:fit,:acc,:from,:to,"
                 + ":status,:pos,:key,:at,:contact)", args);
+    }
+
+    /** @param order source order ID @param revision source revision ID
+     * @return compatible shared air stall candidate orders */
+    public List<SharedStallCandidateView> sharedStallCandidates(long order,
+            long revision) {
+        return jdbc.query("SELECT c.OrderID,c.CurrentRevisionID,"
+                + "cp.PlanID,cl.LegID,c.OriginCountryCode,"
+                + "c.DestinationCountryCode,csc.SharingCode,"
+                + "csc.SlotQuantity AS CandidateSlots,"
+                + "(sc.SlotQuantity + csc.SlotQuantity) AS CombinedSlots,"
+                + "cl.PlannedFlightNumber,sa.StallID,"
+                + "COALESCE(cl.PlannedDeparture,cp.PlannedStartTime,"
+                + "c.PreferredDepartureAt) AS WindowStart,"
+                + "COALESCE(cl.PlannedArrival,cp.PlannedEndTime,"
+                + "c.DeliveryDeadline) AS WindowEnd "
+                + "FROM dbo.TransportOrder o "
+                + "JOIN dbo.OrderServiceChoice osc ON osc.RevisionID=:rev "
+                + "AND osc.ServiceCode='AIR_STALL' "
+                + "JOIN dbo.StallChoice sc ON sc.ChoiceID=osc.ChoiceID "
+                + "OUTER APPLY (SELECT TOP 1 p.PlanID,p.PlannedStartTime,"
+                + "p.PlannedEndTime FROM dbo.TransportPlan p "
+                + "WHERE p.OrderID=o.OrderID AND p.PlanStatus NOT IN "
+                + "('CANCELLED','CANCELED','SUPERSEDED','REJECTED') "
+                + "ORDER BY p.VersionNo DESC,p.PlanID DESC) sp "
+                + "OUTER APPLY (SELECT TOP 1 l.LegID,l.PlannedDeparture,"
+                + "l.PlannedArrival FROM dbo.TripLeg l WHERE l.PlanID="
+                + "sp.PlanID AND l.TransportMode='AIR' AND l.LegStatus NOT IN "
+                + "('CANCELLED','CANCELED') ORDER BY l.SequenceNo ASC) sl "
+                + "JOIN dbo.TransportOrder c ON c.OrderID<>o.OrderID "
+                + "AND c.OriginCountryCode=o.OriginCountryCode "
+                + "AND c.DestinationCountryCode=o.DestinationCountryCode "
+                + "AND c.OrderStatus NOT IN ('CANCELLED','CANCELED','CLOSED',"
+                + "'REJECTED','COMPLETED','DELIVERED') "
+                + "JOIN dbo.OrderServiceChoice cosc ON cosc.RevisionID="
+                + "c.CurrentRevisionID AND cosc.ServiceCode='AIR_STALL' "
+                + "JOIN dbo.StallChoice csc ON csc.ChoiceID=cosc.ChoiceID "
+                + "AND csc.SharingCode='SHARED' "
+                + "OUTER APPLY (SELECT TOP 1 p.PlanID,p.PlannedStartTime,"
+                + "p.PlannedEndTime FROM dbo.TransportPlan p "
+                + "WHERE p.OrderID=c.OrderID AND p.PlanStatus NOT IN "
+                + "('CANCELLED','CANCELED','SUPERSEDED','REJECTED') "
+                + "ORDER BY p.VersionNo DESC,p.PlanID DESC) cp "
+                + "OUTER APPLY (SELECT TOP 1 l.LegID,l.PlannedFlightNumber,"
+                + "l.PlannedDeparture,l.PlannedArrival FROM dbo.TripLeg l "
+                + "WHERE l.PlanID=cp.PlanID AND l.TransportMode='AIR' AND "
+                + "l.LegStatus NOT IN ('CANCELLED','CANCELED') "
+                + "ORDER BY l.SequenceNo ASC) cl "
+                + "OUTER APPLY (SELECT TOP 1 a.StallID FROM "
+                + "dbo.StallAssignment a WHERE a.LegID=cl.LegID AND a.Status "
+                + "NOT IN ('CANCELLED','CANCELED','INACTIVE') ORDER BY "
+                + "a.AssignedFrom DESC) sa "
+                + "WHERE o.OrderID=:order AND sc.SharingCode='SHARED' "
+                + "AND (sc.SlotQuantity + csc.SlotQuantity) <= 3.00 "
+                + "AND (COALESCE(sl.PlannedDeparture,sp.PlannedStartTime,"
+                + "o.PreferredDepartureAt) IS NULL OR COALESCE("
+                + "cl.PlannedArrival,cp.PlannedEndTime,c.DeliveryDeadline) IS "
+                + "NULL OR (COALESCE(sl.PlannedDeparture,sp.PlannedStartTime,"
+                + "o.PreferredDepartureAt) < COALESCE(cl.PlannedArrival,"
+                + "cp.PlannedEndTime,c.DeliveryDeadline) AND "
+                + "COALESCE(cl.PlannedDeparture,cp.PlannedStartTime,"
+                + "c.PreferredDepartureAt) < COALESCE(sl.PlannedArrival,"
+                + "sp.PlannedEndTime,o.DeliveryDeadline))) "
+                + "ORDER BY c.OrderID ASC",
+                Map.of("order", order, "rev", revision),
+                (r, i) -> new SharedStallCandidateView(
+                        r.getLong("OrderID"),
+                        r.getLong("CurrentRevisionID"),
+                        r.getString("OriginCountryCode"),
+                        r.getString("DestinationCountryCode"),
+                        StallSharing.valueOf(r.getString("SharingCode")),
+                        r.getBigDecimal("CandidateSlots")
+                                .setScale(2, RoundingMode.HALF_UP),
+                        r.getBigDecimal("CombinedSlots")
+                                .setScale(2, RoundingMode.HALF_UP),
+                        number(r, "PlanID"),
+                        number(r, "LegID"),
+                        r.getString("PlannedFlightNumber"),
+                        number(r, "StallID"),
+                        time(r, "WindowStart"),
+                        time(r, "WindowEnd")));
     }
 
     /** @param revision revision ID @param offerId offer ID @param now UTC
