@@ -23,6 +23,7 @@ import com.equitransit.backend.dto.plan.PlanModels.PlanRoadAssignmentRequest;
 import com.equitransit.backend.dto.plan.PlanModels.PlanStallAssignmentRequest;
 import com.equitransit.backend.dto.plan.PlanModels.PlanState;
 import com.equitransit.backend.dto.plan.PlanModels.PlanSummaryView;
+import com.equitransit.backend.dto.plan.PlanModels.SharedStallCandidateView;
 import com.equitransit.backend.dto.resource.ResourceModels.
         ResourceAvailabilityRequest;
 import com.equitransit.backend.dto.resource.ResourceModels.ResourceKind;
@@ -128,6 +129,19 @@ public class OperationalPlanService {
         var summary = plans.findPlan(order, plan).orElseThrow(this::missing);
 
         return detail(ctx.parent(), summary);
+    }
+
+    /** @param order parent order ID
+     * @return compatible shared air stall candidate orders */
+    public List<SharedStallCandidateView> sharedStallCandidates(
+            @Positive long order) {
+        var parent = access(order, false).parent();
+
+        if (parent.revisionId() == null) {
+            return List.of();
+        }
+        return plans.sharedStallCandidates(parent.orderId(),
+                parent.revisionId());
     }
 
     /** @param order parent @param req draft legs command
@@ -255,7 +269,7 @@ public class OperationalPlanService {
         var airStall = snapshot.request().getServices().getAirStall();
         BigDecimal slots = StallFitEvaluator.slots(airStall);
         String sharing = airStall.name().equals("PRIVATE") ? "PRIVATE"
-                : airStall.name().equals("WIDE") ? "WIDE" : "SHARED";
+                : "SHARED";
 
         try {
             plans.assignStall(leg, req, slots, sharing, "SUITABLE",
@@ -598,8 +612,9 @@ public class OperationalPlanService {
                 : error.getMostSpecificCause().getMessage();
 
         if (msg.contains("overlapping") || msg.contains("51003")
-                || msg.contains("51005") || msg.contains("51007")
-                || msg.contains("51008")) {
+                || msg.contains("51005") || msg.contains("51006")
+                || msg.contains("51007") || msg.contains("51008")
+                || msg.contains("capacity")) {
             return conflict("RESOURCE_SCHEDULE_OVERLAP",
                     "Resource, driver or horse has an overlapping schedule.");
         }

@@ -10,6 +10,23 @@ package com.equitransit.backend.dto.departure;
 /** Request and response JSON examples for F11 OpenAPI documentation. */
 public final class DepartureExamples {
 
+    public static final String COMMAND = """
+            {"operationId":"a1046c13-4c31-49b9-8695-edbab59eec01",\
+            "recordVersion":"000000000001A2B3"}""";
+
+    public static final String GATE_PASS = """
+            {"status":"PASS","blockers":[]}""";
+
+    public static final String RECEIPT_VIEW = """
+            {"receiptId":1001,"planId":801,"legId":901,\
+            "receivedBy":41,"observedMicrochip":"981020000123456",\
+            "observedPassportNumber":"FEI-VN-2026-009",\
+            "identityCheckResult":"MATCHED","receiptStatus":"ACCEPTED",\
+            "conditionNotes":"Calm, hydrated, normal temperature.",\
+            "evidenceFileKey":"f3046c13-4c31-49b9-8695-edbab59eec2f",\
+            "locationDescription":"Hanoi Stable Gate A",\
+            "receivedAt":"2027-02-01T05:25:00Z"}""";
+
     public static final String EVALUATE = """
             {"command":{"operationId":"a1046c13-4c31-49b9-8695-edbab59eec01",\
             "recordVersion":"000000000001A2B3"}}""";

@@ -111,14 +111,34 @@ public class DepartureRepository {
         jdbc = new NamedParameterJdbcTemplate(template);
     }
 
-    /** @return true when F11 schema and trigger are deployed */
+    /** @return true when F11 schema, constraints and trigger are deployed */
     public boolean ready() {
         String sql = "SELECT CASE WHEN OBJECT_ID('dbo.PlanOperation','U') "
-                + "IS NOT NULL AND OBJECT_ID('dbo.TransportPlan','U') "
-                + "IS NOT NULL AND OBJECT_ID('dbo.TripLeg','U') IS NOT NULL "
-                + "AND OBJECT_ID('dbo.HorseReceipt','U') IS NOT NULL "
-                + "AND OBJECT_ID('dbo.TR_Departure_FirstLegGuard','TR') "
-                + "IS NOT NULL THEN 1 ELSE 0 END";
+                + "IS NOT NULL AND (SELECT COUNT(*) FROM sys.columns WHERE "
+                + "object_id=OBJECT_ID('dbo.TransportPlan') AND name IN "
+                + "('FinancialGateStatus','OperationalGateStatus',"
+                + "'DocGateStatus','GatesCheckedAt','DepartureAuthorizedBy',"
+                + "'DepartureAuthorizedAt','PlanStatus','AcceptedQuoteID',"
+                + "'RevisionID','OrderID'))=10 AND (SELECT COUNT(*) FROM "
+                + "sys.columns WHERE object_id=OBJECT_ID('dbo.HorseReceipt') "
+                + "AND name IN ('ReceiptID','PlanID','LegID','ReceivedBy',"
+                + "'ObservedMicrochip','ObservedPassportNumber',"
+                + "'IdentityCheckResult','ConditionNotes','ReceiptStatus',"
+                + "'ReceivedAt','EvidenceFileKey','LocationDescription'))=12 "
+                + "AND (SELECT COUNT(*) FROM sys.foreign_keys WHERE name IN "
+                + "('FK_Figma_TransportPlan_RevisionID',"
+                + "'FK_Figma_TransportPlan_AcceptedQuoteID',"
+                + "'FK_Figma_HorseReceipt_LegID') AND is_disabled=0 "
+                + "AND is_not_trusted=0)=3 AND (SELECT COUNT(*) FROM "
+                + "sys.check_constraints WHERE name IN "
+                + "('CK_TripLeg_DistanceSource',"
+                + "'CK_Figma_HorseReceipt_Identity') AND is_disabled=0 "
+                + "AND is_not_trusted=0)=2 AND EXISTS (SELECT 1 FROM "
+                + "sys.indexes WHERE object_id=OBJECT_ID('dbo.HorseReceipt') "
+                + "AND name='IX_HorseReceipt_PlanLeg' AND is_disabled=0) "
+                + "AND EXISTS (SELECT 1 FROM sys.triggers WHERE "
+                + "name='TR_Departure_FirstLegGuard' AND is_disabled=0) "
+                + "THEN 1 ELSE 0 END";
 
         return Integer.valueOf(1).equals(jdbc.getJdbcTemplate()
                 .queryForObject(sql, Integer.class));
