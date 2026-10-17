@@ -902,6 +902,71 @@ public class ApiDtoContractTest {
         }
     }
 
+    /**
+     * F11 departure schemas have valid examples, bounded strings and no null
+     * $ref sibling types.
+     * @throws Exception if OpenAPI or example validation fails
+     */
+    @Test
+    public void departureSchemasMatchTheFrontendContract() throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+        String base = "/api/transport-orders/{orderId}/departure";
+
+        assertThat(api.path("paths").has(base)).isTrue();
+        assertThat(api.path("paths").has(base + "/gates/evaluate")).isTrue();
+        assertThat(api.path("paths").has(base + "/authorize")).isTrue();
+        assertThat(api.path("paths").has(base + "/horse-receipts")).isTrue();
+        assertThat(api.path("paths").has(base + "/depart")).isTrue();
+        assertThat(schemas.at("/DepartureCommand/properties/recordVersion/"
+                + "pattern").asText()).isEqualTo("^[0-9a-fA-F]{16}$");
+        assertThat(schemas.at("/HorseReceiptRequest/properties/"
+                + "observedMicrochip/minLength").asInt()).isEqualTo(1);
+        for (String name : List.of("DepartureGateEvaluateRequest",
+                "DepartureAuthorizeRequest", "HorseReceiptRequest",
+                "LegDepartRequest", "GateDetailView", "HorseReceiptView",
+                "DepartureReadinessResponse")) {
+            assertActivityModel(schemas.path(name), schemas,
+                    new java.util.HashSet<>(), false);
+        }
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            var validator = factory.getValidator();
+            var evalReq = mapper.readValue(
+                    com.equitransit.backend.dto.departure.DepartureExamples
+                            .EVALUATE,
+                    com.equitransit.backend.dto.departure.DepartureModels
+                            .DepartureGateEvaluateRequest.class);
+            var authReq = mapper.readValue(
+                    com.equitransit.backend.dto.departure.DepartureExamples
+                            .AUTHORIZE,
+                    com.equitransit.backend.dto.departure.DepartureModels
+                            .DepartureAuthorizeRequest.class);
+            var receiptReq = mapper.readValue(
+                    com.equitransit.backend.dto.departure.DepartureExamples
+                            .RECEIPT,
+                    com.equitransit.backend.dto.departure.DepartureModels
+                            .HorseReceiptRequest.class);
+            var departReq = mapper.readValue(
+                    com.equitransit.backend.dto.departure.DepartureExamples
+                            .DEPART,
+                    com.equitransit.backend.dto.departure.DepartureModels
+                            .LegDepartRequest.class);
+            var readiness = mapper.readValue(
+                    com.equitransit.backend.dto.departure.DepartureExamples
+                            .READINESS,
+                    com.equitransit.backend.dto.departure.DepartureModels
+                            .DepartureReadinessResponse.class);
+
+            assertThat(validator.validate(evalReq)).isEmpty();
+            assertThat(validator.validate(authReq)).isEmpty();
+            assertThat(validator.validate(receiptReq)).isEmpty();
+            assertThat(validator.validate(departReq)).isEmpty();
+            assertThat(validator.validate(readiness)).isEmpty();
+        }
+    }
+
     private void assertJsonMedia(JsonNode api) {
         api.path("paths").properties().forEach(path -> {
             if (path.getKey().startsWith("/api/horses")
