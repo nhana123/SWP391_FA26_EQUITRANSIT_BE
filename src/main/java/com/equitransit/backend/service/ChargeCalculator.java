@@ -50,7 +50,8 @@ public class ChargeCalculator {
 
         if (tariff != null && (!unit.equals(tariff.unit())
                 || !group.equals(tariff.costGroup())
-                || tariff.rate().signum() < 0)) {
+                || tariff.rate() == null || tariff.rate().signum() < 0
+                || tariff.rate().stripTrailingZeros().scale() > 2)) {
             tariff = null;
             blockers.add("RATE_CONFIGURATION_INVALID");
         }
@@ -88,14 +89,17 @@ public class ChargeCalculator {
             }
         }
         return new ServiceChargeResponse(code, section, group, label, mandatory,
-                selected, unit, decimal(quantity), tariff == null ? null
-                        : decimal(tariff.rate()), decimal(amount), status,
+                selected, unit, quantity == null ? null
+                        : quantity.stripTrailingZeros().toPlainString(),
+                tariff == null ? null : money(tariff.rate()), money(amount),
+                status,
                 tariff == null ? null : tariff.tariffId(),
                 tariff == null ? null : tariff.version(), formula,
                 List.copyOf(blockers));
     }
 
-    private String decimal(BigDecimal value) {
-        return value == null ? null : value.toPlainString();
+    private String money(BigDecimal value) {
+        return value == null ? null
+                : value.setScale(2, RoundingMode.HALF_UP).toPlainString();
     }
 }

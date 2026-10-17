@@ -171,14 +171,41 @@ public class ServicePricingPolicyTest {
                 rate.costGroup(),
                 BigDecimal.ZERO);
         TariffRecord fraction = new TariffRecord(3, 1, rate.unit(),
-                rate.costGroup(), new BigDecimal("1.005"));
+                rate.costGroup(), new BigDecimal("1.00"));
 
         assertThat(new BigDecimal(line(BigDecimal.TEN, List.of(zero), null)
                 .amount()))
                 .isEqualByComparingTo("0.00");
-        assertThat(new BigDecimal(line(BigDecimal.ONE, List.of(fraction), null)
-                .amount()))
+        var rounded = line(new BigDecimal("1.005"), List.of(fraction), null);
+
+        assertThat(new BigDecimal(rounded.amount()))
                 .isEqualByComparingTo("1.01");
+    }
+
+    /** SQL DECIMAL(18,4) padding must not break the HTTP decimal contract. */
+    @Test
+    public void paddedDatabaseRateUsesTwoDecimalsAndExactQuantity() {
+        var padded = new TariffRecord(2, 1, rate.unit(), rate.costGroup(),
+                new BigDecimal("2.5000"));
+        var result = line(new BigDecimal("0.0150"), List.of(padded), null);
+
+        assertThat(result.unitRate()).isEqualTo("2.50");
+        assertThat(result.quantity()).isEqualTo("0.015");
+        assertThat(result.amount()).isEqualTo("0.04");
+        assertThat(line(null, List.of(padded), null).unitRate())
+                .isEqualTo("2.50");
+    }
+
+    /** Unsupported legacy fractions are pending, never silently repriced. */
+    @Test
+    public void subCentRateRequiresReviewInsteadOfRoundingThePrice() {
+        var unsupported = new TariffRecord(2, 1, rate.unit(), rate.costGroup(),
+                new BigDecimal("2.5001"));
+        var result = line(BigDecimal.ONE, List.of(unsupported), null);
+
+        assertThat(result.unitRate()).isNull();
+        assertThat(result.amount()).isNull();
+        assertThat(result.blockers()).contains("RATE_CONFIGURATION_INVALID");
     }
 
     private ServiceChargeResponse line(

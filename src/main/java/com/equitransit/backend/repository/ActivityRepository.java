@@ -46,10 +46,43 @@ public class ActivityRepository {
 
     /** @return whether the F16 schema was explicitly deployed */
     public boolean ready() {
-        return jdbc.getJdbcTemplate().queryForObject("SELECT COUNT(*)"
-                + " FROM sys.columns WHERE"
-                + " object_id=OBJECT_ID('dbo.AuditEvent')"
-                + " AND name='EventKey'", Integer.class) == 1;
+        String sql = "SELECT CASE WHEN (SELECT COUNT(*) FROM sys.columns WHERE "
+                + "object_id=OBJECT_ID('dbo.AuditEvent') AND name IN "
+                + "('EventKey'))=1 AND (SELECT COUNT(*) FROM sys.columns "
+                + "WHERE object_id=OBJECT_ID('dbo.Notification') AND name "
+                + "IN ('SourceEventID', 'EmailState', 'EmailLeaseUntil', "
+                + "'EmailAttempts'))=4 AND "
+                + "OBJECT_ID('dbo.NotificationProjection', 'U') IS NOT NULL "
+                + "AND (SELECT COUNT(*) FROM sys.columns WHERE "
+                + "object_id=OBJECT_ID('dbo.NotificationProjection') AND "
+                + "name IN ('EventID', 'ProjectedAt'))=2 AND EXISTS(SELECT "
+                + "1 FROM sys.indexes i WHERE "
+                + "i.object_id=OBJECT_ID('dbo.AuditEvent') AND "
+                + "i.name='UQ_AuditEvent_EventKey' AND i.is_unique=1 AND "
+                + "i.is_disabled=0 AND i.has_filter=1 AND (SELECT COUNT(*) "
+                + "FROM sys.index_columns c WHERE c.object_id=i.object_id "
+                + "AND c.index_id=i.index_id AND c.key_ordinal>0)=1 AND "
+                + "(SELECT COUNT(*) FROM sys.index_columns c WHERE "
+                + "c.object_id=i.object_id AND c.index_id=i.index_id AND "
+                + "c.key_ordinal>0 AND COL_NAME(c.object_id, c.column_id) "
+                + "IN ('EventKey'))=1) AND EXISTS(SELECT 1 FROM sys.indexes "
+                + "i WHERE i.object_id=OBJECT_ID('dbo.Notification') AND "
+                + "i.name='UQ_Notification_EventRecipient' AND "
+                + "i.is_unique=1 AND i.is_disabled=0 AND i.has_filter=1 AND "
+                + "(SELECT COUNT(*) FROM sys.index_columns c WHERE "
+                + "c.object_id=i.object_id AND c.index_id=i.index_id AND "
+                + "c.key_ordinal>0)=2 AND (SELECT COUNT(*) FROM "
+                + "sys.index_columns c WHERE c.object_id=i.object_id AND "
+                + "c.index_id=i.index_id AND c.key_ordinal>0 AND "
+                + "COL_NAME(c.object_id, c.column_id) IN ('SourceEventID', "
+                + "'UserID'))=2) AND EXISTS(SELECT 1 FROM "
+                + "sys.check_constraints WHERE "
+                + "parent_object_id=OBJECT_ID('dbo.AuditEvent') AND "
+                + "name='CK_AuditEvent_ChangeSnapshot_JSON' AND "
+                + "is_disabled=0 AND is_not_trusted=0) THEN 1 ELSE 0 END";
+
+        return Integer.valueOf(1).equals(jdbc.getJdbcTemplate()
+                .queryForObject(sql, Integer.class));
     }
 
     /** @param resource bounded transaction lock key */
@@ -282,8 +315,11 @@ public class ActivityRepository {
                     + "AllocationID=a.AllocationID AND "
                     + "Status='COMPLETED') f WHERE t.Currency='USD' AND "
                     + "t.Status='RECONCILED' AND t.ReconciledAt IS NOT "
-                    + "NULL) AllocatedNet,(SELECT COALESCE(SUM(Amount),0) "
-                    + "FROM dbo.ActualCost WHERE Currency='USD') "
+                    + "NULL) AllocatedNet,(SELECT COALESCE(SUM(ac.Amount),0) "
+                    + "FROM dbo.ActualCost ac JOIN dbo.TransportPlan p ON "
+                    + "p.PlanID=ac.PlanID JOIN dbo.TransportOrder o ON "
+                    + "o.OrderID=p.OrderID AND o.CurrentPlanID=p.PlanID "
+                    + "WHERE ac.Currency='USD') "
                     + "ActualCost,(SELECT COUNT_BIG(*) FROM "
                     + "dbo.TransportOrder WHERE OrderStatus IN "
                     + "('DELIVERED','COMPLETED','CLOSED')) "

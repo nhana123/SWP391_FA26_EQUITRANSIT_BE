@@ -3,7 +3,7 @@ $backendRoot = Split-Path -Parent $PSScriptRoot
 $localDir = Join-Path $backendRoot '.local'
 $configDir = Join-Path $backendRoot '.idea\runConfigurations'
 $jdkHome = [Environment]::GetEnvironmentVariable('JAVA_HOME', 'User')
-$nativeDir = Join-Path $env:LOCALAPPDATA 'EquiTransit\tools\sqljdbc-native'
+$nativeDir = Join-Path $backendRoot '.local\tools\sqljdbc-native'
 New-Item -ItemType Directory -Force -Path $localDir,$configDir | Out-Null
 $secretFile = Join-Path $localDir 'jwt-secret.txt'
 if (-not (Test-Path -LiteralPath $secretFile)) {

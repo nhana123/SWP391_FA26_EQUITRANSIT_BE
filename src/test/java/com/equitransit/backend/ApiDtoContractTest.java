@@ -70,6 +70,47 @@ public class ApiDtoContractTest {
                 .getContentAsString());
         var schemas = api.at("/components/schemas");
 
+        for (String name : List.of("DashboardResponse", "TaskPage",
+                "NotificationPage", "TimelineResponse", "EmailPreference",
+                "AuditPage", "FinancialReport")) {
+            boolean customer = !List.of("AuditPage", "FinancialReport")
+                    .contains(name);
+
+            assertThat(schemas.has(name)).as(name).isTrue();
+            assertActivityModel(schemas.path(name), schemas,
+                    new java.util.HashSet<>(), customer);
+        }
+        var routes = Map.of(
+                "/api/dashboard", "DashboardResponse",
+                "/api/dashboard/tasks", "TaskPage",
+                "/api/notifications", "NotificationPage",
+                "/api/activity/orders/{orderId}/timeline", "TimelineResponse",
+                "/api/manager/audit-events", "AuditPage",
+                "/api/manager/reports/financial", "FinancialReport",
+                "/api/customers/me/notification-preferences",
+                "EmailPreference");
+
+        routes.forEach((path, model) -> {
+            var operation = api.path("paths").path(path).path("get");
+
+            assertThat(operation.path("responses").path("200")
+                    .path("content").path("application/json")
+                    .path("schema").path("$ref").asText())
+                    .isEqualTo("#/components/schemas/" + model);
+        });
+        var read = api.path("paths").path("/api/notifications/{id}/read")
+                .path("put");
+
+        assertThat(read.path("responses").path("200").path("content")
+                .path("application/json").path("schema").path("$ref")
+                .asText()).isEqualTo("#/components/schemas/NotificationView");
+        var preference = api.path("paths")
+                .path("/api/customers/me/notification-preferences").path("put");
+
+        assertThat(preference.path("requestBody").path("content")
+                .path("application/json").path("schema").path("$ref")
+                .asText()).isEqualTo("#/components/schemas/EmailPreference");
+        assertJsonMedia(api);
         assertThat(schemas.at("/DashboardResponse/properties/role/enum")
                 .toString()).contains("CUSTOMER", "DRIVER", "MANAGER");
         assertThat(schemas.path("DashboardOrder").toString())
@@ -552,6 +593,42 @@ public class ApiDtoContractTest {
                 .isTrue();
     }
 
+    private void assertActivityModel(JsonNode node, JsonNode schemas,
+            java.util.Set<String> visited, boolean customer) {
+        if (node.isObject()) {
+            assertThat(node.toString()).doesNotContain("additionalProp1");
+            if (node.has("$ref")) {
+                assertThat(node.path("type").toString())
+                        .doesNotContain("null");
+                String name = node.path("$ref").asText()
+                        .replace("#/components/schemas/", "");
+
+                if (visited.add(name)) {
+                    assertActivityModel(schemas.path(name), schemas, visited,
+                            customer);
+                }
+            }
+            if (node.has("additionalProperties")) {
+                assertThat(node.path("additionalProperties").isBoolean())
+                        .isTrue();
+                assertThat(node.path("additionalProperties").asBoolean())
+                        .isFalse();
+            }
+            if (customer) {
+                for (String field : List.of("actualCost", "supplierCost",
+                        "unitPrice", "margin", "internalNotes",
+                        "sourceReference", "recipientAccount")) {
+                    assertThat(node.path("properties").has(field))
+                            .as(field).isFalse();
+                }
+            }
+        }
+        if (node.isContainerNode()) {
+            node.forEach(child -> assertActivityModel(child, schemas,
+                    visited, customer));
+        }
+    }
+
     private void assertExamples(JsonNode schemas, JsonNode schema,
             String name) {
         JsonNode actual = schema.has("$ref") ? schemas.get(schema.get("$ref")
@@ -659,6 +736,10 @@ public class ApiDtoContractTest {
                 .isEqualTo("^\\d+(\\.\\d{1,2})?$");
         assertThat(schemas.at("/RefundActionCommand/properties/action/enum")
                 .toString()).contains("APPROVE", "REJECT", "COMPLETE");
+        var proof = schemas.at("/RefundActionCommand/properties/proofFileKey");
+
+        assertThat(proof.path("minLength").asInt()).isEqualTo(1);
+        assertThat(proof.path("maxLength").asInt()).isEqualTo(1024);
         assertThat(schemas.at("/PaymentOverview").toString())
                 .doesNotContain("InternalNotes", "RecipientAccount",
                         "additionalProp1");
@@ -669,6 +750,35 @@ public class ApiDtoContractTest {
         assertThat(api.path("paths").has(
                 "/api/transport-orders/{orderId}/payments/refunds"))
                 .isTrue();
+    }
+
+    /** @throws Exception if the optional proof key cannot be validated */
+    @Test
+    public void refundProofKeyIsOptionalButBoundedWhenPresent()
+            throws Exception {
+        var body = mapper.createObjectNode();
+
+        body.put("action", "APPROVE");
+        body.set("command", mapper.readTree("{\"recordVersion\":"
+                + "\"000000000001A2B3\",\"operationId\":"
+                + "\"d86b4f63-5acc-4f20-8da3-e24323268814\"}"));
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            var validator = factory.getValidator();
+            var type = com.equitransit.backend.dto.payment
+                    .RefundActionCommand.class;
+
+            assertThat(validator.validate(mapper.treeToValue(body, type)))
+                    .isEmpty();
+            for (String value : List.of("", "a".repeat(1025))) {
+                body.put("proofFileKey", value);
+                assertThat(validator.validate(mapper.treeToValue(body, type)))
+                        .anyMatch(v -> v.getPropertyPath().toString()
+                                .equals("proofFileKey")
+                                && v.getConstraintDescriptor().getAnnotation()
+                                .annotationType().equals(jakarta.validation
+                                        .constraints.Size.class));
+            }
+        }
     }
 
     private void assertJsonMedia(JsonNode api) {

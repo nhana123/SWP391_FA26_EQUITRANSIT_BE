@@ -226,8 +226,21 @@ public class BookingServicesIntegrationTest {
         assertThat(first.get("sections")).hasSize(7);
         assertThat(first.get("payable").asBoolean()).isFalse();
         assertThat(first.get("totalEstimate").isNull()).isTrue();
-        assertThat(new BigDecimal(row.get("unitRate").asText()))
-                .isEqualByComparingTo("0.5");
+        assertThat(row.get("unitRate").asText()).isEqualTo("0.50");
+        for (var item : first.get("charges")) {
+            for (String field : List.of("unitRate", "amount")) {
+                if (!item.path(field).isNull()) {
+                    assertThat(item.path(field).asText())
+                            .matches("^\\d+(\\.\\d{1,2})?$");
+                }
+            }
+            if (!item.path("quantity").isNull()) {
+                assertThat(item.path("quantity").asText())
+                        .matches("^\\d+(\\.\\d{1,3})?$");
+            }
+        }
+        java.nio.file.Files.writeString(java.nio.file.Path.of(
+                "target/service-disclosure-contract.json"), first.toString());
         assertThat(row.get("quantity").isNull()).isTrue();
         assertThat(row.get("amount").isNull()).isTrue();
         assertThat(row.get("pricingStatus").asText())
