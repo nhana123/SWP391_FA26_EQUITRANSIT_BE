@@ -710,3 +710,26 @@ Examples are documentation fixtures only. Replace sample horse/order/staff IDs
 with actual authorized IDs and use current dates/versions when trying the API.
 Restart the correctly configured local backend after switching/building this
 branch to see updated Swagger; a previously running JAR does not reload itself.
+
+### F09: resource catalogues, availability and fit
+
+See [F09 API and F10 consumer contract](docs/resources-api.md).
+Manager manages vehicles, physical stalls, suppliers and versioned fit policies
+under `/api/manager/resources`; archival preserves operational history.
+Manager/assigned Coordinator probes current-revision availability through
+`POST /api/resources/{kind}/{id}/availability`. Missing evidence stays PENDING;
+maintenance, expiry, buffered overlap and unsuitable fit block availability.
+ROAD vehicles remain separate from AIR equipment and prices are unchanged.
+
+Use `database/migrations/007_resources_availability_fit.sql` after this
+project's baseline and migrations 001-006; see the API document for
+verification scope and deferred SQL Server tests.
+
+F09 completion adds a paginated assigned-case discovery endpoint at
+`POST /api/resources/{kind}/availability`, read-only policy access for
+Specialist at `/api/resources/fit-policies`, and Driver-only current assigned
+vehicle details at `/api/resources/legs/{leg}/vehicle`.
+Existing-leg probes bind the saved mode/carrier; invalid measurements and
+legacy schedules remain blocked. Migration007 and the full SQL script share
+the same schedule guards. SQL Server integration testing remains opt-in and
+is deferred for team integration; H2 results do not verify native locks.

@@ -39,7 +39,8 @@ public class StallFitEvaluator {
                 .toList();
         FitPolicyRecord policy;
 
-        if (horse.weightKg() == null || horse.heightCm() == null
+        if (horse == null || !horse.measurementsComplete()
+                || horse.weightKg() == null || horse.heightCm() == null
                 || horse.bodyWidthCm() == null || horse.measuredAt() == null
                 || horse.weightKg().signum() <= 0
                 || horse.heightCm().signum() <= 0

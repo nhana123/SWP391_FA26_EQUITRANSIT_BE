@@ -65,13 +65,21 @@ public class OpenApiConfig {
                 if (api.getOpenapi().startsWith("3.1")) {
                     var composed = new ComposedSchema();
 
-                    composed.addAnyOfItem(new Schema<>().$ref(ref));
-                    composed.addAnyOfItem(new Schema<>().type("null")
-                            .types(Set.of("null")));
+                    Schema<Object> reference = new Schema<>();
+                    Schema<Object> nullValue = new Schema<>();
+
+                    reference.set$ref(ref);
+                    nullValue.setType("null");
+                    nullValue.setTypes(Set.of("null"));
+                    composed.addAnyOfItem(reference);
+                    composed.addAnyOfItem(nullValue);
                     composed.setExample(property.getExample());
                     owner.getProperties().put("services", composed);
                 } else {
-                    var nullable = new Schema<>().$ref(ref).nullable(true);
+                    Schema<Object> nullable = new Schema<>();
+
+                    nullable.set$ref(ref);
+                    nullable.setNullable(true);
 
                     nullable.setExample(property.getExample());
                     owner.getProperties().put("services", nullable);

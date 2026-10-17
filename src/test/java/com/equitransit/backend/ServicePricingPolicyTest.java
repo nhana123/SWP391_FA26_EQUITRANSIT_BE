@@ -192,7 +192,8 @@ public class ServicePricingPolicyTest {
             throws Exception {
         String json = "{\"weightKg\":" + weight + ",\"heightCm\":" + height
                 + ",\"bodyWidthCm\":" + width
-                + ",\"measuredAt\":\"2026-10-13T00:00:00Z\"}";
+                + ",\"measuredAt\":\"2026-10-13T00:00:00Z\","
+                + "\"measurementsComplete\":true}";
 
         return new ObjectMapper().findAndRegisterModules().readValue(json,
                 HorseResponse.class);
