@@ -184,8 +184,8 @@ public class ApiDtoContractTest {
                 "RegisterRequest", "ResetPasswordRequest", "TokenRequest",
                 "CaseAssignmentRequest", "EndCaseAssignmentRequest",
                 "AssessmentRequest")) {
-            for (var fields = schemas.path(name).path("properties").fields();
-                    fields.hasNext();) {
+            for (var fields = schemas.path(name).path("properties")
+                    .properties().iterator(); fields.hasNext();) {
                 JsonNode field = fields.next().getValue();
                 String types = field.path("type").toString();
 
@@ -323,7 +323,8 @@ public class ApiDtoContractTest {
 
         assertThat(decision.path("example").asText())
                 .isEqualTo("CHANGES_REQUESTED");
-        for (var paths = api.path("paths").fields(); paths.hasNext();) {
+        for (var paths = api.path("paths").properties().iterator();
+                paths.hasNext();) {
             var path = paths.next();
 
             if (!path.getKey().startsWith("/api/manager/")

@@ -10,9 +10,9 @@ if (-not (Test-Path -LiteralPath (Join-Path $mavenHome 'bin\mvn.cmd'))) {
 }
 $nativeDir = Join-Path $toolRoot 'sqljdbc-native'
 New-Item -ItemType Directory -Force -Path $nativeDir | Out-Null
-$nativeFile = Join-Path $nativeDir 'mssql-jdbc_auth-12.10.0.x64.dll'
+$nativeFile = Join-Path $nativeDir 'mssql-jdbc_auth-12.10.2.x64.dll'
 $nativeUrl = 'https://repo.maven.apache.org/maven2/com/microsoft/sqlserver/' +
-    'mssql-jdbc_auth/12.10.0.x64/mssql-jdbc_auth-12.10.0.x64.dll'
+    'mssql-jdbc_auth/12.10.2.x64/mssql-jdbc_auth-12.10.2.x64.dll'
 if (-not (Test-Path -LiteralPath $nativeFile)) {
     Invoke-WebRequest -Uri $nativeUrl -OutFile $nativeFile
 }
