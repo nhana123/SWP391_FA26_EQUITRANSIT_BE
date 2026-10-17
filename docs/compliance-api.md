@@ -4,7 +4,10 @@ Base: `/api/transport-orders/{order}/compliance`. Bearer authentication and
 JSON media type on every operation. Only the owning Customer and the assigned,
 active Specialist can read. Only that Specialist can record legal decisions;
 Manager/Coordinator cannot override them. Staff identity comes from active
-StaffProfile, while audit records the authenticated UserID.
+StaffProfile, while audit records the authenticated UserID. F08 uses the
+separate lockLegalRevision assignment boundary for APPROVED, IN_PREPARATION,
+CONFIRMED, IN_TRANSIT and DELIVERED cases; the original F04 preparation-only
+boundary is unchanged. Terminal/cancelled cases cannot accept new legal writes.
 
 ## Workflow for FE
 

@@ -27,7 +27,6 @@ import com.equitransit.backend.dto.compliance.ComplianceUploadRequest;
 import com.equitransit.backend.dto.quote.QuoteCommand;
 import com.equitransit.backend.dto.compliance.ComplianceReceipt;
 import com.equitransit.backend.dto.compliance.ComplianceOverview;
-import com.equitransit.backend.entity.CaseRole;
 import com.equitransit.backend.entity.compliance.CompliancePhase;
 import com.equitransit.backend.entity.compliance.AuthorityDecision;
 import com.equitransit.backend.entity.compliance.
@@ -535,8 +534,12 @@ public class ComplianceService {
                 throw new IllegalStateException("Unsupported legal receipt.");
             }
         }
-        require(cases.order(order, false).orElseThrow().version()
-                .equalsIgnoreCase(command.recordVersion()),
+        var current = cases.order(order, false).orElseThrow();
+
+        require(java.util.Set.of("APPROVED", "IN_PREPARATION", "CONFIRMED",
+                "IN_TRANSIT", "DELIVERED").contains(current.status()),
+                "LEGAL_WORK_STATE_CONFLICT");
+        require(current.version().equalsIgnoreCase(command.recordVersion()),
                 "ORDER_VERSION_CONFLICT");
         long id = write.apply(args);
 
@@ -563,7 +566,7 @@ public class ComplianceService {
 
         require(parent.revisionId() != null, "SUBMITTED_REVISION_REQUIRED");
         if (specialist || !"CUSTOMER".equals(actor.roleCode())) {
-            assignments.lockRevision(order, CaseRole.SPECIALIST);
+            assignments.lockLegalRevision(order);
         } else if (orders.findOwned(order, actor.customerId(), false)
                 .isEmpty()) {
             throw missing();

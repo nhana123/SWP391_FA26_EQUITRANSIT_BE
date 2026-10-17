@@ -720,4 +720,19 @@ public class ComplianceIntegrationTest {
         assertThat(history.toString()).doesNotContain("legacy/file.pdf");
         clear("PRE_EXPORT", 409);
     }
+
+    /** @throws Exception if arrival work is incorrectly limited to F04 state */
+    @Test
+    public void activeSpecialistCanAssessArrivalDuringTransit()
+            throws Exception {
+        jdbc.update("UPDATE dbo.TransportOrder SET OrderStatus='IN_TRANSIT'"
+                + " WHERE OrderID=?", order);
+        rule("ARRIVAL");
+        checklist("ARRIVAL");
+        assertThat(overview("ARRIVAL").path("requirements").size())
+                .isEqualTo(1);
+        jdbc.update("UPDATE dbo.OrderAssignment SET EndedAt=SYSUTCDATETIME()"
+                + " WHERE OrderID=? AND AssignmentRole='SPECIALIST'", order);
+        post(legal() + "/rules", specialist, ruleBody("ARRIVAL"), 404);
+    }
 }
