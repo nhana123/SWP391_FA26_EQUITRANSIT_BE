@@ -761,3 +761,22 @@ locking the target allocation. Refund proof keys are optional for APPROVE/REJECT
 and bounded when supplied; COMPLETE still requires validated payment evidence.
 Manager ActualCost reports include USD costs of each order's current plan only.
 See docs/activity-api.md for the exact report population and customer isolation.
+
+
+### F08: compliance and versioned legal evidence
+
+See [F08 API contract](docs/compliance-api.md) for the complete FE workflow.
+Assigned active Specialists record source-backed rules/checklists, review the
+exact submitted version, record authority results, assess quarantine/veterinary
+quantities and issue phase-specific clearances. Customers upload immutable
+versions and submit them against requirements. Missing route/transit rules,
+expired/revoked/replaced/rejected files and absent authority evidence block
+clearance. Manager has no legal override. Prices, payment and departure are
+separate commitments.
+
+Migration `009_compliance_legal_evidence.sql` follows 001–008 and is additive.
+It has only been applied/reapplied to the isolated native test database during
+implementation; no real EquiTransit deployment is implied. Until deployed, F08
+returns `COMPLIANCE_SCHEMA_PENDING`. No legal rules or permits are seeded.
+Native F08 tests require `EQ_COMPLIANCE_TEST_ENABLED=true` and
+`EQ_COMPLIANCE_TEST_DB_URL` pointing to the guarded isolated database.

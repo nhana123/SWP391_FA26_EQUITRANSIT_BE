@@ -62,6 +62,49 @@ public class ApiDtoContractTest {
     @Autowired
     private ObjectMapper mapper;
 
+    /** @throws Exception if F08 schemas or operations drift */
+    @Test
+    public void complianceContractsAreTypedPrivateAndDocumented()
+            throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+        int fields = 0;
+
+        for (var entry : schemas.properties()) {
+            if (!entry.getKey().startsWith("Compliance")) {
+                continue;
+            }
+            assertActivityModel(entry.getValue(), schemas,
+                    new java.util.HashSet<>(), false);
+            assertThat(entry.getValue().toString()).doesNotContain(
+                    "supplierCost", "actualCost", "internalNotes", "margin");
+            for (var field : entry.getValue().path("properties")) {
+                assertThat(field.has("example")).as(entry.getKey()).isTrue();
+                fields++;
+            }
+        }
+        assertThat(fields).isGreaterThan(80);
+        String root = "/api/transport-orders/{order}/compliance";
+        int operations = 0;
+
+        for (var entry : api.path("paths").properties()) {
+            if (!entry.getKey().startsWith(root)) {
+                continue;
+            }
+            for (var operation : entry.getValue().properties()) {
+                assertThat(operation.getValue().path("security").toString())
+                        .contains("bearerAuth");
+                assertThat(operation.getValue().at(
+                        "/responses/200/content").has("application/json"))
+                        .isTrue();
+                operations++;
+            }
+        }
+        assertThat(operations).isEqualTo(16);
+    }
+
     /** @throws Exception if the F16 HTTP schemas cannot be generated */
     @Test
     public void activityContractsAreTypedScopedAndBounded() throws Exception {
