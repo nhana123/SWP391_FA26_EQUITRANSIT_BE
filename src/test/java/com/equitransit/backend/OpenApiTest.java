@@ -177,4 +177,121 @@ public class OpenApiTest {
         mvc.perform(get("/api/transport-orders/1/services"))
                 .andExpect(status().isUnauthorized());
     }
+    /** @throws Exception if F16 documentation/security is incomplete */
+    @Test
+    public void allActivityOperationsRequireBearerAndProduceJson()
+            throws Exception {
+        var api = new com.fasterxml.jackson.databind.ObjectMapper()
+                .readTree(mvc.perform(get("/v3/api-docs"))
+                        .andExpect(status().isOk()).andReturn().getResponse()
+                        .getContentAsString());
+        var gets = java.util.List.of("/api/dashboard", "/api/dashboard/tasks",
+                "/api/notifications", "/api/activity/orders/{orderId}/timeline",
+                "/api/manager/audit-events", "/api/manager/reports/financial",
+                "/api/customers/me/notification-preferences");
+        int count = 0;
+
+        for (String path : gets) {
+            var operation = api.path("paths").path(path).path("get");
+
+            org.assertj.core.api.Assertions.assertThat(
+                    operation.path("security").path(0).has("bearerAuth"))
+                    .as(path).isTrue();
+            org.assertj.core.api.Assertions.assertThat(operation
+                    .path("responses").path("200").path("content")
+                    .has("application/json")).as(path).isTrue();
+            mvc.perform(get(path.replace("{orderId}", "1")))
+                    .andExpect(status().isUnauthorized());
+            count++;
+        }
+        for (String path : java.util.List.of("/api/notifications/{id}/read",
+                "/api/customers/me/notification-preferences")) {
+            var operation = api.path("paths").path(path).path("put");
+
+            org.assertj.core.api.Assertions.assertThat(operation
+                    .path("security").path(0).has("bearerAuth"))
+                    .as(path).isTrue();
+            org.assertj.core.api.Assertions.assertThat(operation
+                    .path("responses").path("200").path("content")
+                    .has("application/json")).as(path).isTrue();
+            mvc.perform(org.springframework.test.web.servlet.request
+                    .MockMvcRequestBuilders.put(path.replace("{id}", "1"))
+                    .contentType(org.springframework.http.MediaType
+                            .APPLICATION_JSON).content("{\"enabled\":true}"))
+                    .andExpect(status().isUnauthorized());
+            count++;
+        }
+        org.assertj.core.api.Assertions.assertThat(count).isEqualTo(9);
+    }
+
+
+    /** @throws Exception if any F08 operation admits an anonymous caller */
+    @Test
+    public void allComplianceOperationsRequireAuthentication()
+            throws Exception {
+        var response = mvc.perform(org.springframework.test.web.servlet.
+                request.MockMvcRequestBuilders.get("/v3/api-docs"))
+                .andReturn().getResponse().getContentAsString();
+        var api = new com.fasterxml.jackson.databind.ObjectMapper()
+                .readTree(response);
+        int checked = 0;
+
+        for (var entry : api.path("paths").properties()) {
+            if (!entry.getKey().startsWith(
+                    "/api/transport-orders/{order}/compliance")) {
+                continue;
+            }
+            String route = entry.getKey().replace("{order}", "101")
+                    .replace("{id}", "102").replace("{key}",
+                            "84032724-eac7-45df-8d04-e54f092279d0");
+
+            for (var operation : entry.getValue().properties()) {
+                mvc.perform(org.springframework.test.web.servlet.request.
+                        MockMvcRequestBuilders.request(
+                                org.springframework.http.HttpMethod.valueOf(
+                                        operation.getKey().toUpperCase(
+                                                java.util.Locale.ROOT)),
+                                route).contentType("application/json")
+                                        .content("{}"))
+                        .andExpect(org.springframework.test.web.servlet.
+                                result.MockMvcResultMatchers.status()
+                                        .isUnauthorized());
+                checked++;
+            }
+        }
+        org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(16);
+    }
+
+    /** @throws Exception if any F10 operation admits an anonymous caller */
+    @Test
+    public void allOperationalPlanOperationsRequireAuthentication()
+            throws Exception {
+        var response = mvc.perform(get("/v3/api-docs"))
+                .andReturn().getResponse().getContentAsString();
+        var api = new com.fasterxml.jackson.databind.ObjectMapper()
+                .readTree(response);
+        int checked = 0;
+
+        for (var entry : api.path("paths").properties()) {
+            if (!entry.getKey().startsWith(
+                    "/api/transport-orders/{orderId}/plans")) {
+                continue;
+            }
+            String route = entry.getKey().replace("{orderId}", "101")
+                    .replace("{planId}", "311").replace("{legId}", "401");
+
+            for (var operation : entry.getValue().properties()) {
+                mvc.perform(org.springframework.test.web.servlet.request.
+                        MockMvcRequestBuilders.request(
+                                org.springframework.http.HttpMethod.valueOf(
+                                        operation.getKey().toUpperCase(
+                                                java.util.Locale.ROOT)),
+                                route).contentType("application/json")
+                                        .content("{}"))
+                        .andExpect(status().isUnauthorized());
+                checked++;
+            }
+        }
+        org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(9);
+    }
 }

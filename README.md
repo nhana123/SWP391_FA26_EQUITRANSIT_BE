@@ -20,7 +20,7 @@ Java 21, Spring Boot 3.5.16, Maven Wrapper 3.9.9. Kiến trúc monolith phân l�
 .\run-local.ps1
 ```
 
-API ở `http://127.0.0.1:8080`; kiểm tra `GET /api/health`. Thư viện Windows JDBC native nằm trong `%LOCALAPPDATA%\EquiTransit\tools\sqljdbc-native`. Local profile tin chứng chỉ SQL Server tự ký chỉ để phát triển; profile mặc định yêu cầu xác thực chứng chỉ.
+API ở `http://127.0.0.1:8080`; kiểm tra `GET /api/health`. Thư viện Windows JDBC native nằm trong `.local/tools/sqljdbc-native` (tạo bằng `./tools/setup-java.ps1`; không cần Maven cài riêng, dùng Maven Wrapper). Local profile tin chứng chỉ SQL Server tự ký chỉ để phát triển; profile mặc định yêu cầu xác thực chứng chỉ.
 
 Nếu bản backend chạy nền để kiểm tra đang dùng cổng 8080, chạy `.\tools\stop-local.ps1` trước khi Run trong IntelliJ. Với ứng dụng chạy bằng run-local.ps1, nhấn Ctrl+C ở terminal để dừng.
 
@@ -114,8 +114,9 @@ Default tests dùng H2 trong bộ nhớ. `AuthFlowTest` có guard từ chối cl
 ```powershell
 $env:EQ_TEST_DB_URL = 'jdbc:sqlserver://localhost:1433;databaseName=EquiTransit_AuthTest;encrypt=true;trustServerCertificate=true;integratedSecurity=true'
 $env:EQ_TEST_DDL = 'validate'
-$nativeDir = Join-Path $env:LOCALAPPDATA 'EquiTransit\tools\sqljdbc-native'
-.\mvnw.cmd verify "-DargLine=-Djava.library.path=$nativeDir"
+$nativeDir = Join-Path (Get-Location) '.local\tools\sqljdbc-native'
+$env:JAVA_TOOL_OPTIONS = '"-Djava.library.path=' + $nativeDir + '"'
+.\mvnw.cmd verify
 ```
 
 Mở terminal mới hoặc xóa hai EQ_TEST_* env vars để quay lại H2. Không đổi tên database test thành EquiTransit: các test xóa fixture trong database test.
@@ -198,8 +199,9 @@ không dùng EquiTransit thật hay AuthTest tối giản. Ví dụ Windows Auth
 $env:EQ_HORSE_TEST_ENABLED = 'true'
 $env:EQ_HORSE_TEST_DB_URL = 'jdbc:sqlserver://localhost:1433;databaseName=EquiTransit_FigmaMigrationTest_<stamp>;encrypt=true;trustServerCertificate=true;integratedSecurity=true'
 $env:EQ_TEST_DB_USERNAME = ''
-$nativeDir = 'C:/Users/thang/AppData/Local/EquiTransit/tools/sqljdbc-native'
-.\mvnw.cmd test -Dtest=HorseProfileIntegrationTest "-DargLine=-Djava.library.path=$nativeDir"
+$nativeDir = Join-Path (Get-Location) '.local\tools\sqljdbc-native'
+$env:JAVA_TOOL_OPTIONS = '"-Djava.library.path=' + $nativeDir + '"'
+.\mvnw.cmd test -Dtest=HorseProfileIntegrationTest
 ```
 
 Thay `<stamp>` bằng test copy của máy. Fixtures thường rollback; test cạnh tranh
@@ -710,3 +712,111 @@ Examples are documentation fixtures only. Replace sample horse/order/staff IDs
 with actual authorized IDs and use current dates/versions when trying the API.
 Restart the correctly configured local backend after switching/building this
 branch to see updated Swagger; a previously running JAR does not reload itself.
+
+## Versioned quotations — F06
+
+API contract, actor permissions, JSON command examples, pricing provenance,
+state transitions, idempotency, migration and test setup:
+[docs/quotation-api.md](docs/quotation-api.md).
+
+Migration `005_versioned_quotations.sql` must be deployed after 001–004 before
+using quotation APIs. It is not applied automatically to the real database.
+Quote acceptance commits a price; it never confirms payment or departure.
+
+## Manual bank payments (F07)
+
+See [F07 API contract](docs/manual-bank-payments-api.md) for Customer reporting,
+Manager reconciliation/allocation/refunds, protected image proofs and the separate
+F11 departure/F14 settlement financial facade. Requires reviewed migration007
+on an explicitly authorized target database; code never auto-migrates EquiTransit.
+Report is not paid; acceptance is not bank receipt or operational clearance.
+
+## F16 — Dashboards, notifications and audit
+
+Authenticated actor dashboard: `GET /api/dashboard` and `/api/dashboard/tasks`.
+Customer orders remain private; staff see active case/leg assignments only.
+`GET /api/activity/orders/{orderId}/timeline` returns observed milestones.
+`GET /api/notifications` and `PUT /api/notifications/{id}/read` are recipient scoped.
+Customer ordinary-mail preference: GET/PUT
+`/api/customers/me/notification-preferences`; security emails are independent.
+Manager-only `/api/manager/audit-events` and `/api/manager/reports/financial`
+separate quoted value, customer claims, reconciled cash and net allocations.
+All list APIs use `page=0&size=20`, max100; every response is JSON.
+
+See [F16 API and producer contract](docs/activity-api.md) for privacy, exact
+financial semantics, AuditWriter/NotificationWriter integration and retry rules.
+Deploy migration008 after007 in an explicitly authorized database. It is not run
+automatically; existing audit history establishes the notification watermark.
+Missing008 returns503 for F16; legacy booking submission remains compatible.
+For native SQL verification use EQ_ACTIVITY_TEST_ENABLED=true and
+EQ_ACTIVITY_TEST_DB_URL targeting only the documented isolated test catalog.
+
+### F07/F16 schema and report checks
+
+Payment/activity endpoints fail closed when required tables, columns or trusted
+constraints/indexes are missing or disabled. Check the reviewed baseline plus
+migration007/008 on the authorized deployment target; table presence is not enough.
+Refund mutations retain the ledger lock and lock the bank transaction before
+locking the target allocation. Refund proof keys are optional for APPROVE/REJECT
+and bounded when supplied; COMPLETE still requires validated payment evidence.
+Manager ActualCost reports include USD costs of each order's current plan only.
+See docs/activity-api.md for the exact report population and customer isolation.
+
+
+### F08: compliance and versioned legal evidence
+
+See [F08 API contract](docs/compliance-api.md) for the complete FE workflow.
+Assigned active Specialists record source-backed rules/checklists, review the
+exact submitted version, record authority results, assess quarantine/veterinary
+quantities and issue phase-specific clearances. Customers upload immutable
+versions and submit them against requirements. Missing route/transit rules,
+expired/revoked/replaced/rejected files and absent authority evidence block
+clearance. Manager has no legal override. Prices, payment and departure are
+separate commitments.
+
+Migration `009_compliance_legal_evidence.sql` follows 001–008 and is additive.
+It has only been applied/reapplied to the isolated native test database during
+implementation; no real EquiTransit deployment is implied. Until deployed, F08
+returns `COMPLIANCE_SCHEMA_PENDING`. No legal rules or permits are seeded.
+Native F08 tests require `EQ_COMPLIANCE_TEST_ENABLED=true` and
+`EQ_COMPLIANCE_TEST_DB_URL` pointing to the guarded isolated database.
+
+### F09: resource catalogues, availability and fit
+
+See [F09 API and F10 consumer contract](docs/resources-api.md).
+Manager manages vehicles, physical stalls, suppliers and versioned fit policies
+under `/api/manager/resources`; archival preserves operational history.
+Manager/assigned Coordinator probes current-revision availability through
+`POST /api/resources/{kind}/{id}/availability`. Missing evidence stays PENDING;
+maintenance, expiry, buffered overlap and unsuitable fit block availability.
+ROAD vehicles remain separate from AIR equipment and prices are unchanged.
+
+Migration `010_resources_availability_fit.sql` follows 001..009. It was tested
+only on the isolated SQL test catalog, with no real database deployment.
+F10 must retain a transaction through the strict `requireAvailable` facade and
+assignment write. A probe is neither a reservation nor carrier acceptance;
+automatic shared-stall matching is outside this flow.
+
+Verified with Java21 `mvnw.cmd clean verify`: 249 tests (140 native SQL),
+zero failures/errors/skips and zero Checkstyle violations. Migration010 reapply
+passed on the isolated test catalog; all 30 checked business tables had 0 rows.
+
+### F10: multimodal operational plan
+
+See [F10 API contract](docs/operational-plan-api.md) for the complete operational
+planning workflow. Active Managers and assigned active Coordinators create
+versioned `DRAFT` multimodal plans (`ROAD` and `AIR` legs with sourced confirmed
+kilometres feeding `ServiceSourceRepository.itinerary()` for F05/F06), assign
+vehicles/drivers (`ROAD`) or physical stalls/flights (`AIR`), record quarantine
+and insurance commitments, and confirm the active `CurrentPlanID` tied to an
+accepted quote (`QuotationCommitmentFacade.requireAccepted`). `HELD`/`PENDING`
+reservations and unbooked `SupplierOffer` rows never satisfy confirmation.
+Cross-order horse overlap (`BR-03`) and vehicle/stall/driver overlaps (`BR-10`)
+are blocked under parent-order, horse and resource locks.
+
+Migration `011_multimodal_operational_plan.sql` follows 001..010 and was tested
+only on the isolated SQL test catalog (`EquiTransit_FigmaMigrationTest_20261013_143729`),
+with no real database deployment. Native F10 tests require
+`EQ_PLAN_TEST_ENABLED=true` and `EQ_PLAN_TEST_DB_URL` pointing to the guarded
+isolated test database.
+

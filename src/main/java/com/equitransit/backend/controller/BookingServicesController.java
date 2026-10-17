@@ -7,6 +7,10 @@
  */
 package com.equitransit.backend.controller;
 
+import com.equitransit.backend.dto.pricing.ServiceRateResponse;
+
+import com.equitransit.backend.dto.pricing.ServicePreviewRequest;
+
 
 import org.springframework.http.MediaType;
 import jakarta.validation.Valid;
@@ -56,9 +60,45 @@ public class BookingServicesController {
                     + "quantity/rate is null and pending, not zero. Air "
                 + "options "
                     + "use captured horse measurements and approved policies; "
-                    + "measurement eligibility is not carrier confirmation.")
+                    + "measurement eligibility is not carrier confirmation. "
+                    + "A usable current-revision F06 quotation supplies its "
+                    + "retail snapshot and commercial assessments; PRICED "
+                    + "quote rows are shown as ESTIMATED here. Supplier "
+                    + "purchase costs and internal evidence stay private.")
     public ServiceDisclosureResponse get(@PathVariable @Positive long id) {
         return services.get(id);
+    }
+
+    /**
+     * @param id owned order
+     * @return all supported public retail options, including unselected ones
+     */
+    @GetMapping("/rates")
+    @Operation(summary = "Read service option unit rates for my order",
+            description = "Missing rate is null, not zero. Included services "
+                    + "cannot be sold twice. Rates alone do not confirm "
+                    + "quantities, legal applicability or carrier acceptance.")
+    public java.util.List<
+            ServiceRateResponse> rates(
+                    @PathVariable @Positive long id) {
+        return services.rates(id);
+    }
+
+    /**
+     * @param id owned order
+     * @param request full unsaved preferences with observed versions
+     * @return read-only nonpayable estimate; no revision or quote is created
+     */
+    @PostMapping("/preview")
+    @Operation(summary = "Preview unsaved service choices",
+            description = "Read-only calculation. Never saves preferences, "
+                    + "allocates space or creates a quotation. Client must "
+                    + "discard responses for older selections. Missing "
+                    + "source quantities or evidence stay pending.")
+    public ServiceDisclosureResponse preview(@PathVariable @Positive long id,
+            @RequestBody @Valid
+            ServicePreviewRequest request) {
+        return services.preview(id, request);
     }
 
     /**

@@ -49,13 +49,30 @@ public class CaseAssignmentAccess {
      */
     @Transactional
     public long lockRevision(long order, CaseRole role) {
+        return requireRevision(order, role, false);
+    }
+
+    /**
+     * Legal review continues at arrival/release during active operations.
+     * @param order current case, never a caller-selected staff identity
+     * @return exact current revision, retaining the shared parent lock
+     */
+    @Transactional
+    public long lockLegalRevision(long order) {
+        return requireRevision(order, CaseRole.SPECIALIST, true);
+    }
+
+    private long requireRevision(long order, CaseRole role, boolean legal) {
         CurrentActor actor = actors.current();
         CaseOrder parent = cases.order(order, true)
                 .orElseThrow(this::notFound);
 
         if (!role.name().equals(actor.roleCode())
                 || !cases.activeStaff(actor.staffId(), role.name())
-                || !"APPROVED".equals(parent.status())
+                || !(legal ? java.util.Set.of("APPROVED", "IN_PREPARATION",
+                        "CONFIRMED", "IN_TRANSIT", "DELIVERED")
+                        .contains(parent.status())
+                        : "APPROVED".equals(parent.status()))
                 || parent.revisionId() == null
                 || !cases.assigned(order, actor.staffId(), role)) {
             throw notFound();

@@ -106,6 +106,19 @@ public class ServiceSourceRepository {
      */
     public ItineraryPricingContext itinerary(long order, long revision,
             OffsetDateTime now) {
+        return itinerary(order, revision, now, false);
+    }
+
+    /**
+     * Reads sourced draft distances without claiming resource confirmation.
+     * @param order authorized parent
+     * @param revision exact submitted revision
+     * @param now source evaluation time
+     * @param quotation whether draft plans may supply quotation quantities
+     * @return sourced quantities; never an operational readiness result
+     */
+    public ItineraryPricingContext itinerary(long order, long revision,
+            OffsetDateTime now, boolean quotation) {
         String sql = "SELECT p.PlanID,"
                 + "SUM(CASE WHEN l.TransportMode='ROAD' THEN l.DistanceKm"
                 + " ELSE 0 END) AS RoadKm,"
@@ -118,7 +131,9 @@ public class ServiceSourceRepository {
                 + " THEN 1 ELSE 0 END) AS MissingSources"
                 + " FROM dbo.TransportOrder o JOIN dbo.TransportPlan p"
                 + " ON p.PlanID=o.CurrentPlanID AND p.OrderID=o.OrderID"
-                + " AND p.RevisionID=:revision AND p.PlanStatus='CONFIRMED'"
+                + " AND p.RevisionID=:revision AND p.PlanStatus IN ("
+                + (quotation ? "'DRAFT','PROPOSED','PLANNED','CONFIRMED'"
+                        : "'CONFIRMED'") + ")"
                 + " LEFT JOIN dbo.TripLeg l ON l.PlanID=p.PlanID"
                 + " AND l.TransportMode IN ('ROAD','AIR')"
                 + " OUTER APPLY (SELECT COUNT(*) AS ValidStaff"
@@ -230,6 +245,35 @@ public class ServiceSourceRepository {
                 (row, index) -> new BundleSourceRecord(
                         row.getBoolean("IncludesStall"),
                         row.getString("IncludedCharges")));
+    }
+
+    /**
+     * Reads the chosen commercial version, never an arbitrary supplier offer.
+     * Retail prices and commercial assessments are frozen in this snapshot.
+     * @param order authorized parent
+     * @param revision exact current submitted revision
+     * @param now server UTC time
+     * @return latest usable snapshot, without exposing purchase costs
+     */
+    public java.util.Optional<String> commercialSnapshot(long order,
+            long revision, OffsetDateTime now) {
+        if (!available("dbo.Quote", List.of("PricingSnapshotJSON"))) {
+            return java.util.Optional.empty();
+        }
+        return jdbc.query("SELECT TOP (1) q.PricingSnapshotJSON"
+                + " FROM dbo.Quote q JOIN dbo.OrderRevision r"
+                + " ON r.RevisionID=q.RevisionID JOIN dbo.TransportOrder o"
+                + " ON o.OrderID=r.OrderID AND o.CurrentRevisionID=r.RevisionID"
+                + " WHERE o.OrderID=:order AND r.RevisionID=:revision"
+                + " AND q.PricingSnapshotJSON IS NOT NULL"
+                + " AND (q.QuoteStatus='ACCEPTED' OR (q.QuoteStatus IN"
+                + " ('DRAFT','APPROVED','ISSUED') AND q.ValidUntil>:now))"
+                + " ORDER BY q.VersionNo DESC,q.QuoteID DESC",
+                new MapSqlParameterSource("order", order)
+                        .addValue("revision", revision)
+                        .addValue("now", now.toLocalDateTime()),
+                (row, index) -> row.getString("PricingSnapshotJSON"))
+                .stream().findFirst();
     }
 
     private String specialistProof(String alias) {

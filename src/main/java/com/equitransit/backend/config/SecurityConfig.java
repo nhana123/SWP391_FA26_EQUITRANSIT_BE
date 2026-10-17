@@ -155,6 +155,23 @@ public class SecurityConfig {
                         .hasRole("MANAGER")
                         .requestMatchers("/api/staff/**")
                         .hasAnyRole("SPECIALIST", "COORDINATOR")
+                        .requestMatchers("/api/transport-orders/*/quotes",
+                                "/api/transport-orders/*/quotes/**")
+                        .hasAnyRole("CUSTOMER", "MANAGER", "COORDINATOR")
+                        .requestMatchers(
+                                "/api/transport-orders/*/supplier-offers")
+                        .hasAnyRole("MANAGER", "COORDINATOR")
+                        .requestMatchers("/api/transport-orders/*/payments",
+                                "/api/transport-orders/*/payments/**")
+                        .hasAnyRole("CUSTOMER", "MANAGER")
+                        .requestMatchers(
+                                "/api/transport-orders/*/compliance",
+                                "/api/transport-orders/*/compliance/**")
+                        .hasAnyRole("CUSTOMER", "SPECIALIST")
+                        .requestMatchers(
+                                "/api/transport-orders/*/plans",
+                                "/api/transport-orders/*/plans/**")
+                        .hasAnyRole("MANAGER", "COORDINATOR")
                         .requestMatchers("/api/customers/**", "/api/horses",
                                 "/api/horses/**", "/api/transport-orders",
                                 "/api/transport-orders/**")

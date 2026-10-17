@@ -25,6 +25,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import com.equitransit.backend.dto.ApiExamples;
+import com.equitransit.backend.dto.quote.QuotePrepareRequest;
+import com.equitransit.backend.dto.quote.QuoteApiExamples;
 import com.equitransit.backend.dto.request.HorseProfileRequest;
 import com.equitransit.backend.dto.request.EmailRequest;
 import com.equitransit.backend.dto.request.LoginRequest;
@@ -60,6 +62,203 @@ public class ApiDtoContractTest {
     @Autowired
     private ObjectMapper mapper;
 
+    /** @throws Exception if F09 schemas or media types drift */
+    @Test
+    public void resourceContractsAreTypedAndDocumented() throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+        int fields = 0;
+        int operations = 0;
+
+        for (var entry : schemas.properties()) {
+            if (!entry.getKey().startsWith("Resource")) {
+                continue;
+            }
+            assertActivityModel(entry.getValue(), schemas,
+                    new java.util.HashSet<>(), false);
+            for (var field : entry.getValue().path("properties")) {
+                assertThat(field.has("example")).as(entry.getKey()).isTrue();
+                fields++;
+            }
+        }
+        for (var entry : api.path("paths").properties()) {
+            if (!entry.getKey().startsWith("/api/manager/resources")
+                    && !entry.getKey().startsWith("/api/resources")) {
+                continue;
+            }
+            for (var operation : entry.getValue().properties()) {
+                assertThat(operation.getValue().path("security").toString())
+                        .contains("bearerAuth");
+                assertThat(operation.getValue().at("/responses/200/content")
+                        .has("application/json")).isTrue();
+                operations++;
+            }
+        }
+        assertThat(fields).isGreaterThan(70);
+        assertThat(operations).isEqualTo(17);
+    }
+
+    /** @throws Exception if F10 planning schemas or operations drift */
+    @Test
+    public void operationalPlanContractsAreTypedAndDocumented()
+            throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+        int fields = 0;
+        int operations = 0;
+
+        for (var entry : schemas.properties()) {
+            if (!entry.getKey().startsWith("Plan")) {
+                continue;
+            }
+            assertActivityModel(entry.getValue(), schemas,
+                    new java.util.HashSet<>(), false);
+            for (var field : entry.getValue().path("properties")) {
+                assertThat(field.has("example")).as(entry.getKey()).isTrue();
+                fields++;
+            }
+        }
+        String root = "/api/transport-orders/{orderId}/plans";
+
+        for (var entry : api.path("paths").properties()) {
+            if (!entry.getKey().startsWith(root)) {
+                continue;
+            }
+            for (var operation : entry.getValue().properties()) {
+                assertThat(operation.getValue().path("security").toString())
+                        .contains("bearerAuth");
+                assertThat(operation.getValue().at("/responses/200/content")
+                        .has("application/json")).isTrue();
+                operations++;
+            }
+        }
+        assertThat(fields).isGreaterThan(100);
+        assertThat(operations).isEqualTo(9);
+    }
+
+    /** @throws Exception if F08 schemas or operations drift */
+    @Test
+    public void complianceContractsAreTypedPrivateAndDocumented()
+            throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+        int fields = 0;
+
+        for (var entry : schemas.properties()) {
+            if (!entry.getKey().startsWith("Compliance")) {
+                continue;
+            }
+            assertActivityModel(entry.getValue(), schemas,
+                    new java.util.HashSet<>(), false);
+            assertThat(entry.getValue().toString()).doesNotContain(
+                    "supplierCost", "actualCost", "internalNotes", "margin");
+            for (var field : entry.getValue().path("properties")) {
+                assertThat(field.has("example")).as(entry.getKey()).isTrue();
+                fields++;
+            }
+        }
+        assertThat(fields).isGreaterThan(80);
+        String root = "/api/transport-orders/{order}/compliance";
+        int operations = 0;
+
+        for (var entry : api.path("paths").properties()) {
+            if (!entry.getKey().startsWith(root)) {
+                continue;
+            }
+            for (var operation : entry.getValue().properties()) {
+                assertThat(operation.getValue().path("security").toString())
+                        .contains("bearerAuth");
+                assertThat(operation.getValue().at(
+                        "/responses/200/content").has("application/json"))
+                        .isTrue();
+                operations++;
+            }
+        }
+        assertThat(operations).isEqualTo(16);
+    }
+
+    /** @throws Exception if the F16 HTTP schemas cannot be generated */
+    @Test
+    public void activityContractsAreTypedScopedAndBounded() throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+
+        for (String name : List.of("DashboardResponse", "TaskPage",
+                "NotificationPage", "TimelineResponse", "EmailPreference",
+                "AuditPage", "FinancialReport")) {
+            boolean customer = !List.of("AuditPage", "FinancialReport")
+                    .contains(name);
+
+            assertThat(schemas.has(name)).as(name).isTrue();
+            assertActivityModel(schemas.path(name), schemas,
+                    new java.util.HashSet<>(), customer);
+        }
+        var routes = Map.of(
+                "/api/dashboard", "DashboardResponse",
+                "/api/dashboard/tasks", "TaskPage",
+                "/api/notifications", "NotificationPage",
+                "/api/activity/orders/{orderId}/timeline", "TimelineResponse",
+                "/api/manager/audit-events", "AuditPage",
+                "/api/manager/reports/financial", "FinancialReport",
+                "/api/customers/me/notification-preferences",
+                "EmailPreference");
+
+        routes.forEach((path, model) -> {
+            var operation = api.path("paths").path(path).path("get");
+
+            assertThat(operation.path("responses").path("200")
+                    .path("content").path("application/json")
+                    .path("schema").path("$ref").asText())
+                    .isEqualTo("#/components/schemas/" + model);
+        });
+        var read = api.path("paths").path("/api/notifications/{id}/read")
+                .path("put");
+
+        assertThat(read.path("responses").path("200").path("content")
+                .path("application/json").path("schema").path("$ref")
+                .asText()).isEqualTo("#/components/schemas/NotificationView");
+        var preference = api.path("paths")
+                .path("/api/customers/me/notification-preferences").path("put");
+
+        assertThat(preference.path("requestBody").path("content")
+                .path("application/json").path("schema").path("$ref")
+                .asText()).isEqualTo("#/components/schemas/EmailPreference");
+        assertJsonMedia(api);
+        assertThat(schemas.at("/DashboardResponse/properties/role/enum")
+                .toString()).contains("CUSTOMER", "DRIVER", "MANAGER");
+        assertThat(schemas.path("DashboardOrder").toString())
+                .doesNotContain("actualCost", "internalNotes", "unitPrice");
+        assertThat(schemas.path("TimelinePoint").toString())
+                .contains("CLEARED", "DEPARTED", "DELIVERED", "CLOSED");
+        for (String name : List.of("quotedValue", "reportedTransfers",
+                "netBankReceipts", "netAllocated", "actualCost")) {
+            var field = schemas.path("FinancialReport")
+                    .path("properties").path(name);
+
+            assertThat(field.path("type").asText()).isEqualTo("string");
+            assertThat(field.path("pattern").asText())
+                    .isEqualTo("^\\d+(\\.\\d{1,2})?$");
+        }
+        for (var parameter : api.path("paths").path("/api/dashboard")
+                .path("get").path("parameters")) {
+            var schema = parameter.path("schema");
+
+            if ("size".equals(parameter.path("name").asText())) {
+                assertThat(schema.path("minimum").asInt()).isEqualTo(1);
+                assertThat(schema.path("maximum").asInt()).isEqualTo(100);
+                assertThat(schema.path("example").asInt()).isEqualTo(20);
+            }
+        }
+    }
+
     /**
      * Checks real Swagger output and saves an ignored diagnostic artifact.
      * @throws Exception if schema generation fails
@@ -75,6 +274,49 @@ public class ApiDtoContractTest {
 
         Files.writeString(Path.of("target/api-dto-contract.json"), encoded);
         for (String name : List.of(
+                "AuditPage",
+                "AuditView",
+                "DashboardOrder",
+                "DashboardResponse",
+                "EmailPreference",
+                "FinancialReport",
+                "NotificationPage",
+                "NotificationView",
+                "StatusCount",
+                "TimelinePoint",
+                "TaskView", "TaskPage",
+                "TimelineResponse",
+                "AllocationCommand",
+                "BankReceiptCommand",
+                "BankReceiptView",
+                "BankReportCommand",
+                "PaymentAllocationView",
+                "PaymentMutationReceipt",
+                "PaymentObligation",
+                "PaymentOverview",
+                "PaymentProofCommand",
+                "PaymentProofReceipt",
+                "PaymentProofView",
+                "PaymentReportView",
+                "PaymentRequestCommand",
+                "RefundActionCommand",
+                "RefundRequestCommand",
+                "RefundView",
+                "ReportReviewCommand",
+                "ReversalCommand",
+                "ServicePreviewRequest", "ServiceRateResponse",
+                "TariffWriteRequest", "TariffResponse", "TariffPage",
+                "QuoteCommand",
+                "QuoteActionRequest",
+                "QuotePrepareRequest",
+                "QuoteEvidence",
+                "QuoteSchedule",
+                "QuoteLine",
+                "QuoteSummary",
+                "QuoteResponse",
+                "QuotePage",
+                "SupplierOfferRequest",
+                "SupplierOfferReceipt",
                 "EmailRequest",
                 "LoginRequest",
                 "RegisterRequest",
@@ -472,6 +714,42 @@ public class ApiDtoContractTest {
                 .isTrue();
     }
 
+    private void assertActivityModel(JsonNode node, JsonNode schemas,
+            java.util.Set<String> visited, boolean customer) {
+        if (node.isObject()) {
+            assertThat(node.toString()).doesNotContain("additionalProp1");
+            if (node.has("$ref")) {
+                assertThat(node.path("type").toString())
+                        .doesNotContain("null");
+                String name = node.path("$ref").asText()
+                        .replace("#/components/schemas/", "");
+
+                if (visited.add(name)) {
+                    assertActivityModel(schemas.path(name), schemas, visited,
+                            customer);
+                }
+            }
+            if (node.has("additionalProperties")) {
+                assertThat(node.path("additionalProperties").isBoolean())
+                        .isTrue();
+                assertThat(node.path("additionalProperties").asBoolean())
+                        .isFalse();
+            }
+            if (customer) {
+                for (String field : List.of("actualCost", "supplierCost",
+                        "unitPrice", "margin", "internalNotes",
+                        "sourceReference", "recipientAccount")) {
+                    assertThat(node.path("properties").has(field))
+                            .as(field).isFalse();
+                }
+            }
+        }
+        if (node.isContainerNode()) {
+            node.forEach(child -> assertActivityModel(child, schemas,
+                    visited, customer));
+        }
+    }
+
     private void assertExamples(JsonNode schemas, JsonNode schema,
             String name) {
         JsonNode actual = schema.has("$ref") ? schemas.get(schema.get("$ref")
@@ -485,13 +763,156 @@ public class ApiDtoContractTest {
         }
     }
 
+    /**
+     * F06 commands have usable examples, bounded text and closed states.
+     * @throws Exception if OpenAPI or example decoding fails
+     */
+    @Test
+    public void quotationSchemasMatchTheFrontendContract() throws Exception {
+        JsonNode api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        JsonNode schemas = api.at("/components/schemas");
+        String base = "/api/transport-orders/{orderId}/quotes";
+
+        assertThat(api.path("paths").has(base)).isTrue();
+        assertThat(schemas.get("QuoteResponse").toString())
+                .doesNotContain("supplierCost", "margin", "purchaseUnitPrice",
+                        "additionalProp1");
+        assertThat(schemas.at("/QuotePrepareRequest/properties/terms/minLength")
+                .asInt()).isEqualTo(1);
+        assertThat(schemas.at("/QuoteCommand/properties/recordVersion/pattern")
+                .asText()).isEqualTo("^[0-9a-fA-F]{16}$");
+        assertThat(schemas.at("/QuoteSummary/properties/status/enum")
+                .toString()).contains("DRAFT", "APPROVED", "ISSUED",
+                        "ACCEPTED", "REJECTED", "EXPIRED", "SUPERSEDED");
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            var command = mapper.readValue(
+                    QuoteApiExamples.PREPARE, QuotePrepareRequest.class);
+
+            assertThat(factory.getValidator().validate(command)).isEmpty();
+            for (String field : List.of("paymentSchedule", "assessments")) {
+                ObjectNode invalid = (ObjectNode) mapper.readTree(
+                        QuoteApiExamples.PREPARE);
+
+                invalid.set(field, mapper.readTree("[null]"));
+                assertThat(factory.getValidator().validate(
+                        mapper.treeToValue(invalid, QuotePrepareRequest.class)))
+                        .isNotEmpty();
+            }
+        }
+    }
+
+    /**
+     * Manager publication commands and read-only previews have strict schemas.
+     * @throws Exception if generated examples fail decoding
+     */
+    @Test
+    public void pricingCommandsHaveUsableValidationAndSchemas()
+            throws Exception {
+        var body = mapper.createObjectNode();
+
+        body.put("product", "GROOMING");
+        body.put("unitPrice", "1.25");
+        body.put("sourceReference", "Artificial test publication");
+        body.put("operationId", java.util.UUID.randomUUID().toString());
+        var type = com.equitransit.backend.dto.pricing.TariffWriteRequest.class;
+
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            assertThat(factory.getValidator().validate(
+                    mapper.treeToValue(body, type))).isEmpty();
+            body.put("unitPrice", "1.234");
+            assertThat(factory.getValidator().validate(
+                    mapper.treeToValue(body, type))).isNotEmpty();
+        }
+        JsonNode api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        assertThat(api.at("/components/schemas/TariffResponse/properties/"
+                + "product/anyOf/1/type").asText()).isEqualTo("null");
+        var schema = api.at("/components/schemas/ServicePreviewRequest");
+
+        assertThat(schema.path("required").toString()).contains("services");
+        assertThat(schema.at("/properties/services/type").asText())
+                .isNotEqualTo("null");
+        assertThat(api.at("/components/schemas/ServiceRateResponse")
+                .toString()).doesNotContain("sourceReference", "purchase");
+        assertThat(api.path("paths").has("/api/manager/service-tariffs"))
+                .isTrue();
+        assertThat(api.path("paths").has(
+                "/api/transport-orders/{id}/services/preview")).isTrue();
+    }
+
+    /** @throws Exception if payment OpenAPI schemas cannot be generated */
+    @Test
+    public void paymentContractUsesExactTypesAndSafeReadModels()
+            throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+
+        assertThat(schemas.at("/BankReceiptCommand/properties/"
+                + "amountReceived/pattern").asText())
+                .isEqualTo("^\\d+(\\.\\d{1,2})?$");
+        assertThat(schemas.at("/RefundActionCommand/properties/action/enum")
+                .toString()).contains("APPROVE", "REJECT", "COMPLETE");
+        var proof = schemas.at("/RefundActionCommand/properties/proofFileKey");
+
+        assertThat(proof.path("minLength").asInt()).isEqualTo(1);
+        assertThat(proof.path("maxLength").asInt()).isEqualTo(1024);
+        assertThat(schemas.at("/PaymentOverview").toString())
+                .doesNotContain("InternalNotes", "RecipientAccount",
+                        "additionalProp1");
+        assertThat(schemas.at("/PaymentRequestCommand/required").toString())
+                .contains("command");
+        assertThat(schemas.at("/BankReportCommand/properties/command/type")
+                .asText()).isNotEqualTo("null");
+        assertThat(api.path("paths").has(
+                "/api/transport-orders/{orderId}/payments/refunds"))
+                .isTrue();
+    }
+
+    /** @throws Exception if the optional proof key cannot be validated */
+    @Test
+    public void refundProofKeyIsOptionalButBoundedWhenPresent()
+            throws Exception {
+        var body = mapper.createObjectNode();
+
+        body.put("action", "APPROVE");
+        body.set("command", mapper.readTree("{\"recordVersion\":"
+                + "\"000000000001A2B3\",\"operationId\":"
+                + "\"d86b4f63-5acc-4f20-8da3-e24323268814\"}"));
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            var validator = factory.getValidator();
+            var type = com.equitransit.backend.dto.payment
+                    .RefundActionCommand.class;
+
+            assertThat(validator.validate(mapper.treeToValue(body, type)))
+                    .isEmpty();
+            for (String value : List.of("", "a".repeat(1025))) {
+                body.put("proofFileKey", value);
+                assertThat(validator.validate(mapper.treeToValue(body, type)))
+                        .anyMatch(v -> v.getPropertyPath().toString()
+                                .equals("proofFileKey")
+                                && v.getConstraintDescriptor().getAnnotation()
+                                .annotationType().equals(jakarta.validation
+                                        .constraints.Size.class));
+            }
+        }
+    }
+
     private void assertJsonMedia(JsonNode api) {
         api.path("paths").properties().forEach(path -> {
             if (path.getKey().startsWith("/api/horses")
                     || path.getKey().contains("transport-orders")
                     || path.getKey().startsWith("/api/auth/")
                     || path.getKey().startsWith("/api/customers/")
-                    || path.getKey().equals("/api/health")) {
+                    || path.getKey().equals("/api/health")
+                    || path.getKey().startsWith("/api/dashboard")
+                    || path.getKey().startsWith("/api/activity/")
+                    || path.getKey().startsWith("/api/notifications")
+                    || path.getKey().startsWith("/api/manager/")) {
                 path.getValue().properties().forEach(method ->
                         method.getValue().path("responses").properties()
                                 .forEach(response -> {

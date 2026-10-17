@@ -11,6 +11,8 @@ spring:
   mail:
     host: localhost
 app:
+  notifications:
+    worker-enabled: false
   jwt:
     secret: dGVzdC1vbmx5LWtleS1mb3ItZXF1aXRyYW5zaXQtYXV0aC10ZXN0cw==
   mail:

@@ -12,6 +12,14 @@ import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Optional;
+import com.equitransit.backend.entity.PublishedTariffRecord;
+import com.equitransit.backend.dto.pricing.ServiceRateResponse;
+import com.equitransit.backend.entity.pricing.PricingMode;
+import com.equitransit.backend.entity.pricing.ServiceProduct;
+import com.equitransit.backend.entity.quote.QuoteSnapshot;
+import com.equitransit.backend.exception.OrderException;
+import org.springframework.http.HttpStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -48,6 +56,78 @@ public class ServiceAssessmentFacade {
     }
 
     /**
+     * Shares F06 retail snapshots and evidence with F05 read-only disclosure.
+     * The caller must authorize the parent before reading this private type.
+     * @param order owned parent
+     * @param revision exact current revision, null for draft
+     * @param now server time
+     * @return supported commercial snapshot, never a public response
+     */
+    public Optional<QuoteSnapshot> commercialQuote(long order, Long revision,
+            OffsetDateTime now) {
+        if (revision == null) {
+            return Optional.empty();
+        }
+        return sources.commercialSnapshot(order, revision, now).map(encoded -> {
+            try {
+                var snapshot = mapper.readValue(encoded, QuoteSnapshot.class);
+
+                if (snapshot != null && snapshot.schemaVersion() == 1
+                        && snapshot.request() != null
+                        && snapshot.lines() != null
+                        && snapshot.sources() != null
+                        && snapshot.blockers() != null
+                        && snapshot.request().revisionId() == revision) {
+                    return snapshot;
+                }
+            } catch (JsonProcessingException error) {
+                throw unsupportedQuote();
+            }
+            throw unsupportedQuote();
+        });
+    }
+
+    /**
+     * Reads current unit prices for selected and unselected product options.
+     * @param now server UTC time
+     * @return retail-only bounded catalogue, without private source references
+     */
+    public List<ServiceRateResponse> retailRates(OffsetDateTime now) {
+        var products = ServiceProduct.values();
+        var catalogue = sources.tariffs(java.util.Arrays.stream(products)
+                .map(ServiceProduct::code)
+                .distinct().toList(), now);
+
+        return java.util.Arrays.stream(products).map(product -> {
+            var matches = catalogue.stream().filter(row ->
+                    row.service().equals(product.code())
+                            && row.option().equals(product.option()))
+                    .map(PublishedTariffRecord::tariff).toList();
+            var rate = matches.size() == 1 ? matches.getFirst() : null;
+            boolean usable = rate != null
+                    && rate.unit().equals(product.unit())
+                    && rate.costGroup().equals(product.group())
+                    && rate.rate().signum() >= 0
+                    && rate.rate().stripTrailingZeros().scale() <= 2
+                    && product.mode() != PricingMode.INCLUDED;
+
+            return new ServiceRateResponse(
+                    product, product.section(), product.unit(), usable
+                            ? rate.rate().setScale(2,
+                                    java.math.RoundingMode.HALF_UP)
+                                    .toPlainString() : null,
+                    "USD", product.mode(), usable ? rate.tariffId() : null,
+                    usable ? rate.version() : null);
+        }).toList();
+    }
+
+    private OrderException unsupportedQuote() {
+        return new OrderException(HttpStatus.CONFLICT,
+                "QUOTE_DATA_UNSUPPORTED",
+                "This quotation requires a supported data version.");
+    }
+
+    /**
      * Resolves current sourced itinerary kilometres.
      * @param order authorized order
      * @param revision exact current revision, null for draft
@@ -58,6 +138,18 @@ public class ServiceAssessmentFacade {
             OffsetDateTime now) {
         return revision == null ? new ItineraryPricingContext(null, null,
                 null, "PENDING") : sources.itinerary(order, revision, now);
+    }
+
+    /**
+     * Supplies quoted draft distances without confirming resources or gates.
+     * @param order authorized locked order
+     * @param revision current submitted revision
+     * @param now source evaluation time
+     * @return sourced draft itinerary quantities or pending
+     */
+    public ItineraryPricingContext quotationItinerary(long order,
+            long revision, OffsetDateTime now) {
+        return sources.itinerary(order, revision, now, true);
     }
 
     /**
