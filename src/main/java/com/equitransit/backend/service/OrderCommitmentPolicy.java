@@ -42,4 +42,12 @@ public class OrderCommitmentPolicy {
     public void invalidatePreparation(long order) {
         commitments.invalidatePreparation(order);
     }
+
+    /**
+     * Legal quantities may change without rewriting an accepted obligation.
+     * @param order parent locked by the F08 assessment transaction
+     */
+    public void invalidateLegalPricing(long order) {
+        commitments.invalidatePreparation(order);
+    }
 }

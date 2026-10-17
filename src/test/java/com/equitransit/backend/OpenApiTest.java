@@ -224,4 +224,41 @@ public class OpenApiTest {
         org.assertj.core.api.Assertions.assertThat(count).isEqualTo(9);
     }
 
+
+    /** @throws Exception if any F08 operation admits an anonymous caller */
+    @Test
+    public void allComplianceOperationsRequireAuthentication()
+            throws Exception {
+        var response = mvc.perform(org.springframework.test.web.servlet.
+                request.MockMvcRequestBuilders.get("/v3/api-docs"))
+                .andReturn().getResponse().getContentAsString();
+        var api = new com.fasterxml.jackson.databind.ObjectMapper()
+                .readTree(response);
+        int checked = 0;
+
+        for (var entry : api.path("paths").properties()) {
+            if (!entry.getKey().startsWith(
+                    "/api/transport-orders/{order}/compliance")) {
+                continue;
+            }
+            String route = entry.getKey().replace("{order}", "101")
+                    .replace("{id}", "102").replace("{key}",
+                            "84032724-eac7-45df-8d04-e54f092279d0");
+
+            for (var operation : entry.getValue().properties()) {
+                mvc.perform(org.springframework.test.web.servlet.request.
+                        MockMvcRequestBuilders.request(
+                                org.springframework.http.HttpMethod.valueOf(
+                                        operation.getKey().toUpperCase(
+                                                java.util.Locale.ROOT)),
+                                route).contentType("application/json")
+                                        .content("{}"))
+                        .andExpect(org.springframework.test.web.servlet.
+                                result.MockMvcResultMatchers.status()
+                                        .isUnauthorized());
+                checked++;
+            }
+        }
+        org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(16);
+    }
 }
