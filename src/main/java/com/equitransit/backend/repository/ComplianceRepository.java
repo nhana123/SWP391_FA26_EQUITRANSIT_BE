@@ -72,7 +72,11 @@ public class ComplianceRepository {
                 + "EXISTS(SELECT 1 FROM sys.indexes WHERE "
                 + "object_id=OBJECT_ID('dbo.DocumentVersion') AND "
                 + "name='UQ_DocumentVersion_Version' AND "
-                + "is_unique=1 AND is_disabled=0) THEN 1 ELSE 0 END",
+                + "is_unique=1 AND is_disabled=0) AND (SELECT COUNT(*) "
+                + "FROM sys.indexes WHERE name IN "
+                + "('UX_QuarantineAssessment_Current',"
+                + "'UX_VeterinaryAssessment_Current') AND is_unique=1 "
+                + "AND is_disabled=0)=2 THEN 1 ELSE 0 END",
                 Integer.class) == 1;
     }
 

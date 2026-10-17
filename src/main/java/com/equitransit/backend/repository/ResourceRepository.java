@@ -304,24 +304,57 @@ public class ResourceRepository {
     public List<ResourceBlocker> scheduleBlockers(ResourceKind kind, long key,
                     OffsetDateTime start, OffsetDateTime end, int buffer,
                     long exclude) {
-        boolean vehicle = kind == ResourceKind.VEHICLE;
-        String from = vehicle ? "a.PlannedDeparture" : "a.AssignedFrom";
-        String to = vehicle ? "a.PlannedArrival" : "a.AssignedTo";
-        String population = vehicle
-                ? "dbo.TripLeg a JOIN dbo.TransportPlan p ON p.PlanID=a.PlanID"
-                        + " WHERE a.VehicleID=:id AND a.LegStatus NOT IN "
-                        + "('CANCELLED','CANCELED','REJECTED')"
-                : "dbo.StallAssignment a JOIN dbo.TripLeg l ON l.LegID=a.LegID"
-                        + " JOIN dbo.TransportPlan p ON p.PlanID=l.PlanID"
-                        + " WHERE a.StallID=:id AND a.Status NOT IN "
-                        + "('CANCELLED','CANCELED','INACTIVE')";
-        String sql = "SELECT COALESCE(SUM(CASE WHEN " + from + " IS NULL OR "
-                + to + " IS NULL THEN 1 ELSE 0 END),0) AS Missing,"
-                + "COALESCE(SUM(CASE WHEN " + from + "<:end AND "
-                + "DATEADD(minute,:buffer," + to + ")>:start THEN 1 ELSE 0 "
-                + "END),0) AS Busy FROM " + population
-                + " AND a.LegID<>:exclude AND p.PlanStatus NOT IN "
-                + "('CANCELLED','CANCELED','SUPERSEDED','REJECTED')";
+        String sql = kind == ResourceKind.VEHICLE
+                ? "SELECT COALESCE(SUM(CASE WHEN a.PlannedDeparture IS NULL OR "
+                        + "a.PlannedArrival IS NULL THEN 1 ELSE 0 END),0) "
+                        + "AS Missing, COALESCE(SUM(CASE WHEN "
+                        + "a.PlannedDeparture<:end AND DATEADD(minute,:buffer,"
+                        + "a.PlannedArrival)>:start THEN 1 ELSE 0 END),0) "
+                        + "AS Busy FROM dbo.TripLeg a JOIN dbo.TransportPlan p "
+                        + "ON p.PlanID=a.PlanID WHERE a.VehicleID=:id AND "
+                        + "a.LegStatus NOT IN ('CANCELLED','CANCELED',"
+                        + "'REJECTED') AND a.LegID<>:exclude AND p.PlanStatus "
+                        + "NOT IN ('CANCELLED','CANCELED','SUPERSEDED',"
+                        + "'REJECTED')"
+                : "SELECT COALESCE(SUM(CASE WHEN a.AssignedFrom IS NULL OR "
+                        + "a.AssignedTo IS NULL THEN 1 ELSE 0 END),0) "
+                        + "AS Missing, CASE WHEN COALESCE(SUM(CASE WHEN "
+                        + "a.AssignedFrom<:end AND DATEADD(minute,:buffer,"
+                        + "a.AssignedTo)>:start AND (:exclude<=0 OR "
+                        + "a.SharingCode<>'SHARED' OR tl.LegID IS NULL OR "
+                        + "tl.TransportMode<>'AIR' OR l.TransportMode<>'AIR' "
+                        + "OR tl.StartPoint<>l.StartPoint OR tl.EndPoint<>"
+                        + "l.EndPoint OR tl.PlannedFlightNumber IS NULL OR "
+                        + "l.PlannedFlightNumber IS NULL OR "
+                        + "tl.PlannedFlightNumber<>l.PlannedFlightNumber OR "
+                        + "tl.PlannedDeparture<>l.PlannedDeparture OR "
+                        + "tl.PlannedArrival<>l.PlannedArrival OR tp.OrderID="
+                        + "p.OrderID OR (COALESCE(sc.SharingCode,'')<>'SHARED' "
+                        + "AND COALESCE(osc.OptionCode,'') NOT IN "
+                        + "('SHARED_ONE','WIDE'))) THEN 1 ELSE 0 END),0)>0 OR "
+                        + "(:exclude>0 AND COALESCE(SUM(CASE WHEN "
+                        + "a.AssignedFrom<:end AND DATEADD(minute,:buffer,"
+                        + "a.AssignedTo)>:start THEN 1 ELSE 0 END),0)>0 AND "
+                        + "COALESCE(SUM(CASE WHEN a.AssignedFrom<:end AND "
+                        + "DATEADD(minute,:buffer,a.AssignedTo)>:start THEN "
+                        + "a.SlotQuantity ELSE 0 END),0)+COALESCE(MAX("
+                        + "COALESCE(sc.SlotQuantity, CASE WHEN osc.OptionCode="
+                        + "'SHARED_ONE' THEN 1.0 WHEN osc.OptionCode='WIDE' "
+                        + "THEN 1.5 ELSE 3.0 END)),3.0)>COALESCE(MAX("
+                        + "se.CapacitySlots),0)) THEN 1 ELSE 0 END AS Busy "
+                        + "FROM dbo.StallAssignment a JOIN dbo.TripLeg l ON "
+                        + "l.LegID=a.LegID JOIN dbo.TransportPlan p ON "
+                        + "p.PlanID=l.PlanID LEFT JOIN dbo.StallEquipment se "
+                        + "ON se.StallID=:id LEFT JOIN dbo.TripLeg tl ON "
+                        + "tl.LegID=:exclude AND :exclude>0 LEFT JOIN "
+                        + "dbo.TransportPlan tp ON tp.PlanID=tl.PlanID LEFT "
+                        + "JOIN dbo.OrderServiceChoice osc ON osc.RevisionID="
+                        + "tp.RevisionID AND osc.ServiceCode='AIR_STALL' LEFT "
+                        + "JOIN dbo.StallChoice sc ON sc.ChoiceID=osc.ChoiceID "
+                        + "WHERE a.StallID=:id AND a.Status NOT IN "
+                        + "('CANCELLED','CANCELED','INACTIVE') AND a.LegID<>"
+                        + ":exclude AND p.PlanStatus NOT IN ('CANCELLED',"
+                        + "'CANCELED','SUPERSEDED','REJECTED')";
 
         return jdbc.queryForObject(sql, Map.of("id", key, "exclude", exclude,
                 "start", utc(start), "end", utc(end.plusMinutes(buffer)),

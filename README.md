@@ -800,3 +800,46 @@ automatic shared-stall matching is outside this flow.
 Verified with Java21 `mvnw.cmd clean verify`: 249 tests (140 native SQL),
 zero failures/errors/skips and zero Checkstyle violations. Migration010 reapply
 passed on the isolated test catalog; all 30 checked business tables had 0 rows.
+
+### F10: multimodal operational plan
+
+See [F10 API contract](docs/operational-plan-api.md) for the complete operational
+planning workflow. Active Managers and assigned active Coordinators create
+versioned `DRAFT` multimodal plans (`ROAD` and `AIR` legs with sourced confirmed
+kilometres feeding `ServiceSourceRepository.itinerary()` for F05/F06), assign
+vehicles/drivers (`ROAD`) or physical stalls/flights (`AIR`), record quarantine
+and insurance commitments, and confirm the active `CurrentPlanID` tied to an
+accepted quote (`QuotationCommitmentFacade.requireAccepted`). `HELD`/`PENDING`
+reservations and unbooked `SupplierOffer` rows never satisfy confirmation.
+Cross-order horse overlap (`BR-03`) and vehicle/stall/driver overlaps (`BR-10`)
+are blocked under parent-order, horse and resource locks.
+
+Migration `011_multimodal_operational_plan.sql` follows 001..010 and was tested
+only on the isolated SQL test catalog (`EquiTransit_FigmaMigrationTest_20261013_143729`),
+with no real database deployment. Native F10 tests require
+`EQ_PLAN_TEST_ENABLED=true` and `EQ_PLAN_TEST_DB_URL` pointing to the guarded
+isolated test database.
+
+### F11: verify departure gates and physically receive the horse
+
+See [F11 API contract](docs/departure-api.md) for the departure gate evaluation,
+manager authorization, road driver horse receipt and atomic departure workflow.
+Active Managers and assigned active Coordinators evaluate the 3 real-time gates
+(`FinancialGateStatus` via `QuotationCommitmentFacade.readiness`,
+`DocGateStatus` via `ComplianceReadinessFacade.readiness` on `PRE_EXPORT`, and
+`OperationalGateStatus` via live plan, reservation, vehicle/stall/driver and
+horse-overlap checks). Unreconciled customer `PaymentReport` rows never open the
+financial gate, and Managers cannot bypass the legal/document gate. Only an
+active `MANAGER` may authorize departure (`POST /authorize`) when all 3 gates
+evaluate to `PASS` in the same transaction. Only the assigned active `DRIVER` on
+the first `ROAD` leg may record physical horse pickup inspection (`HorseReceipt`
+comparing `ObservedMicrochip` and `ObservedPassportNumber` against the order
+snapshot and horse record) and execute atomic departure (`POST /depart`), which
+re-verifies all 3 gates (`BR-09`), manager authorization and `MATCHED`/`ACCEPTED`
+receipt before transitioning `TripLeg.ActualDeparture`, `LegStatus`,
+`PlanStatus` and `OrderStatus` to `IN_TRANSIT`.
+
+Migration `012_departure_gates_horse_receipt.sql` follows 001..011 and was
+tested only on the isolated SQL test catalog (`EquiTransit_FigmaMigrationTest_20261013_143729`).
+Native F11 tests require `EQ_DEPARTURE_TEST_ENABLED=true` and
+`EQ_PLAN_TEST_DB_URL` pointing to the guarded isolated test database.
