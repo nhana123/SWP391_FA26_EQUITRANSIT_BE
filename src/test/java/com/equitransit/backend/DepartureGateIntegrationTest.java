@@ -101,8 +101,9 @@ public class DepartureGateIntegrationTest {
     @BeforeEach
     public void setup() throws Exception {
         try (var connection = source.getConnection()) {
-            assertThat(connection.getCatalog()).isEqualTo(
-                    "EquiTransit_FigmaMigrationTest_20261013_143729");
+            assertThat(connection.getCatalog()).isIn(
+                    "EquiTransit_FigmaMigrationTest_20261013_143729",
+                    "EquiTransit_FigmaMigrationTest_Bootstrap_20261018");
         }
         assertThat(repository.ready()).isTrue();
         passwordHash = passwords.encode("TestPassword123!");

@@ -51,8 +51,11 @@ Hibernate không tự cập nhật schema nghiệp vụ.
 | F09 — Tài nguyên và kiểm tra phù hợp | [Resources](docs/resources-api.md) |
 | F10 — Kế hoạch vận chuyển | [Operational plan](docs/operational-plan-api.md) |
 | F11 — Điều kiện xuất phát và nhận ngựa | [Departure](docs/departure-api.md) |
+| F12 — Thực thi chặng, tracking và chăm sóc | [Execution](docs/leg-execution-api.md) |
 | F16 — Dashboard, thông báo và audit | [Activity](docs/activity-api.md) |
 | Chuẩn DTO/OpenAPI | [DTO audit](docs/api-dto-audit.md) |
+| Đồng bộ DB test | [Database setup](docs/database-sync.md) |
+| Bàn giao F13/F14 | [BE2 handoff](docs/team/BE2_F13_F14_HANDOFF_SPEC.md) |
 
 Swagger mô tả hợp đồng API từ source hiện tại. Quy ước Java: **4 spaces,
 không tab, tối đa 80 ký tự/dòng**. Làm việc trên nhánh feature/fix và mở PR vào `dev`.

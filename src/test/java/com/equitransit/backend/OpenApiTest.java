@@ -326,4 +326,27 @@ public class OpenApiTest {
         }
         org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(5);
     }
+    /** @throws Exception if execution paths or bearer guards disappear */
+    @Test
+    public void executionOperationsAreProtectedAndDocumented()
+            throws Exception {
+        mvc.perform(get("/api/transport-orders/101/execution"))
+                .andExpect(status().isUnauthorized());
+        for (String path : new String[] {"/execution", "/legs/{legId}/start",
+                "/legs/{legId}/complete", "/legs/{legId}/milestones",
+                "/legs/{legId}/welfare-logs"}) {
+            String method = path.equals("/execution") ? "get" : "post";
+
+            mvc.perform(get("/v3/api-docs"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.paths['/api/transport-orders/"
+                            + "{orderId}" + path + "']." + method
+                            + ".security[0].bearerAuth").isArray())
+                    .andExpect(jsonPath("$.paths['/api/transport-orders/"
+                            + "{orderId}" + path + "']." + method
+                            + ".responses['200'].content['application/json']")
+                            .exists());
+        }
+    }
+
 }

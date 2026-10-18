@@ -89,8 +89,9 @@ public class StaffAdministrationIntegrationTest {
     @BeforeEach
     public void setup() throws Exception {
         try (var connection = source.getConnection()) {
-            assertThat(connection.getCatalog()).isEqualTo(
-                    "EquiTransit_StaffProvisioningTest_20261018");
+            assertThat(connection.getCatalog()).isIn(
+                    "EquiTransit_StaffProvisioningTest_20261018",
+                    "EquiTransit_FigmaMigrationTest_Staff_20261018");
         }
         for (String role : List.of("MANAGER", "SPECIALIST", "COORDINATOR",
                 "DRIVER", "CUSTOMER")) {
