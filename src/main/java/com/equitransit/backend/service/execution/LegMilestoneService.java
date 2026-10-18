@@ -19,7 +19,6 @@ import com.equitransit.backend.repository.execution.LegExecutionRepository;
 import com.equitransit.backend.repository.execution.LegMilestoneLogRepository;
 import com.equitransit.backend.security.CurrentActor;
 import com.equitransit.backend.security.CurrentActorService;
-import com.equitransit.backend.security.DomainAccessPolicy;
 import com.equitransit.backend.service.execution.validation.MilestoneSequenceValidator;
 import java.time.Clock;
 import java.time.OffsetDateTime;
@@ -37,7 +36,6 @@ public class LegMilestoneService {
     private final LegExecutionRepository legs;
     private final MilestoneSequenceValidator sequenceValidator;
     private final CurrentActorService actors;
-    private final DomainAccessPolicy access;
     private final Clock clock;
 
     /**
@@ -47,19 +45,17 @@ public class LegMilestoneService {
      * @param legs leg and order execution repository
      * @param sequenceValidator sequence progression validator
      * @param actors current actor resolver
-     * @param access domain access policy
      * @param clock system UTC clock
      */
     public LegMilestoneService(LegMilestoneLogRepository milestones,
             LegExecutionRepository legs,
             MilestoneSequenceValidator sequenceValidator,
             CurrentActorService actors,
-            DomainAccessPolicy access, Clock clock) {
+            Clock clock) {
         this.milestones = milestones;
         this.legs = legs;
         this.sequenceValidator = sequenceValidator;
         this.actors = actors;
-        this.access = access;
         this.clock = clock;
     }
 
@@ -188,7 +184,7 @@ public class LegMilestoneService {
     public LegMilestoneResponse updateEstimatedArrival(long legId,
             EstimatedArrivalUpdateRequest req) {
         CurrentActor actor = actors.current();
-        var leg = requireLeg(legId);
+        requireLeg(legId);
 
         if (!"COORDINATOR".equals(actor.roleCode())
                 && !"MANAGER".equals(actor.roleCode())) {

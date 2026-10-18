@@ -90,7 +90,7 @@ public class LegExecutionCompletionTest {
     @BeforeEach
     public void setup() {
         milestoneService = new LegMilestoneService(
-                milestones, legs, validator, actors, access, clock);
+                milestones, legs, validator, actors, clock);
         welfareService = new HorseWelfareService(
                 welfare, legs, actors, clock);
         trackingService = new CustomerTrackingService(
@@ -195,7 +195,7 @@ public class LegExecutionCompletionTest {
         var airClock = Clock.fixed(
                 Instant.parse("2026-10-18T20:00:00Z"), ZoneOffset.UTC);
         milestoneService = new LegMilestoneService(
-                milestones, legs, validator, actors, access, airClock);
+                milestones, legs, validator, actors, airClock);
 
         var airLeg = createAirLeg(AIR_LEG_ID, 2, "SCHEDULED", null, null);
         var roadLeg = createRoadLeg(ROAD_LEG_ID, 1, "COMPLETED",
