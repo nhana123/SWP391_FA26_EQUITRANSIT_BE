@@ -1105,4 +1105,32 @@ public class ApiDtoContractTest {
             }
         });
     }
+    /** @throws Exception if F12 schema examples/privacy/types drift */
+    @Test
+    public void executionContractsAreTypedBoundedAndDocumented()
+            throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.path("components").path("schemas");
+
+        for (String name : List.of("TransitionRequest", "MilestoneRequest",
+                "WelfareRequest", "ExecutionReceipt", "ExecutionOverview",
+                "LegView", "MilestoneView", "WelfareView")) {
+            assertThat(schemas.has(name)).as(name).isTrue();
+            assertActivityModel(schemas.path(name), schemas,
+                    new java.util.HashSet<>(), false);
+        }
+        assertThat(schemas.at("/ExecutionOverview/properties/recordVersion/"
+                + "pattern").asText()).isEqualTo("^[0-9a-fA-F]{16}$");
+        var field = schemas.at("/WelfareRequest/properties/feedIntakeKg");
+
+        assertThat(field.path("type").asText()).isEqualTo("string");
+        assertThat(field.path("minLength").asInt()).isEqualTo(1);
+        assertThat(schemas.at("/MilestoneRequest/properties/sourceCode/enum")
+                .toString()).contains("CARRIER");
+        assertThat(schemas.at("/TransitionRequest/properties/command/type")
+                .asText()).isNotEqualTo("null");
+    }
+
 }
