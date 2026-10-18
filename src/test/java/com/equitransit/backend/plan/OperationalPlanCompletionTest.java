@@ -83,6 +83,7 @@ public class OperationalPlanCompletionTest {
     private CurrentActorService actors;
     private OperationalPlanService service;
     private PlanCommand command;
+    private OrderDraftRequest request;
 
     /** Configure only explicit actual contracts; no database is contacted. */
     @BeforeEach
@@ -97,7 +98,7 @@ public class OperationalPlanCompletionTest {
         var orders = mock(OrderRepository.class);
         var json = mock(OrderJsonCodec.class);
         var snapshot = mock(OrderSnapshot.class);
-        var request = mock(OrderDraftRequest.class);
+        request = mock(OrderDraftRequest.class);
         var revision = mock(OrderRevisionRecord.class);
 
         command = new PlanCommand(UUID.randomUUID(), VERSION);
@@ -430,6 +431,44 @@ public class OperationalPlanCompletionTest {
                 BigDecimal.TEN, "verified route", departure,
                 departure.plusHours(2), "Asia/Ho_Chi_Minh",
                 "Asia/Ho_Chi_Minh", 21L, null, 0, 0, null);
+    }
+
+    /** A sourced plan still cannot exceed its immutable delivery deadline. */
+    @Test
+    public void latePlanCannotBeConfirmed() {
+        when(request.getDeliveryDeadline()).thenReturn(departure.plusHours(1));
+        assertThatThrownBy(() -> service.confirm(101, 311,
+                new PlanConfirmRequest(command, 501)))
+                .hasMessageContaining("DELIVERY_DEADLINE_EXCEEDED");
+        verify(plans, never()).confirmPlan(anyLong(), anyLong(),
+                anyLong(), any());
+    }
+
+    /** Equal instants are allowed even when offsets differ. */
+    @Test
+    public void arrivalExactlyAtDeadlineCanBeConfirmed() {
+        when(request.getDeliveryDeadline()).thenReturn(departure.plusHours(2)
+                .withOffsetSameInstant(ZoneOffset.ofHours(7)));
+        service.confirm(101, 311, new PlanConfirmRequest(command, 501));
+        verify(plans).confirmPlan(101, 311, 501, now);
+    }
+
+    /** Missing deadline fails closed instead of authorizing a trip. */
+    @Test
+    public void missingDeadlineBlocksConfirmation() {
+        when(request.getDeliveryDeadline()).thenReturn(null);
+        assertThatThrownBy(() -> service.confirm(101, 311,
+                new PlanConfirmRequest(command, 501)))
+                .hasMessageContaining("DELIVERY_DEADLINE_PENDING");
+    }
+
+    /** A previously confirmed plan must also pass the live deadline gate. */
+    @Test
+    public void lateConfirmedPlanClosesReadiness() {
+        when(plans.findPlan(101, 311)).thenReturn(Optional.of(summary(
+                311, PlanState.CONFIRMED, true)));
+        when(request.getDeliveryDeadline()).thenReturn(departure.plusHours(1));
+        assertThat(service.operationalReady(101, 201, 311)).isFalse();
     }
 
     private PlanSummaryView summary(long id, PlanState state,

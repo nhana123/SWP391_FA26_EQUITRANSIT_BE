@@ -10,10 +10,12 @@ import java.util.List;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /** Role-scoped itinerary projections use explicit DTO allowlists. */
 @RestController
+@RequestMapping("/api")
 @Validated
 @SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Scoped transport itineraries")
@@ -27,7 +29,7 @@ public class PlanItineraryController {
     }
 
     /** @param orderId owned order @return public itinerary */
-    @GetMapping(value = "/api/transport-orders/{orderId}/itinerary",
+    @GetMapping(value = "/transport-orders/{orderId}/itinerary",
             produces = "application/json")
     public PlanPublicItinerary customer(
             @PathVariable @Positive long orderId) {
@@ -35,7 +37,7 @@ public class PlanItineraryController {
     }
 
     /** @param orderId assigned order @return driver's own ROAD tasks */
-    @GetMapping(value = "/api/driver/transport-orders/{orderId}/legs",
+    @GetMapping(value = "/driver/transport-orders/{orderId}/legs",
             produces = "application/json")
     public List<PlanDriverLeg> driver(
             @PathVariable @Positive long orderId) {

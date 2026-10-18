@@ -122,3 +122,22 @@ checked offline using SQL Server ScriptDom, including embedded dynamic SQL.
 
 See [F10 acceptance coverage](operational-plan-acceptance.md) for the mapping
 between business rules, implementation and deferred native verification.
+
+## Delivery deadline and draft pricing
+
+Confirmation and live operational readiness compare plan arrival with the
+immutable revision delivery deadline, by instant. Arrival at the deadline is
+allowed; later arrival produces `DELIVERY_DEADLINE_EXCEEDED`. A missing deadline
+produces `DELIVERY_DEADLINE_PENDING`. Drafts may retain these blockers for editing.
+
+Pricing uses an eligible selected plan of the exact current revision. When the
+operating pointer belongs to an older revision or is absent, one unique
+DRAFT/PROPOSED/PLANNED candidate of the requested order and current revision may
+supply sourced kilometres. Multiple unselected candidates remain `PENDING`;
+select a draft explicitly or supersede the other drafts. Source and ownership
+checks still apply. This read never changes `CurrentPlanID`. Public itinerary
+and driver endpoints continue to use the operating pointer.
+
+Regression coverage includes late arrival rejection, equal-instant arrival,
+missing deadline, live readiness, new revision pricing, no current pointer,
+ambiguous drafts, missing drafts, and revoked source assignment.

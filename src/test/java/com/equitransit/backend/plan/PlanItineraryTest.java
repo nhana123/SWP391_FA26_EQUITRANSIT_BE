@@ -170,6 +170,61 @@ public class PlanItineraryTest {
         assertThat(service.pricing(101, 202).status()).isEqualTo("PENDING");
     }
 
+    /** A unique revision draft supplies pricing without pointer writes. */
+    @Test
+    public void newRevisionDraftFeedsPricing() {
+        useNewRevisionDraft();
+        assertThat(service.pricing(101, 202).status()).isEqualTo("SOURCED");
+        assertThat(service.pricing(101, 202).roadKm())
+                .isEqualByComparingTo("20");
+        verify(plans, never()).setCurrentPlan(anyLong(), anyLong());
+        verify(plans, never()).touchOrder(anyLong());
+    }
+
+    /** A first unselected draft also works without any operating pointer. */
+    @Test
+    public void unselectedDraftWorksWithoutCurrentPlan() {
+        useNewRevisionDraft();
+        when(plans.currentPlanId(101)).thenReturn(null);
+        assertThat(service.pricing(101, 202).status()).isEqualTo("SOURCED");
+    }
+
+    /** Multiple unselected drafts cannot silently pick pricing quantities. */
+    @Test
+    public void ambiguousDraftsRemainPending() {
+        useNewRevisionDraft();
+        var draft = plans.pricingDrafts(101, 202).getFirst();
+        when(plans.pricingDrafts(101, 202)).thenReturn(List.of(draft, draft));
+        assertThat(service.pricing(101, 202).status()).isEqualTo("PENDING");
+    }
+
+    /** An old operating plan never supplies a new revision without a draft. */
+    @Test
+    public void missingRevisionDraftRemainsPending() {
+        useNewRevisionDraft();
+        when(plans.pricingDrafts(101, 202)).thenReturn(List.of());
+        assertThat(service.pricing(101, 202).status()).isEqualTo("PENDING");
+    }
+
+    /** Draft selection never bypasses the source reviewer's live assignment. */
+    @Test
+    public void unselectedDraftStillRequiresLiveSource() {
+        useNewRevisionDraft();
+        when(plans.distanceSourceValid(101, 202, 31)).thenReturn(false);
+        assertThat(service.pricing(101, 202).status()).isEqualTo("PENDING");
+    }
+
+    private void useNewRevisionDraft() {
+        when(cases.order(101, false)).thenReturn(Optional.of(new CaseOrder(
+                101, "EQ-101", "APPROVED", "0000000000000001", 202L)));
+        var draft = new PlanSummaryView(312, 101, 202, 2, PlanState.DRAFT,
+                false, null, 31, now.plusDays(30), now.plusDays(31),
+                GateState.PENDING, GateState.PENDING, GateState.PENDING);
+        when(plans.pricingDrafts(101, 202)).thenReturn(List.of(draft));
+        when(plans.legs(312)).thenReturn(List.of(leg(401, 32), leg(402, 33)));
+        when(plans.distanceSourceValid(101, 202, 31)).thenReturn(true);
+    }
+
     private PlanSummaryView summary(PlanState state) {
         return new PlanSummaryView(311, 101, 201, 1, state, true,
                 501L, 31, now.plusDays(30), now.plusDays(31),

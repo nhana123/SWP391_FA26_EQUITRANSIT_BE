@@ -208,6 +208,19 @@ public class PlanRepository {
                 (r, i) -> summary(r, current));
     }
 
+    /** @param order parent @param revision exact current revision
+     * @return at most two drafts; multiple candidates require selection */
+    public List<PlanSummaryView> pricingDrafts(long order, long revision) {
+        Long current = currentPlanId(order);
+
+        return jdbc.query("SELECT TOP (2) * FROM dbo.TransportPlan "
+                + "WHERE OrderID=:order AND RevisionID=:rev AND PlanStatus "
+                + "IN ('DRAFT','PROPOSED','PLANNED') "
+                + "ORDER BY VersionNo DESC, PlanID DESC",
+                Map.of("order", order, "rev", revision),
+                (r, i) -> summary(r, current));
+    }
+
     /** @param order parent @return count of plans */
     public long countPlans(long order) {
         return jdbc.queryForObject("SELECT COUNT_BIG(*) FROM dbo.TransportPlan "

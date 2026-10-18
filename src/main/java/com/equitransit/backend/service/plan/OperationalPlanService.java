@@ -613,6 +613,15 @@ public class OperationalPlanService {
                                 summary.plannedEndTime()),
                         now()));
 
+        var snapshot = json.snapshot(orders.revision(parent.orderId(),
+                summary.revisionId()).orElseThrow(this::missing).snapshot());
+        var deadline = snapshot.request().getDeliveryDeadline();
+        if (deadline == null) {
+            reasons.add("DELIVERY_DEADLINE_PENDING");
+        } else if (summary.plannedEndTime() != null
+                && summary.plannedEndTime().isAfter(deadline)) {
+            reasons.add("DELIVERY_DEADLINE_EXCEEDED");
+        }
         if (legs.isEmpty() || summary.plannedStartTime() == null
                 || summary.plannedEndTime() == null
                 || !summary.plannedStartTime().isEqual(

@@ -131,10 +131,14 @@ public class PlanItineraryService {
             throw missing();
         }
         var parent = cases.order(order, false).orElseThrow(this::missing);
-        if (!plans.ready() || plans.currentPlanId(order) == null) {
+        if (!plans.ready() || parent.revisionId() == null
+                || parent.revisionId() != revision) {
             return new ItineraryPricingContext(null, null, null, "PENDING");
         }
-        var summary = current(order, false);
+        var summary = pricingCandidate(order, revision);
+        if (summary == null) {
+            return new ItineraryPricingContext(null, null, null, "PENDING");
+        }
         var legs = plans.legs(summary.planId());
         var now = OffsetDateTime.now(clock);
 
@@ -175,6 +179,30 @@ public class PlanItineraryService {
 
         return new ItineraryPricingContext(summary.planId(), road, air,
                 "SOURCED");
+    }
+
+    private PlanSummaryView pricingCandidate(long order, long revision) {
+        Long id = plans.currentPlanId(order);
+        var selected = id == null ? null
+                : plans.findPlan(order, id).orElse(null);
+        var eligible = List.of(PlanState.DRAFT, PlanState.PROPOSED,
+                PlanState.PLANNED, PlanState.CONFIRMED, PlanState.ACTIVE,
+                PlanState.IN_TRANSIT);
+
+        if (selected != null && selected.orderId() == order
+                && selected.revisionId() == revision
+                && eligible.contains(selected.planStatus())) {
+            return selected;
+        }
+        var drafts = plans.pricingDrafts(order, revision);
+        if (drafts.size() != 1) {
+            return null;
+        }
+        var draft = drafts.getFirst();
+        return draft.orderId() == order && draft.revisionId() == revision
+                && List.of(PlanState.DRAFT, PlanState.PROPOSED,
+                        PlanState.PLANNED).contains(draft.planStatus())
+                ? draft : null;
     }
 
     private void customerAccess(long order, CurrentActor actor) {
