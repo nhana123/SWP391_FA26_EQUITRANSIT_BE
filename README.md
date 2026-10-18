@@ -760,3 +760,5 @@ plan bindings for quarantine/insurance and schedule/scope guards. This migration
 was not deployed to a real database. Native SQL Server tests remain opt-in via
 `EQ_PLAN_TEST_ENABLED=true` and `EQ_PLAN_TEST_DB_URL`; default verification uses
 unit tests/H2 and does not prove native locking, trigger or race behavior.
+
+F11 departure gates and horse receipt: [API](docs/departure-api.md).
