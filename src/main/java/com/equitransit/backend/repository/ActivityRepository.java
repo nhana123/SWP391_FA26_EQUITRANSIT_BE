@@ -185,6 +185,11 @@ public class ActivityRepository {
                     + "ActionCode,ChangeSnapshot,EventKey) OUTPUT "
                     + "INSERTED.EventID VALUES (:user,'ORDER_ACTIVITY',"
                     + ":order,:code,:snapshot,:key)";
+            case "staffAuditAppend" ->
+                    "INSERT dbo.AuditEvent (UserID,EntityType,EntityID,"
+                    + "ActionCode,ChangeSnapshot,EventKey) OUTPUT "
+                    + "INSERTED.EventID VALUES (:user,'STAFF_PROFILE',"
+                    + ":staff,:code,:snapshot,:key)";
             case "preference" ->
                     "SELECT EmailNotificationsEnabled FROM dbo.Customer "
                     + "WHERE UserID=:user";

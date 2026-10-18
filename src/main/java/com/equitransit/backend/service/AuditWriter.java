@@ -9,6 +9,8 @@ package com.equitransit.backend.service;
 
 
 import com.equitransit.backend.entity.activity.ActivityCode;
+import com.equitransit.backend.dto.staff.StaffModels.StaffAction;
+import com.equitransit.backend.security.CurrentActor;
 import com.equitransit.backend.repository.ActivityRepository;
 import com.equitransit.backend.security.CurrentActorService;
 import com.equitransit.backend.security.TokenTools;
@@ -70,5 +72,30 @@ public class AuditWriter {
             return ((Number) prior.getFirst().get("EventID")).longValue();
         }
         return repository.scalar("auditAppend", args).longValueExact();
+    }
+
+    /**
+     * Producer passes its trusted, pre-mutation actor for self-disable audit.
+     * @param actor resolved by CurrentActorService, never request data
+     * @param staff affected StaffID, distinct from audit actor UserID
+     * @param action verified staff fact
+     * @param operation producer idempotency key
+     * @param snapshot metadata subject to the same strict redactor
+     * @return append-only event identity
+     */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public long appendStaff(CurrentActor actor, long staff, StaffAction action,
+            UUID operation, JsonNode snapshot) {
+        String key = TokenTools.hash("staff:" + actor.userId() + ":" + staff
+                + ":" + action + ":" + operation);
+        repository.lock("EquiTransit:audit:" + key);
+        var args = Map.of("key", key, "user", actor.userId(), "staff", staff,
+                "code", action.name(), "snapshot", "{\"schemaVersion\":1,"
+                        + "\"metadata\":" + redactor.redact(snapshot) + "}");
+        var prior = repository.rows("auditKey", args);
+        if (!prior.isEmpty()) {
+            return ((Number) prior.getFirst().get("EventID")).longValue();
+        }
+        return repository.scalar("staffAuditAppend", args).longValueExact();
     }
 }
