@@ -14,16 +14,16 @@ import org.springframework.security.authentication.
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.
-        authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.
+        JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.equitransit.backend.entity.Customer;
-import com.equitransit.backend.entity.StaffProfile;
-import com.equitransit.backend.entity.UserAccount;
-import com.equitransit.backend.repository.CustomerRepository;
-import com.equitransit.backend.repository.StaffProfileRepository;
-import com.equitransit.backend.repository.UserAccountRepository;
+import com.equitransit.backend.entity.customer.Customer;
+import com.equitransit.backend.entity.assessment.StaffProfile;
+import com.equitransit.backend.entity.auth.UserAccount;
+import com.equitransit.backend.repository.customer.CustomerRepository;
+import com.equitransit.backend.repository.assessment.StaffProfileRepository;
+import com.equitransit.backend.repository.auth.UserAccountRepository;
 
 
 /** Resolves domain identities without accepting client-supplied identifiers. */

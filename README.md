@@ -2,6 +2,9 @@
 
 Java 21, Spring Boot 3.5.16, Maven Wrapper 3.9.9. Kiến trúc monolith phân lớp: Controller → Service → Repository → SQL Server. Entity chỉ dùng cho persistence; request/response dùng DTO.
 
+Các tầng Java được chia thư mục con theo nghiệp vụ cho cả BE1 và BE2.
+Xem [cấu trúc package và vị trí từng nhóm](docs/project-structure.md).
+
 ## Database và nguồn nghiệp vụ
 
 - Database thật: `EquiTransit`, server `DESKTOP-9VRARFD`, TCP 1433; dùng Windows Authentication ở profile `local`.
@@ -733,3 +736,27 @@ Existing-leg probes bind the saved mode/carrier; invalid measurements and
 legacy schedules remain blocked. Migration007 and the full SQL script share
 the same schedule guards. SQL Server integration testing remains opt-in and
 is deferred for team integration; H2 results do not verify native locks.
+
+
+### F10: multimodal operational plan
+
+See [operational planning API](docs/operational-plan-api.md). Assigned active
+Coordinators and Managers create versioned multimodal drafts, edit the complete
+leg chain atomically, assign ROAD vehicles/drivers and AIR stalls/flights, and
+record plan-scoped quarantine and insurance evidence. Confirmation consumes an
+actual accepted quote for the same order/current revision and rechecks current
+resources, personnel, sourced distances and reservations. Unknown quarantine
+assessment remains a blocker; customer-selected days are never a substitute.
+
+`PlanAssessmentAdapter` supplies reviewed draft kilometres to the existing
+`ServiceAssessmentFacade` contract so F05/F06 can price before plan confirmation.
+`PlanEvidenceRepository` reads the existing BE1 Quote table and appends actual
+AuditEvent records; copying the clone's F06/F07/F16 implementations is unnecessary.
+The operational check does not approve financial/legal gates or departure.
+
+Apply `008_multimodal_plans_reservations.sql` after the application baseline and
+001-007. It preserves the extracted seven-table definitions and adds PlanOperation,
+plan bindings for quarantine/insurance and schedule/scope guards. This migration
+was not deployed to a real database. Native SQL Server tests remain opt-in via
+`EQ_PLAN_TEST_ENABLED=true` and `EQ_PLAN_TEST_DB_URL`; default verification uses
+unit tests/H2 and does not prove native locking, trigger or race behavior.

@@ -17,8 +17,8 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.stereotype.Service;
-import com.equitransit.backend.dto.response.LoginResponse;
-import com.equitransit.backend.entity.UserAccount;
+import com.equitransit.backend.dto.auth.response.LoginResponse;
+import com.equitransit.backend.entity.auth.UserAccount;
 
 
 /** Issues short-lived access tokens for authenticated accounts. */

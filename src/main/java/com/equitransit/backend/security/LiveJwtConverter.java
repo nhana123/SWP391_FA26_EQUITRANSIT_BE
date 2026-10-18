@@ -14,12 +14,12 @@ import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.
-        authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.
+        JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import com.equitransit.backend.entity.UserAccount;
-import com.equitransit.backend.repository.UserAccountRepository;
+import com.equitransit.backend.entity.auth.UserAccount;
+import com.equitransit.backend.repository.auth.UserAccountRepository;
 
 
 /** Rechecks account status, role and credentials on protected requests. */

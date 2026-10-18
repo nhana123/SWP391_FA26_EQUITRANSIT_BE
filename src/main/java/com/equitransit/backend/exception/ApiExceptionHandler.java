@@ -7,6 +7,10 @@
  */
 package com.equitransit.backend.exception;
 
+import com.equitransit.backend.exception.horse.HorseException;
+import com.equitransit.backend.exception.order.OrderException;
+
+
 
 import java.util.LinkedHashMap;
 import java.util.Map;

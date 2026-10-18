@@ -24,24 +24,24 @@ import org.springframework.boot.test.autoconfigure.web.servlet.
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import com.equitransit.backend.dto.ApiExamples;
-import com.equitransit.backend.dto.request.HorseProfileRequest;
-import com.equitransit.backend.dto.request.EmailRequest;
-import com.equitransit.backend.dto.request.LoginRequest;
-import com.equitransit.backend.dto.request.RegisterRequest;
-import com.equitransit.backend.dto.request.ResetPasswordRequest;
-import com.equitransit.backend.dto.request.OrderDraftRequest;
-import com.equitransit.backend.entity.OrderServiceIntent;
-import com.equitransit.backend.entity.CaseRole;
-import com.equitransit.backend.entity.DecisionCode;
-import com.equitransit.backend.entity.OrderStatus;
-import com.equitransit.backend.dto.request.AssessmentRequest;
-import com.equitransit.backend.dto.response.AssessmentReceipt;
-import com.equitransit.backend.dto.response.CaseAssignmentResponse;
-import com.equitransit.backend.dto.response.CaseDecisionResponse;
-import com.equitransit.backend.dto.response.CaseResponse;
-import com.equitransit.backend.dto.response.CaseStaffResponse;
-import com.equitransit.backend.dto.response.CaseSummaryResponse;
+import com.equitransit.backend.dto.common.ApiExamples;
+import com.equitransit.backend.dto.horse.request.HorseProfileRequest;
+import com.equitransit.backend.dto.auth.request.EmailRequest;
+import com.equitransit.backend.dto.auth.request.LoginRequest;
+import com.equitransit.backend.dto.auth.request.RegisterRequest;
+import com.equitransit.backend.dto.auth.request.ResetPasswordRequest;
+import com.equitransit.backend.dto.order.request.OrderDraftRequest;
+import com.equitransit.backend.entity.order.OrderServiceIntent;
+import com.equitransit.backend.entity.assessment.CaseRole;
+import com.equitransit.backend.entity.assessment.DecisionCode;
+import com.equitransit.backend.entity.order.OrderStatus;
+import com.equitransit.backend.dto.assessment.request.AssessmentRequest;
+import com.equitransit.backend.dto.assessment.response.AssessmentReceipt;
+import com.equitransit.backend.dto.assessment.response.CaseAssignmentResponse;
+import com.equitransit.backend.dto.assessment.response.CaseDecisionResponse;
+import com.equitransit.backend.dto.assessment.response.CaseResponse;
+import com.equitransit.backend.dto.assessment.response.CaseStaffResponse;
+import com.equitransit.backend.dto.assessment.response.CaseSummaryResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.
         MockMvcRequestBuilders.get;
@@ -584,4 +584,44 @@ public class ApiDtoContractTest {
                     visited, customer));
         }
     }
+    /** @throws Exception if F10 planning schemas or operations drift */
+    @Test
+    public void operationalPlanContractsAreTypedAndDocumented()
+            throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+        int fields = 0;
+        int operations = 0;
+
+        for (var entry : schemas.properties()) {
+            if (!entry.getKey().startsWith("Plan")) {
+                continue;
+            }
+            assertActivityModel(entry.getValue(), schemas,
+                    new java.util.HashSet<>(), false);
+            for (var field : entry.getValue().path("properties")) {
+                assertThat(field.has("example")).as(entry.getKey()).isTrue();
+                fields++;
+            }
+        }
+        String root = "/api/transport-orders/{orderId}/plans";
+
+        for (var entry : api.path("paths").properties()) {
+            if (!entry.getKey().startsWith(root)) {
+                continue;
+            }
+            for (var operation : entry.getValue().properties()) {
+                assertThat(operation.getValue().path("security").toString())
+                        .contains("bearerAuth");
+                assertThat(operation.getValue().at("/responses/200/content")
+                        .has("application/json")).isTrue();
+                operations++;
+            }
+        }
+        assertThat(fields).isGreaterThan(100);
+        assertThat(operations).isEqualTo(10);
+    }
+
 }
