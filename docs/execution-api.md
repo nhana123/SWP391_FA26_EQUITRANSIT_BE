@@ -48,11 +48,14 @@ vật bất biến (Append-Only Horse Welfare Audit Trail) theo chuẩn FEI.
 ## Error Codes
 | Code | HTTP Status | Description |
 | :--- | :--- | :--- |
-| `MILESTONE_OUT_OF_SEQUENCE` | 400 Bad Request | Mốc sự kiện không tuân thủ trình tự logic nghiệp vụ (ví dụ: `ARRIVED` trước `DEPARTED`). |
-| `AIR_MILESTONE_GPS_FORBIDDEN` | 400 Bad Request | Gửi GPS trên các mốc bay trên không (`WHEELS_UP`, `WHEELS_DOWN`, `AIRCRAFT_LOADED`). |
-| `AIR_PARTNER_SOURCE_REQUIRED` | 400 Bad Request | Thiếu `SourceCode` hoặc `SourceReference` cho mốc hàng không. |
-| `FUTURE_TIMESTAMP_NOT_PERMITTED` | 400 Bad Request | Thời điểm xảy ra sự kiện `OccurredAt` hoặc `CheckTime` lớn hơn thời gian hiện tại (+5 phút dung sai). |
+| Code | HTTP Status | Description |
+| :--- | :--- | :--- |
+| `INVALID_MILESTONE_PROGRESSION` | 409 Conflict | Mốc sự kiện không tuân thủ trình tự logic nghiệp vụ hoặc thời gian không đơn điệu tăng. |
+| `PREVIOUS_LEG_INCOMPLETE` | 409 Conflict | Chặng trước trong hành trình chưa đạt trạng thái `COMPLETED`. |
+| `INVALID_TRANSPORT_MODE` | 400 Bad Request | Gọi nhầm API đường bộ cho chặng hàng không hoặc ngược lại. |
+| `FUTURE_TIMESTAMP_NOT_PERMITTED` | 400 Bad Request | Thời điểm xảy ra sự kiện `OccurredAt` hoặc `CheckTime` lớn hơn hiện tại (+5 phút dung sai). |
+| `INVALID_ESTIMATED_ARRIVAL` | 400 Bad Request | Thời gian dự kiến đến `EstimatedArrivalAt` nằm trong quá khứ. |
 | `SUPERSEDED_LOG_DIFFERENT_LEG` | 400 Bad Request | Bản ghi cũ cần đính chính không thuộc cùng một chặng (`LegID`). |
 | `SELF_SUPERSEDING_NOT_PERMITTED` | 400 Bad Request | Bản ghi đính chính không thể trỏ tới chính nó. |
-| `ORDER_NOT_FOUND` / `LEG_NOT_FOUND` | 404 Not Found | Không tìm thấy đơn hàng hoặc chặng tương ứng. |
+| `ORDER_NOT_FOUND` / `LEG_NOT_FOUND` / `WELFARE_LOG_NOT_FOUND` | 404 Not Found | Không tìm thấy đơn hàng, chặng, hoặc nhật ký phúc lợi tương ứng. |
 | `ACCESS_DENIED` | 403 Forbidden | Nhân viên không được phân công hoặc khách hàng không sở hữu đơn hàng. |
