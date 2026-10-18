@@ -22,11 +22,14 @@ public class AuditRedactor {
     private static final Set<String> SAFE_TEXT = Set.of("DRAFT", "SUBMITTED",
             "ACCEPTED", "APPROVED", "ISSUED", "REJECTED", "SUPERSEDED",
             "EXPIRED", "PAID", "CLEARED", "DEPARTED", "DELIVERED", "CLOSED",
-            "REQUESTED", "COMPLETED", "RECONCILED", "REVERSED", "USD");
+            "REQUESTED", "COMPLETED", "RECONCILED", "REVERSED", "USD",
+            "MANAGER", "SPECIALIST", "COORDINATOR", "DRIVER", "ACTIVE",
+            "INACTIVE", "LOCKED");
     private static final Set<String> SAFE_FIELDS = Set.of("schemaVersion",
             "operationId", "orderId", "revisionId", "quoteId", "entityId",
             "status", "decision", "milestone", "recordVersion", "count",
-            "metadata");
+            "metadata", "staffId", "userId", "role", "previousRole",
+            "accountStatus", "staffStatus");
 
     private final ObjectMapper mapper;
 

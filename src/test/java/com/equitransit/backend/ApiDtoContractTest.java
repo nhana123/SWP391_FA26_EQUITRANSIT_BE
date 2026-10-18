@@ -62,6 +62,54 @@ public class ApiDtoContractTest {
     @Autowired
     private ObjectMapper mapper;
 
+    /** @throws Exception if private F15 staff schemas drift */
+    @Test
+    public void staffProvisioningContractsAreTypedAndDocumented()
+            throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+        int fields = 0;
+        int operations = 0;
+        for (String name : List.of("StaffCommand", "StaffCreateRequest",
+                "StaffProfileInput", "StaffUpdateRequest",
+                "StaffStatusRequest", "StaffView", "StaffPage")) {
+            var model = schemas.path(name);
+            assertThat(model.isMissingNode()).as(name).isFalse();
+            assertActivityModel(model, schemas,
+                    new java.util.HashSet<>(), false);
+            for (var property : model.path("properties")) {
+                assertThat(property.has("example")).as(name).isTrue();
+                if (property.path("type").asText().equals("string")
+                        && !property.has("enum")
+                        && !property.path("format").asText().equals("uuid")) {
+                    assertThat(property.path("minLength").asInt())
+                            .as(name).isGreaterThanOrEqualTo(1);
+                }
+                fields++;
+            }
+        }
+        assertThat(schemas.at("/StaffCreateRequest/properties/initialPassword/"
+                + "writeOnly").asBoolean()).isTrue();
+        assertThat(schemas.path("StaffView").toString())
+                .doesNotContain("Password", "Hash", "initialPassword");
+        for (var path : api.path("paths").properties()) {
+            if (!path.getKey().startsWith("/api/manager/staff")) {
+                continue;
+            }
+            for (var operation : path.getValue().properties()) {
+                assertThat(operation.getValue().path("security").toString())
+                        .contains("bearerAuth");
+                assertThat(operation.getValue().at("/responses/200/content")
+                        .has("application/json")).isTrue();
+                operations++;
+            }
+        }
+        assertThat(fields).isGreaterThan(30);
+        assertThat(operations).isEqualTo(5);
+    }
+
     /** @throws Exception if F09 schemas or media types drift */
     @Test
     public void resourceContractsAreTypedAndDocumented() throws Exception {
@@ -635,8 +683,14 @@ public class ApiDtoContractTest {
                     } else if ("role".equals(name)) {
                         assertThat(example.asText()).isEqualTo("SPECIALIST");
                         assertThat(schema.path("enum").toString())
-                                .contains("SPECIALIST", "COORDINATOR")
-                                .doesNotContain("MANAGER", "DRIVER");
+                                .contains("SPECIALIST", "COORDINATOR");
+                        if (path.getKey().equals("/api/manager/staff")) {
+                            assertThat(schema.path("enum").toString())
+                                    .contains("MANAGER", "DRIVER");
+                        } else {
+                            assertThat(schema.path("enum").toString())
+                                    .doesNotContain("MANAGER", "DRIVER");
+                        }
                     }
                 }
             }

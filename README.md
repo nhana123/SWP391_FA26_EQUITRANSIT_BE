@@ -83,8 +83,8 @@ Recovery: gửi email tới forgot-password, lấy token trong email mới, rồ
 
 `CurrentActorService` xác định UserID/CustomerID/StaffID từ JWT và database;
 `DomainAccessPolicy` kiểm role/ownership/assignment key. Profile service đã
-được bảo vệ bằng method security. StaffProfile hiện chỉ được đọc để xác định
-identity, chưa có API quản trị staff.
+được bảo vệ bằng method security. F15 bổ sung quản trị StaffProfile qua
+`/api/manager/staff`; xem hợp đồng staff provisioning bên dưới.
 
 `database/migrations/001_authentication_token.sql` tạo `AuthenticationToken`
 để đáp ứng A03. Chỉ lưu hash token, purpose, hạn dùng và thời điểm dùng; raw
@@ -843,3 +843,82 @@ Migration `012_departure_gates_horse_receipt.sql` follows 001..011 and was
 tested only on the isolated SQL test catalog (`EquiTransit_FigmaMigrationTest_20261013_143729`).
 Native F11 tests require `EQ_DEPARTURE_TEST_ENABLED=true` and
 `EQ_PLAN_TEST_DB_URL` pointing to the guarded isolated test database.
+
+### F15: internal staff provisioning
+
+Active Managers administer staff under `/api/manager/staff`. This is separate
+from the F04 assignment picker `/api/manager/transport-orders/staff`.
+All responses are JSON. No public staff registration or password-reset override
+is introduced. Only MANAGER, SPECIALIST, COORDINATOR and DRIVER are provisionable.
+
+| Method | Path suffix | Request / response |
+| --- | --- | --- |
+| GET | root | `role`, `status`, `page=0`, `size=20` -> `StaffPage` |
+| GET | `/{staffId}` | `StaffView`, including active assignment counts |
+| POST | root | `StaffCreateRequest` -> `StaffView` |
+| PUT | `/{staffId}` | `StaffUpdateRequest` -> `StaffView` |
+| POST | `/{staffId}/status` | `StaffStatusRequest` -> `StaffView` |
+
+Page is zero-based, at most 100000; size is 1..100. Status filters account state.
+`StaffPage.actorRecordVersion` is the acting Manager's 16-hex staff version:
+use it for creation, because the new target does not exist yet. Other writes
+use the target `StaffView.recordVersion`. Every write has a `command` object:
+
+```json
+{
+  "command": {
+    "recordVersion": "000000000001A2B3",
+    "operationId": "e4324ce2-f726-44e4-a655-a692e50405bd"
+  },
+  "profile": {
+    "email": "specialist@equitransit.example",
+    "fullName": "Alex Nguyen",
+    "phone": "+84901234567",
+    "role": "SPECIALIST",
+    "employeeCode": "EMP-2026-001",
+    "department": "Compliance",
+    "specialization": "Equine export documentation"
+  },
+  "initialPassword": "ExamplePass!2026"
+}
+```
+
+Examples are not seeded credentials. Password is required on creation only
+(12..72 characters, at most 72 UTF-8 bytes), adaptively hashed and input-only.
+PUT replaces `profile`, without `initialPassword`. Optional text uses null,
+never empty/blank strings; phone uses international E.164 format.
+Email is stored in lowercase and employeeCode uppercase; duplicates return409.
+Status body contains `command`, `status` (ACTIVE/INACTIVE/LOCKED) and `reason`.
+Reusing an operation UUID with identical input returns the original receipt;
+different input returns409. Keep the UUID and original version on retries.
+
+Writes serialize through transaction-owned `EquiTransit:staff-admin` and recheck
+live Manager status. The final active Manager cannot be disabled or demoted.
+Role changes require ending/reassigning incompatible active work first. A
+Driver with an active assignment on an IN_TRANSIT leg must be reassigned first.
+Disable closes open OrderAssignment rows and marks remaining active trip
+assignments INACTIVE, preserving planned windows and history. Reactivation
+does not restore assignments. Account/profile states change atomically;
+the existing live JWT converter rejects disabled accounts on the next request.
+Self-disable is allowed only if another active Manager remains; its audit uses
+the trusted pre-mutation actor, and subsequent calls with that JWT receive401.
+
+Safe error codes:403 `ACTIVE_MANAGER_REQUIRED`;404 `STAFF_NOT_FOUND`;
+409 `STAFF_DUPLICATE`, `STAFF_VERSION_CONFLICT`, `IDEMPOTENCY_CONFLICT`,
+`LAST_ACTIVE_MANAGER_PROTECTED`, `STAFF_ASSIGNMENT_ROLE_CONFLICT`,
+`DRIVER_IN_TRANSIT`, `STAFF_ADMIN_BUSY`;503 `STAFF_SCHEMA_PENDING`.
+Invalid DTOs, unknown roles and pagination bounds return400. Existing history
+and credentials never appear in `StaffView`; append-only staff audit is scoped
+as `STAFF_PROFILE`, with UserID for the actor and StaffID for the target.
+Request fingerprints are keyed HMACs; no raw password or fast password digest
+is stored in idempotency receipts or audit metadata.
+
+Deploy additive `database/migrations/013_staff_provisioning.sql` through the
+reviewed migration process. It adds staff state/profile metadata, rowversion,
+unique employee codes and private retry receipts; it never runs on startup.
+Legacy staff metadata remains nullable. Migration013 and reapply were verified
+only on schema-only clone `EquiTransit_StaffProvisioningTest_20261018`.
+The shared test catalog and real EquiTransit database were not migrated here.
+Native tests require `EQ_STAFF_TEST_ENABLED=true` and `EQ_STAFF_TEST_DB_URL`
+pointing to this exact isolated catalog. Ordinary fixtures roll back; committed
+race fixtures clean only their owned users/audits/receipts and assert zero users.

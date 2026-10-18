@@ -264,6 +264,20 @@ public class AuthService {
         events.publishEvent(event);
     }
 
+    /**
+     * Internal provisioning hook; caller owns Manager authorization.
+     * @param password initial credential, never persisted as plain text
+     * @return adaptive hash using the same policy as ordinary registration
+     */
+    public String encodeStaffPassword(String password) {
+        if (password == null || password.length() < 12) {
+            throw new ApiException(HttpStatus.BAD_REQUEST,
+                    "Password must contain at least 12 characters.");
+        }
+        checkPassword(password, password);
+        return passwords.encode(password);
+    }
+
     private void checkPassword(String password, String confirmation) {
         if (!password.equals(confirmation)) {
             throw new ApiException(HttpStatus.BAD_REQUEST,
