@@ -739,4 +739,89 @@ public class ApiDtoContractTest {
         }
     }
 
+    /**
+     * F12 execution schemas have valid examples, bounded strings and customer
+     * data redaction.
+     * @throws Exception if OpenAPI or example validation fails
+     */
+    @Test
+    public void executionSchemasMatchTheFrontendContract() throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+
+        for (String route : List.of(
+                "/api/driver/legs/{legId}/milestones",
+                "/api/driver/legs/{legId}/welfare",
+                "/api/driver/legs/{legId}/welfare/{logId}/supersede",
+                "/api/coordinator/legs/{legId}/air-milestones",
+                "/api/coordinator/legs/{legId}/estimated-arrival",
+                "/api/coordinator/legs/{legId}/milestones",
+                "/api/coordinator/legs/{legId}/welfare",
+                "/api/coordinator/legs/{legId}/welfare/{logId}/audit",
+                "/api/coordinator/legs/{legId}/welfare/{logId}/supersede",
+                "/api/customer/transport-orders/{orderId}/tracking",
+                "/api/transport-orders/{orderId}/tracking")) {
+            assertThat(api.path("paths").has(route)).as(route).isTrue();
+        }
+
+        for (String name : List.of(
+                "RoadMilestoneCreateRequest",
+                "AirMilestoneCreateRequest",
+                "EstimatedArrivalUpdateRequest",
+                "HorseWelfareLogCreateRequest",
+                "HorseWelfareLogCorrectionRequest",
+                "LegMilestoneResponse",
+                "HorseWelfareLogResponse",
+                "JourneyTimelineResponse",
+                "LegTimelineItem",
+                "CustomerMilestoneItem",
+                "CustomerWelfareItem",
+                "WelfareAuditHistoryResponse")) {
+            assertThat(schemas.has(name)).as(name).isTrue();
+            assertActivityModel(schemas.path(name), schemas,
+                    new java.util.HashSet<>(), false);
+        }
+
+        assertActivityModel(schemas.path("JourneyTimelineResponse"), schemas,
+                new java.util.HashSet<>(), true);
+
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            var validator = factory.getValidator();
+            var roadReq = mapper.readValue(
+                    com.equitransit.backend.dto.execution.ExecutionExamples
+                            .ROAD_MILESTONE,
+                    com.equitransit.backend.dto.execution.request
+                            .RoadMilestoneCreateRequest.class);
+            var airReq = mapper.readValue(
+                    com.equitransit.backend.dto.execution.ExecutionExamples
+                            .AIR_MILESTONE,
+                    com.equitransit.backend.dto.execution.request
+                            .AirMilestoneCreateRequest.class);
+            var etaReq = mapper.readValue(
+                    com.equitransit.backend.dto.execution.ExecutionExamples
+                            .ESTIMATED_ARRIVAL,
+                    com.equitransit.backend.dto.execution.request
+                            .EstimatedArrivalUpdateRequest.class);
+            var welfareReq = mapper.readValue(
+                    com.equitransit.backend.dto.execution.ExecutionExamples
+                            .WELFARE_LOG,
+                    com.equitransit.backend.dto.execution.request
+                            .HorseWelfareLogCreateRequest.class);
+            var corrReq = mapper.readValue(
+                    com.equitransit.backend.dto.execution.ExecutionExamples
+                            .WELFARE_CORRECTION,
+                    com.equitransit.backend.dto.execution.request
+                            .HorseWelfareLogCorrectionRequest.class);
+
+            assertThat(validator.validate(roadReq)).isEmpty();
+            assertThat(validator.validate(airReq)).isEmpty();
+            assertThat(validator.validate(etaReq)).isEmpty();
+            assertThat(validator.validate(welfareReq)).isEmpty();
+            assertThat(validator.validate(corrReq)).isEmpty();
+        }
+    }
+
 }
+

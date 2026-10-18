@@ -243,4 +243,43 @@ public class OpenApiTest {
         org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(8);
     }
 
+    /** @throws Exception if any F12 operation admits an anonymous caller */
+    @Test
+    public void allExecutionOperationsRequireAuthentication()
+            throws Exception {
+        var response = mvc.perform(get("/v3/api-docs"))
+                .andReturn().getResponse().getContentAsString();
+        var api = new com.fasterxml.jackson.databind.ObjectMapper()
+                .readTree(response);
+        int checked = 0;
+
+        for (var entry : api.path("paths").properties()) {
+            String path = entry.getKey();
+            if (!path.startsWith("/api/driver/legs")
+                    && !path.startsWith("/api/coordinator/legs")
+                    && !path.startsWith(
+                            "/api/customer/transport-orders")
+                    && !path.equals(
+                            "/api/transport-orders/{orderId}/tracking")) {
+                continue;
+            }
+            String route = path.replace("{orderId}", "101")
+                    .replace("{legId}", "401").replace("{logId}", "501");
+
+            for (var operation : entry.getValue().properties()) {
+                mvc.perform(org.springframework.test.web.servlet.request.
+                        MockMvcRequestBuilders.request(
+                                org.springframework.http.HttpMethod.valueOf(
+                                        operation.getKey().toUpperCase(
+                                                java.util.Locale.ROOT)),
+                                route).contentType("application/json")
+                                        .content("{}"))
+                        .andExpect(status().isUnauthorized());
+                checked++;
+            }
+        }
+        org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(14);
+    }
+
 }
+

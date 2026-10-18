@@ -169,6 +169,13 @@ public class SecurityConfig {
                                 "DRIVER")
                         .requestMatchers("/api/driver/**")
                         .hasRole("DRIVER")
+                        .requestMatchers("/api/coordinator/**")
+                        .hasAnyRole("COORDINATOR", "MANAGER")
+                        .requestMatchers(
+                                "/api/customer/transport-orders/*/tracking",
+                                "/api/transport-orders/*/tracking")
+                        .hasAnyRole("CUSTOMER", "COORDINATOR", "MANAGER",
+                                "DRIVER")
                         .requestMatchers("/api/customers/**", "/api/horses",
                                 "/api/horses/**", "/api/transport-orders",
                                 "/api/transport-orders/**")
