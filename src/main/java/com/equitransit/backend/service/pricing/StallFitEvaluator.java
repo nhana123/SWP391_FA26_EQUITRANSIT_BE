@@ -13,6 +13,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import org.springframework.stereotype.Component;
 import com.equitransit.backend.dto.horse.response.HorseResponse;
+import com.equitransit.backend.entity.horse.HorseSex;
 import com.equitransit.backend.entity.order.AirStallPreference;
 import com.equitransit.backend.entity.pricing.FitPolicyRecord;
 import com.equitransit.backend.entity.pricing.StallFitResult;
@@ -69,8 +70,8 @@ public class StallFitEvaluator {
         }
         return new StallFitResult(option.name(), slots, "ELIGIBLE",
                 policy.policyId(), policy.version(),
-                horse.sexCode() == com.equitransit.backend.entity.HorseSex
-                        .STALLION && option != AirStallPreference.PRIVATE
+                horse.sexCode() == HorseSex.STALLION
+                        && option != AirStallPreference.PRIVATE
                         ? List.of("STALLION_COMPATIBILITY_REVIEW_REQUIRED")
                         : List.of());
     }

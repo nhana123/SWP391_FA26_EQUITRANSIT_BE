@@ -46,6 +46,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import com.equitransit.backend.entity.pricing.BundleResult;
 
 
 /** Exact arithmetic, expiry and missing-source semantics in isolation. */
@@ -310,7 +311,7 @@ public class QuotePricingPolicyTest {
                     .thenReturn(List.of(offer));
             policy.prepare(1, snapshot, request(List.of(evidence)));
             var capture = org.mockito.ArgumentCaptor.forClass(
-                    com.equitransit.backend.entity.BundleResult.class);
+                    BundleResult.class);
 
             verify(builder, atLeastOnce())
                     .build(any(), any(), any(), any(), capture.capture(), any(),

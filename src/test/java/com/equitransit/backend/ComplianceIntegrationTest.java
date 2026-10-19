@@ -17,6 +17,8 @@ import com.equitransit.backend.repository.auth.UserAccountRepository;
 import com.equitransit.backend.security.JwtTokenService;
 import com.equitransit.backend.security.TokenTools;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.equitransit.backend.service.compliance.ComplianceReadinessFacade;
+import com.equitransit.backend.service.pricing.ServiceAssessmentFacade;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.time.LocalDateTime;
@@ -91,9 +93,9 @@ public class ComplianceIntegrationTest {
     @Autowired
     private JwtTokenService tokens;
     @Autowired
-    private com.equitransit.backend.service.ServiceAssessmentFacade sources;
+    private ServiceAssessmentFacade sources;
     @Autowired
-    private com.equitransit.backend.service.ComplianceReadinessFacade gates;
+    private ComplianceReadinessFacade gates;
     @Autowired
     private PlatformTransactionManager transactions;
 

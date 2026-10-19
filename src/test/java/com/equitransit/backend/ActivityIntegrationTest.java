@@ -14,6 +14,10 @@ import com.equitransit.backend.entity.auth.UserAccount;
 import com.equitransit.backend.repository.auth.AccountRoleRepository;
 import com.equitransit.backend.repository.customer.CustomerRepository;
 import com.equitransit.backend.repository.auth.UserAccountRepository;
+import com.equitransit.backend.repository.activity.ActivityRepository;
+import com.equitransit.backend.service.activity.AuditWriter;
+import com.equitransit.backend.service.activity.NotificationWriter;
+import com.equitransit.backend.security.LiveJwtConverter;
 import com.equitransit.backend.security.JwtTokenService;
 import com.equitransit.backend.security.TokenTools;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -59,16 +63,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class ActivityIntegrationTest {
 
     @org.springframework.test.context.bean.override.mockito.MockitoSpyBean
-    private com.equitransit.backend.repository.ActivityRepository activity;
+    private ActivityRepository activity;
 
     @Autowired
-    private com.equitransit.backend.service.AuditWriter auditWriter;
+    private AuditWriter auditWriter;
     @Autowired
-    private com.equitransit.backend.service.NotificationWriter notifications;
+    private NotificationWriter notifications;
     @Autowired
     private org.springframework.security.oauth2.jwt.JwtDecoder decoder;
     @Autowired
-    private com.equitransit.backend.security.LiveJwtConverter liveTokens;
+    private LiveJwtConverter liveTokens;
 
     private long acceptedQuote;
     private long requestId;

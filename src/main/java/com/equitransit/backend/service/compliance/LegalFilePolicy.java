@@ -20,6 +20,8 @@ import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSArray;
+import com.equitransit.backend.exception.order.OrderException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 
@@ -63,8 +65,8 @@ public class LegalFilePolicy {
             }
             return bytes;
         } catch (IOException | IllegalArgumentException error) {
-            throw new com.equitransit.backend.exception.OrderException(
-                    org.springframework.http.HttpStatus.CONFLICT,
+            throw new OrderException(
+                    HttpStatus.CONFLICT,
                     "FILE_CONTENT_INVALID", "Unsupported evidence content.");
         }
     }

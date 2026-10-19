@@ -14,6 +14,8 @@ import com.equitransit.backend.entity.auth.UserAccount;
 import com.equitransit.backend.repository.auth.AccountRoleRepository;
 import com.equitransit.backend.repository.customer.CustomerRepository;
 import com.equitransit.backend.repository.auth.UserAccountRepository;
+import com.equitransit.backend.repository.payment.PaymentRepository;
+import com.equitransit.backend.service.quote.QuotationCommitmentFacade;
 import com.equitransit.backend.security.JwtTokenService;
 import com.equitransit.backend.security.TokenTools;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -62,7 +64,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class PaymentIntegrationTest {
 
     @Autowired
-    private com.equitransit.backend.service.QuotationCommitmentFacade gate;
+    private QuotationCommitmentFacade gate;
 
     private long acceptedQuote;
     private long requestId;
@@ -737,7 +739,7 @@ public class PaymentIntegrationTest {
     public void readinessRejectsMissingLedgerColumnsAndConstraints()
             throws Exception {
         paymentFixture();
-        var ledger = new com.equitransit.backend.repository.PaymentRepository(
+        var ledger = new PaymentRepository(
                 dataSource);
         var changes = new ArrayList<String>();
 
@@ -796,7 +798,7 @@ public class PaymentIntegrationTest {
         long allocation = post(pay() + "/allocations", manager,
                 allocationBody(receive("260.00"), "260.00"), 200)
                 .path("entityId").asLong();
-        var ledger = new com.equitransit.backend.repository.PaymentRepository(
+        var ledger = new PaymentRepository(
                 dataSource);
 
         try (var pool = Executors.newSingleThreadExecutor()) {

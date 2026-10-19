@@ -21,6 +21,7 @@ import com.equitransit.backend.repository.payment.PaymentRepository;
 import com.equitransit.backend.repository.order.OrderRepository;
 import com.equitransit.backend.repository.assessment.AssessmentRepository;
 import com.equitransit.backend.security.CurrentActorService;
+import com.equitransit.backend.entity.assessment.CaseOrder;
 import com.equitransit.backend.exception.order.OrderException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -125,7 +126,7 @@ public class PaymentReadService {
                         row.get("Status").toString()), at(row, "PostedAt"));
     }
 
-    private com.equitransit.backend.entity.CaseOrder access(long order,
+    private CaseOrder access(long order,
             boolean manager) {
         if (!ledger.ready()) {
             throw new OrderException(HttpStatus.SERVICE_UNAVAILABLE,

@@ -22,6 +22,7 @@ import com.equitransit.backend.repository.pricing.ServiceSourceRepository;
 import com.equitransit.backend.repository.resource.ResourceRepository;
 import com.equitransit.backend.security.JwtTokenService;
 import com.equitransit.backend.service.pricing.StallFitEvaluator;
+import com.equitransit.backend.exception.order.OrderException;
 import com.equitransit.backend.service.resource.ResourceAvailabilityService;
 import com.equitransit.backend.dto.horse.response.HorseResponse;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -586,7 +587,7 @@ public class ResourceIntegrationTest {
             assertThat(error.getMostSpecificCause().getMessage())
                     .containsAnyOf("overlapping assignment", "deadlock");
             return false;
-        } catch (com.equitransit.backend.exception.OrderException error) {
+        } catch (OrderException error) {
             failures.add(error.getCode());
             assertThat(error.getCode()).isEqualTo("RESOURCE_BUSY");
             return false;

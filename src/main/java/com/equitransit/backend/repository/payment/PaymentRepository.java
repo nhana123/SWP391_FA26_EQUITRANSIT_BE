@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.math.BigDecimal;
 import javax.sql.DataSource;
+import com.equitransit.backend.exception.order.OrderException;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -116,8 +118,8 @@ public class PaymentRepository {
                 + "@LockTimeout=5000; SELECT @r", Long.class);
 
         if (result < 0) {
-            throw new com.equitransit.backend.exception.OrderException(
-                    org.springframework.http.HttpStatus.CONFLICT,
+            throw new OrderException(
+                    HttpStatus.CONFLICT,
                     "PAYMENT_LEDGER_BUSY", "Retry the same operation later.");
         }
     }

@@ -14,6 +14,7 @@ import com.equitransit.backend.dto.quote.QuotePrepareRequest;
 import com.equitransit.backend.dto.order.response.OrderSnapshot;
 import com.equitransit.backend.dto.pricing.response.ServiceChargeResponse;
 import com.equitransit.backend.entity.pricing.BundleResult;
+import com.equitransit.backend.entity.pricing.StallFitResult;
 import com.equitransit.backend.entity.quote.QuoteEvidenceStatus;
 import com.equitransit.backend.entity.quote.QuotePriceSource;
 import com.equitransit.backend.entity.quote.QuoteSnapshot;
@@ -110,7 +111,7 @@ public class QuotePricingPolicy {
                 now, horizon);
         var rows = builder.build(chosen, route,
                 quarantine, veterinary, bundle, now, snapshot.request());
-        com.equitransit.backend.entity.StallFitResult fit = null;
+        StallFitResult fit = null;
 
         if (route.airKm() == null) {
             blockers.add("ITINERARY_PENDING");

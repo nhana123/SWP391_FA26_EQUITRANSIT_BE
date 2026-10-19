@@ -49,6 +49,7 @@ import com.equitransit.backend.security.TokenTools;
 import com.equitransit.backend.service.horse.HorseService;
 import com.equitransit.backend.service.pricing.ServicePreferencePolicy;
 import com.equitransit.backend.service.activity.AuditWriter;
+import com.equitransit.backend.repository.activity.ActivityRepository;
 
 
 /** A submitted revision is never updated or deleted by this service. */
@@ -67,7 +68,7 @@ public class TransportOrderService {
     private final Clock clock;
     private final ServicePreferencePolicy selections;
     private final AuditWriter activity;
-    private final com.equitransit.backend.repository.ActivityRepository events;
+    private final ActivityRepository events;
 
     /**
      * Creates the customer request lifecycle facade.
@@ -89,7 +90,7 @@ public class TransportOrderService {
             OrderCommitmentPolicy commitments, OrderJsonCodec json,
             Clock clock, ServicePreferencePolicy selections,
             AuditWriter activity,
-            com.equitransit.backend.repository.ActivityRepository events) {
+            ActivityRepository events) {
         this.orders = orders;
         this.actors = actors;
         this.horses = horses;
