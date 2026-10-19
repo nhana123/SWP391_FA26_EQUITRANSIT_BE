@@ -13,3 +13,11 @@ out/
 
 # Personal AI guidance is kept outside the repository.
 /swp/AI/
+
+# Local-only demo setup; keep these scripts on the developer machine.
+/tools/export-demo-schema.ps1
+/tools/run-demo-local.ps1
+/tools/run-demo-seed.ps1
+/tools/seed-demo-data.sql
+/tools/seed-demo-orders.ps1
+/tools/verify-demo-api.mjs
