@@ -7,14 +7,14 @@
  */
 package com.equitransit.backend;
 
-import com.equitransit.backend.repository.ActivityRepository;
-import com.equitransit.backend.repository.ComplianceRepository;
-import com.equitransit.backend.repository.DepartureRepository;
-import com.equitransit.backend.repository.PaymentRepository;
-import com.equitransit.backend.repository.PlanRepository;
-import com.equitransit.backend.repository.ResourceRepository;
-import com.equitransit.backend.repository.StaffAdministrationRepository;
-import com.equitransit.backend.repository.TariffRepository;
+import com.equitransit.backend.repository.activity.ActivityRepository;
+import com.equitransit.backend.repository.compliance.ComplianceRepository;
+import com.equitransit.backend.repository.departure.DepartureRepository;
+import com.equitransit.backend.repository.payment.PaymentRepository;
+import com.equitransit.backend.repository.plan.PlanRepository;
+import com.equitransit.backend.repository.resource.ResourceRepository;
+import com.equitransit.backend.repository.staff.StaffAdministrationRepository;
+import com.equitransit.backend.repository.pricing.TariffRepository;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import javax.sql.DataSource;
@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import static org.assertj.core.api.Assertions.assertThat;
+import com.equitransit.backend.repository.execution.LegExecutionOperationRepository;
 
 /** Native metadata smoke; it performs no business writes or mock readiness. */
 @SpringBootTest(properties = {
@@ -52,7 +53,7 @@ public class SchemaReadinessIntegrationTest {
     @Autowired
     private TariffRepository tariff;
     @Autowired
-    private com.equitransit.backend.repository.LegExecutionRepository execution;
+    private LegExecutionOperationRepository execution;
 
     /** @throws Exception if a runtime probe or physical seam is incomplete */
     @Test
@@ -76,7 +77,8 @@ public class SchemaReadinessIntegrationTest {
                 }
             }
         }
-        assertThat(execution.ready()).as("LegExecutionRepository").isTrue();
+        assertThat(execution.ready())
+                .as("LegExecutionOperationRepository").isTrue();
         assertThat(activity.ready()).as("ActivityRepository").isTrue();
         assertThat(compliance.ready()).as("ComplianceRepository").isTrue();
         assertThat(departure.ready()).as("DepartureRepository").isTrue();

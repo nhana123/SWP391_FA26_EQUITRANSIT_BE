@@ -7,9 +7,9 @@
  */
 package com.equitransit.backend;
 
-import com.equitransit.backend.entity.UserAccount;
-import com.equitransit.backend.repository.AccountRoleRepository;
-import com.equitransit.backend.repository.UserAccountRepository;
+import com.equitransit.backend.entity.auth.UserAccount;
+import com.equitransit.backend.repository.auth.AccountRoleRepository;
+import com.equitransit.backend.repository.auth.UserAccountRepository;
 import com.equitransit.backend.security.JwtTokenService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

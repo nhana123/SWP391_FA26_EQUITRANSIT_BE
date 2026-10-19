@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.
         MethodArgumentTypeMismatchException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
+import com.equitransit.backend.exception.order.OrderException;
+import com.equitransit.backend.exception.horse.HorseException;
 
 
 /** Returns consistent errors without exposing secrets or SQL details. */

@@ -9,7 +9,7 @@ package com.equitransit.backend.dto.activity;
 
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import com.equitransit.backend.entity.OrderStatus;
+import com.equitransit.backend.entity.order.OrderStatus;
 
 
 /** Safe, bounded actor-facing activity contract. */

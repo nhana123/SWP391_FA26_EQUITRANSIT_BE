@@ -9,7 +9,7 @@ package com.equitransit.backend;
 
 
 import com.equitransit.backend.entity.quote.FinancialObligation;
-import com.equitransit.backend.service.FinancialReadinessPolicy;
+import com.equitransit.backend.service.payment.FinancialReadinessPolicy;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;

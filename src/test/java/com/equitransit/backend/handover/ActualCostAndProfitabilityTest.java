@@ -13,7 +13,7 @@ import com.equitransit.backend.dto.handover.response.ActualCostResponse;
 import com.equitransit.backend.dto.handover.response.CustomerHandoverResponse;
 import com.equitransit.backend.dto.handover.response.PlanProfitabilityResponse;
 import com.equitransit.backend.entity.handover.ActualCost;
-import com.equitransit.backend.exception.OrderException;
+import com.equitransit.backend.exception.order.OrderException;
 import com.equitransit.backend.repository.execution.LegExecutionRepository;
 import com.equitransit.backend.repository.handover.ActualCostRepository;
 import com.equitransit.backend.repository.handover.TripHandoverRepository;

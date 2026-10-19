@@ -15,7 +15,7 @@ import com.equitransit.backend.dto.handover.response.CustomerHandoverResponse;
 import com.equitransit.backend.dto.handover.response.OperationalCompletionReceipt;
 import com.equitransit.backend.dto.handover.response.TripHandoverResponse;
 import com.equitransit.backend.entity.handover.TripHandover;
-import com.equitransit.backend.exception.OrderException;
+import com.equitransit.backend.exception.order.OrderException;
 import com.equitransit.backend.repository.execution.LegExecutionRepository;
 import com.equitransit.backend.repository.execution.LegExecutionRepository.LegRow;
 import com.equitransit.backend.repository.execution.LegExecutionRepository.OrderScopeRow;

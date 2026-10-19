@@ -9,7 +9,7 @@ package com.equitransit.backend;
 
 import com.equitransit.backend.dto.resource.ResourceModels.ResourceWindow;
 import com.equitransit.backend.dto.resource.ResourceModels.ResourceBlocker;
-import com.equitransit.backend.service.ResourceAvailabilityPolicy;
+import com.equitransit.backend.service.resource.ResourceAvailabilityPolicy;
 import java.time.OffsetDateTime;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;

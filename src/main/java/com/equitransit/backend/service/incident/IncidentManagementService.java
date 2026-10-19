@@ -13,7 +13,7 @@ import com.equitransit.backend.dto.incident.request.IncidentReportCreateRequest;
 import com.equitransit.backend.dto.incident.request.IncidentResolveRequest;
 import com.equitransit.backend.dto.incident.response.IncidentReportResponse;
 import com.equitransit.backend.entity.incident.IncidentReport;
-import com.equitransit.backend.exception.OrderException;
+import com.equitransit.backend.exception.order.OrderException;
 import com.equitransit.backend.repository.execution.LegExecutionRepository;
 import com.equitransit.backend.repository.incident.IncidentReportRepository;
 import com.equitransit.backend.security.CurrentActor;

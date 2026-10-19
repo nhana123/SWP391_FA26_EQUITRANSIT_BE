@@ -16,7 +16,7 @@ import com.equitransit.backend.dto.departure.DepartureModels.IdentityResult;
 import com.equitransit.backend.dto.departure.DepartureModels.ReceiptState;
 import com.equitransit.backend.dto.plan.PlanModels.LegState;
 import com.equitransit.backend.dto.plan.PlanModels.PlanState;
-import com.equitransit.backend.service.DepartureGatePolicy;
+import com.equitransit.backend.service.departure.DepartureGatePolicy;
 import java.time.OffsetDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;

@@ -8,9 +8,9 @@
 package com.equitransit.backend.service.handover;
 
 import com.equitransit.backend.dto.handover.request.FinalDeliveryHandoverCreateRequest;
-import com.equitransit.backend.exception.OrderException;
+import com.equitransit.backend.exception.order.OrderException;
 import com.equitransit.backend.repository.handover.TripHandoverRepository.OrderReceiverRow;
-import com.equitransit.backend.service.ComplianceService;
+import com.equitransit.backend.service.compliance.ComplianceService;
 import java.util.Locale;
 import java.util.Set;
 import org.springframework.beans.factory.ObjectProvider;

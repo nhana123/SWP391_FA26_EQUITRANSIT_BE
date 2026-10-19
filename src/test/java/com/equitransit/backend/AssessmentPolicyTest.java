@@ -15,11 +15,11 @@ import java.time.ZoneOffset;
 import java.util.UUID;
 import jakarta.validation.Validation;
 import org.junit.jupiter.api.Test;
-import com.equitransit.backend.dto.request.AssessmentRequest;
-import com.equitransit.backend.entity.CaseOrder;
-import com.equitransit.backend.entity.DecisionCode;
-import com.equitransit.backend.exception.OrderException;
-import com.equitransit.backend.service.AssessmentPolicy;
+import com.equitransit.backend.dto.assessment.request.AssessmentRequest;
+import com.equitransit.backend.entity.assessment.CaseOrder;
+import com.equitransit.backend.entity.assessment.DecisionCode;
+import com.equitransit.backend.exception.order.OrderException;
+import com.equitransit.backend.service.assessment.AssessmentPolicy;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

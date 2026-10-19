@@ -43,12 +43,12 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.
         TransactionSynchronizationManager;
-import com.equitransit.backend.entity.Customer;
-import com.equitransit.backend.entity.UserAccount;
-import com.equitransit.backend.repository.AccountRoleRepository;
-import com.equitransit.backend.repository.CustomerRepository;
-import com.equitransit.backend.repository.OrderRepository;
-import com.equitransit.backend.repository.UserAccountRepository;
+import com.equitransit.backend.entity.customer.Customer;
+import com.equitransit.backend.entity.auth.UserAccount;
+import com.equitransit.backend.repository.auth.AccountRoleRepository;
+import com.equitransit.backend.repository.customer.CustomerRepository;
+import com.equitransit.backend.repository.order.OrderRepository;
+import com.equitransit.backend.repository.auth.UserAccountRepository;
 import com.equitransit.backend.security.JwtTokenService;
 import com.equitransit.backend.security.TokenTools;
 import static org.assertj.core.api.Assertions.assertThat;

@@ -8,9 +8,9 @@
 package com.equitransit.backend;
 
 
-import com.equitransit.backend.service.AuditRedactor;
-import com.equitransit.backend.service.NotificationWriter;
-import com.equitransit.backend.service.NotificationWorker;
+import com.equitransit.backend.service.activity.AuditRedactor;
+import com.equitransit.backend.service.activity.NotificationWriter;
+import com.equitransit.backend.service.activity.NotificationWorker;
 import com.equitransit.backend.mail.AccountMailSender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;

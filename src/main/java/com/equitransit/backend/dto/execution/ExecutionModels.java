@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import com.equitransit.backend.dto.plan.PlanModels.PlanLegMode;
 import com.equitransit.backend.dto.plan.PlanModels.LegState;
-import com.equitransit.backend.entity.OrderStatus;
+import com.equitransit.backend.entity.order.OrderStatus;
 
 
 /** Typed F12 facts; planned times are never writable execution fields. */

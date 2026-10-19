@@ -8,9 +8,9 @@
 package com.equitransit.backend;
 
 
-import com.equitransit.backend.service.LegalEvidencePolicy;
-import com.equitransit.backend.service.LegalFilePolicy;
-import com.equitransit.backend.exception.OrderException;
+import com.equitransit.backend.service.compliance.LegalEvidencePolicy;
+import com.equitransit.backend.service.compliance.LegalFilePolicy;
+import com.equitransit.backend.exception.order.OrderException;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.Base64;

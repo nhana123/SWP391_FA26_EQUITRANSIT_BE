@@ -7,8 +7,8 @@ import static org.springframework.test.web.servlet.request.
         MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.
         MockMvcRequestBuilders.post;
-import com.equitransit.backend.repository.LegExecutionRepository;
-import com.equitransit.backend.repository.UserAccountRepository;
+import com.equitransit.backend.repository.execution.LegExecutionOperationRepository;
+import com.equitransit.backend.repository.auth.UserAccountRepository;
 import com.equitransit.backend.security.JwtTokenService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,7 +54,7 @@ public class LegExecutionIntegrationTest {
     @Autowired
     private JwtTokenService tokens;
     @Autowired
-    private LegExecutionRepository repository;
+    private LegExecutionOperationRepository repository;
     private long order;
     private long plan;
     private long road;

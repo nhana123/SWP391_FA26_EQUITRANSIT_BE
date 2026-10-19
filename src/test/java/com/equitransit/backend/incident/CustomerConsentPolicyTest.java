@@ -16,7 +16,7 @@ import com.equitransit.backend.dto.incident.response.CustomerAdjustmentResponse;
 import com.equitransit.backend.dto.incident.response.OperationalAdjustmentResponse;
 import com.equitransit.backend.dto.incident.response.PlanEvolutionReceipt;
 import com.equitransit.backend.entity.incident.OperationalAdjustment;
-import com.equitransit.backend.exception.OrderException;
+import com.equitransit.backend.exception.order.OrderException;
 import com.equitransit.backend.repository.execution.LegExecutionRepository;
 import com.equitransit.backend.repository.execution.LegExecutionRepository.OrderScopeRow;
 import com.equitransit.backend.repository.execution.LegExecutionRepository.StaffProfileRow;

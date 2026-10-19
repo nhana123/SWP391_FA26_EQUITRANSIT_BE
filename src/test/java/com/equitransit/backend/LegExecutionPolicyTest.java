@@ -4,8 +4,8 @@ package com.equitransit.backend;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import com.equitransit.backend.dto.execution.ExecutionModels.SourceCode;
-import com.equitransit.backend.exception.OrderException;
-import com.equitransit.backend.service.LegExecutionPolicy;
+import com.equitransit.backend.exception.order.OrderException;
+import com.equitransit.backend.service.execution.LegExecutionPolicy;
 import java.time.OffsetDateTime;
 import org.junit.jupiter.api.Test;
 

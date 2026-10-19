@@ -10,7 +10,7 @@ package com.equitransit.backend.entity.quote;
 
 import java.math.BigDecimal;
 import java.util.List;
-import com.equitransit.backend.entity.VeterinaryAssessmentResult;
+import com.equitransit.backend.entity.pricing.VeterinaryAssessmentResult;
 
 
 /** Internal evidence snapshot, not a customer or readiness response. */

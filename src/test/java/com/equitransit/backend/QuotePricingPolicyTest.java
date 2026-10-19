@@ -8,22 +8,22 @@
 package com.equitransit.backend;
 
 
-import com.equitransit.backend.dto.ApiExamples;
+import com.equitransit.backend.dto.common.ApiExamples;
 import com.equitransit.backend.dto.quote.QuoteCommand;
 import com.equitransit.backend.dto.quote.QuoteEvidence;
 import com.equitransit.backend.dto.quote.QuotePrepareRequest;
 import com.equitransit.backend.dto.quote.QuoteSchedule;
-import com.equitransit.backend.dto.response.OrderSnapshot;
-import com.equitransit.backend.dto.response.ServiceChargeResponse;
-import com.equitransit.backend.entity.ItineraryPricingContext;
+import com.equitransit.backend.dto.order.response.OrderSnapshot;
+import com.equitransit.backend.dto.pricing.response.ServiceChargeResponse;
+import com.equitransit.backend.entity.pricing.ItineraryPricingContext;
 import com.equitransit.backend.entity.quote.QuoteChargeCode;
 import com.equitransit.backend.entity.quote.QuoteEvidenceStatus;
 import com.equitransit.backend.entity.quote.QuotePriceSource;
-import com.equitransit.backend.repository.QuoteSourceRepository;
-import com.equitransit.backend.service.QuotePricingPolicy;
-import com.equitransit.backend.service.ServiceAssessmentFacade;
-import com.equitransit.backend.service.ServiceChargeBuilder;
-import com.equitransit.backend.service.ServicePreferencePolicy;
+import com.equitransit.backend.repository.quote.QuoteSourceRepository;
+import com.equitransit.backend.service.quote.QuotePricingPolicy;
+import com.equitransit.backend.service.pricing.ServiceAssessmentFacade;
+import com.equitransit.backend.service.pricing.ServiceChargeBuilder;
+import com.equitransit.backend.service.pricing.ServicePreferencePolicy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import java.math.BigDecimal;
