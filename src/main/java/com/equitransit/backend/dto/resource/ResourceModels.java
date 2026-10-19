@@ -176,6 +176,25 @@ public final class ResourceModels {
             @Schema(example = "false") boolean carrierConfirmed,
             @Schema(example = "[\"FIT_POLICY_PENDING\"]")
             List<ResourceBlocker> blockers) { }
+
+    /** One scoped catalogue option with a current, advisory probe. */
+    public record ResourceCandidate(
+            @Schema(example = "11") long id,
+            @Schema(example = "STALL-101")
+            @Size(min = 1, max = 50) String code,
+            @Schema(example = "AVAILABLE") AvailabilityState status,
+            @Schema(example = "000000000001A2B3")
+            @Pattern(regexp = "^[0-9a-fA-F]{16}$")
+            String recordVersion,
+            @Schema(example = "[\"OVERLAP\"]")
+            List<ResourceBlocker> blockers) { }
+
+    /** Bounded search page; total counts catalogue matches, not free slots. */
+    public record ResourceCandidatePage(
+            @Schema(example = "[]") List<ResourceCandidate> items,
+            @Schema(example = "0") int page,
+            @Schema(example = "10") int size,
+            @Schema(example = "1") long totalElements) { }
     /** Full replacement command; creates use a null recordVersion. */
     public record ResourceVehicleWrite(
             @Schema(example = ResourceExamples.COMMAND)

@@ -49,6 +49,7 @@ Hibernate không tự cập nhật schema nghiệp vụ.
 | F07 — Thanh toán và hoàn tiền | [Manual bank payments](docs/manual-bank-payments-api.md) |
 | F08 — Hồ sơ pháp lý | [Compliance](docs/compliance-api.md) |
 | F09 — Tài nguyên và kiểm tra phù hợp | [Resources](docs/resources-api.md) |
+| Coordinator — Chọn xe/chuồng khả dụng | [FE resource picker](docs/fe-resource-picker-handoff.md) |
 | F10 — Kế hoạch vận chuyển | [Operational plan](docs/operational-plan-api.md) |
 | F11 — Điều kiện xuất phát và nhận ngựa | [Departure](docs/departure-api.md) |
 | F12 — Thực thi chặng, tracking và chăm sóc | [Execution](docs/leg-execution-api.md) |

@@ -145,7 +145,31 @@ public class ApiDtoContractTest {
             }
         }
         assertThat(fields).isGreaterThan(70);
-        assertThat(operations).isEqualTo(17);
+        assertThat(operations).isEqualTo(18);
+        assertThat(api.at("/paths/~1api~1resources~1{kind}"
+                + "~1candidates/post/requestBody/content"
+                + "/application~1json").isMissingNode()).isFalse();
+        assertThat(schemas.path("ResourceCandidatePage")
+                .path("properties").has("items")).isTrue();
+        assertThat(schemas.at("/ResourceCandidatePage/properties/items/items/"
+                + "$ref").asText()).endsWith("/ResourceCandidate");
+        assertThat(schemas.at("/ResourceCandidate/properties/recordVersion/"
+                + "pattern").asText()).isEqualTo("^[0-9a-fA-F]{16}$");
+        var candidate = api.at("/paths/~1api~1resources~1{kind}"
+                + "~1candidates/post");
+
+        assertThat(candidate.at("/responses/200/content/application~1json/"
+                + "schema/$ref").asText()).endsWith("/ResourceCandidatePage");
+        for (var parameter : candidate.path("parameters")) {
+            if ("kind".equals(parameter.path("name").asText())) {
+                assertThat(parameter.at("/schema/enum").toString())
+                        .isEqualTo("[\"VEHICLE\",\"STALL\"]");
+            }
+            if ("size".equals(parameter.path("name").asText())) {
+                assertThat(parameter.at("/schema/maximum").asInt())
+                        .isEqualTo(10);
+            }
+        }
     }
 
     /** @throws Exception if F10 planning schemas or operations drift */
