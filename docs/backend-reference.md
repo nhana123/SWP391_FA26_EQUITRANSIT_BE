@@ -6,6 +6,47 @@ Java 21, Spring Boot 3.5.16, Maven Wrapper 3.9.9. Kiến trúc monolith phân l�
 
 [Quay lại README](../README.md)
 
+## Refresh token rotation — migration 017
+
+Deploy `database/migrations/017_refresh_token_rotation.sql` through the
+reviewed migration process. It is not run by application startup. Login
+fails closed with 503 `AUTH_SCHEMA_PENDING` until the table is deployed.
+Existing auth registration/recovery persistence is unchanged; the new login
+and refresh session storage uses parameterized JDBC only.
+
+- Login JSON stays `{accessToken, tokenType: "Bearer", expiresIn: 900, role}`.
+  Login creates a new family. Refresh returns the same JSON contract.
+- Cookie: `eq_refresh_token`; HttpOnly; Path `/api/auth`; SameSite `Strict`;
+  Max-Age `28800` (8 hours). `EQ_REFRESH_COOKIE_SECURE=true` enables Secure
+  for HTTPS. Local HTTP uses false. Keep FE/API on the same hostname
+  (`localhost` on both, rather than mixing localhost and 127.0.0.1).
+- Use `credentials: 'include'` for login, refresh and logout. Keep the access
+  token in memory and attach `Authorization: Bearer ...` to protected calls.
+  `POST /api/auth/refresh` has no JSON body. Optionally send
+  `X-Expected-Role: COORDINATOR` (or the role held by the current tab).
+- Roles in tabs share the browser cookie. A role mismatch returns 401
+  `REFRESH_ROLE_MISMATCH` without clearing the cookie or revoking its family.
+  It does not create independent cookie sessions per tab. FE should serialize
+  refresh across same-role tabs; concurrent use of an old token is replay.
+- `POST /api/auth/logout` revokes the cookie's family, returns 204 with no
+  body and clears the cookie using the same path/flags and Max-Age=0.
+  Missing, malformed and unknown cookies are accepted as logged out.
+- Refresh 401 JSON is `{errorCode, message}`. Exact codes:
+  `REFRESH_TOKEN_MISSING`, `REFRESH_TOKEN_INVALID`, `REFRESH_ROLE_MISMATCH`,
+  `REFRESH_TOKEN_REUSED`, `REFRESH_TOKEN_REVOKED`, `REFRESH_TOKEN_EXPIRED`,
+  `ACCOUNT_INACTIVE_OR_LOCKED`, `CREDENTIALS_CHANGED`.
+- SHA-256 fingerprints only are stored. `CredentialHash` fingerprints the
+  current password hash to detect credential changes without adding an
+  account timestamp. Reset and F15 deactivation revoke all open sessions
+  in their own transaction. A hook-revoked token returns
+  `REFRESH_TOKEN_REVOKED`; a previously unrevoked token observing a direct
+  credential/status change returns the respective account/credential code.
+- Lock order is owning User, then FamilyID (`UPDLOCK,HOLDLOCK`). Replay
+  revocation commits even though the request returns 401. A rotated ancestor
+  also revokes its successor; another login family remains independent.
+- CORS allows credentials for exact comma-separated `app.cors-origin`
+  entries and allows `X-Expected-Role`; wildcards are rejected.
+
 ## Database và nguồn nghiệp vụ
 
 - Database thật: `EquiTransit`, server `DESKTOP-9VRARFD`, TCP 1433; dùng Windows Authentication ở profile `local`.

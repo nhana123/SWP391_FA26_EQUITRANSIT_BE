@@ -2,5 +2,7 @@ spring:
   datasource:
     url: jdbc:sqlserver://localhost:1433;databaseName=EquiTransit;encrypt=true;trustServerCertificate=true;integratedSecurity=true
 app:
+  jwt:
+    refresh-cookie-secure: ${EQ_REFRESH_COOKIE_SECURE:false}
   mail:
     mode: file

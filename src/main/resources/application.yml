@@ -42,6 +42,9 @@ app:
     secret: ${EQ_JWT_SECRET}
     issuer: equitransit
     ttl-seconds: 900
+    refresh-ttl-seconds: 28800
+    refresh-cookie-name: eq_refresh_token
+    refresh-cookie-secure: ${EQ_REFRESH_COOKIE_SECURE:false}
   mail:
     mode: smtp
     from: ${EQ_MAIL_FROM:no-reply@example.invalid}

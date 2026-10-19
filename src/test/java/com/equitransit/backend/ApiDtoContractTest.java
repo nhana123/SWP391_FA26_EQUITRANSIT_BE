@@ -62,6 +62,22 @@ public class ApiDtoContractTest {
     @Autowired
     private ObjectMapper mapper;
 
+    /** @throws Exception if login/refresh JSON drifts from the FE contract */
+    @Test
+    public void refreshRetainsTheFourFieldLoginResponse() throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var properties = api.at("/components/schemas/LoginResponse/properties");
+        assertThat(properties.size()).isEqualTo(4);
+        assertThat(properties.has("accessToken")).isTrue();
+        assertThat(properties.has("tokenType")).isTrue();
+        assertThat(properties.has("expiresIn")).isTrue();
+        assertThat(properties.has("role")).isTrue();
+        assertThat(api.at("/components/schemas/RefreshError/properties")
+                .has("errorCode")).isTrue();
+    }
+
     /** @throws Exception if private F15 staff schemas drift */
     @Test
     public void staffProvisioningContractsAreTypedAndDocumented()

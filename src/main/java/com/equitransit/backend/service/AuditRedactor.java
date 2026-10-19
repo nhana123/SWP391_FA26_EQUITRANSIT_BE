@@ -46,6 +46,13 @@ public class AuditRedactor {
         return redact(input, 0);
     }
 
+    private boolean safeField(String key) {
+        String lower = key.toLowerCase(java.util.Locale.ROOT);
+        return !lower.contains("token") && !lower.contains("cookie")
+                && !lower.contains("authorization")
+                && SAFE_FIELDS.contains(key);
+    }
+
     private JsonNode redact(JsonNode node, int depth) {
         if (node == null || node.isNull()) {
             return mapper.nullNode();
@@ -57,9 +64,9 @@ public class AuditRedactor {
             var result = mapper.createObjectNode();
 
             node.properties().forEach(field -> result.set(
-                    SAFE_FIELDS.contains(field.getKey())
+                    safeField(field.getKey())
                             ? field.getKey() : "redactedField",
-                    SAFE_FIELDS.contains(field.getKey())
+                    safeField(field.getKey())
                             ? redact(field.getValue(), depth + 1)
                             : TextNode.valueOf("[REDACTED]")));
             return result;

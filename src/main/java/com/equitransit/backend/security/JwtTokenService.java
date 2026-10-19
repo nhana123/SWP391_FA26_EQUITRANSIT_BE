@@ -52,13 +52,21 @@ public class JwtTokenService {
      * @return the safe sign-in response
      */
     public LoginResponse issue(UserAccount user) {
+        return issue(user.getUserId(), user.getPasswordHash(),
+                user.getRole().getRoleCode());
+    }
+
+    /** @param user account key @param hash current password hash
+     * @param role current role @return short-lived access credential */
+    public LoginResponse issue(long user, String hash, String role) {
         Instant now = clock.instant();
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer(issuer)
-                .subject(user.getUserId().toString())
+                .subject(Long.toString(user))
+                .id(java.util.UUID.randomUUID().toString())
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(ttlSeconds))
-                .claim("credential", TokenTools.hash(user.getPasswordHash()))
+                .claim("credential", TokenTools.hash(hash))
                 .claim("purpose", "ACCESS")
                 .build();
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
@@ -69,7 +77,7 @@ public class JwtTokenService {
         response.setAccessToken(value);
         response.setTokenType("Bearer");
         response.setExpiresIn(ttlSeconds);
-        response.setRole(user.getRole().getRoleCode());
+        response.setRole(role);
         return response;
     }
 }

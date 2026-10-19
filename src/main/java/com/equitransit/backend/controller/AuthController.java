@@ -28,6 +28,19 @@ import com.equitransit.backend.dto.response.LoginResponse;
 import com.equitransit.backend.service.AuthService;
 
 
+import com.equitransit.backend.service.RefreshSessionService;
+import com.equitransit.backend.service.RefreshSessionService.Failure;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.HttpHeaders;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+
 /** Exposes account APIs corresponding to Figma A01, A02 and A03. */
 @RestController
 @RequestMapping(value = "/api/auth",
@@ -39,13 +52,31 @@ public class AuthController {
             "If an eligible account exists, an email will be sent.";
 
     private final AuthService auth;
+    private final RefreshSessionService refresh;
+    private final String cookieName;
+    private final boolean secure;
+    private final long ttl;
+
+    /** Safe refresh failure contract; never carries a credential. */
+    public record RefreshError(
+            @Schema(example = "REFRESH_TOKEN_INVALID") String errorCode,
+            @Schema(example = "Refresh authentication failed.")
+            String message) { }
 
     /**
      * Creates the authentication controller.
      * @param auth the authentication service
      */
-    public AuthController(AuthService auth) {
+    public AuthController(AuthService auth, RefreshSessionService refresh,
+            @Value("${app.jwt.refresh-cookie-name:eq_refresh_token}")
+            String cookieName,
+            @Value("${app.jwt.refresh-cookie-secure:false}") boolean secure,
+            @Value("${app.jwt.refresh-ttl-seconds:28800}") long ttl) {
         this.auth = auth;
+        this.refresh = refresh;
+        this.cookieName = cookieName;
+        this.secure = secure;
+        this.ttl = ttl;
     }
 
     /**
@@ -68,9 +99,68 @@ public class AuthController {
      * @return the access-token response
      */
     @PostMapping("/login")
-    @Operation(summary = "Sign in to a verified active account")
-    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
-        return auth.login(request);
+    @Operation(summary = "Sign in to a verified active account",
+            description = "Returns the existing access JSON plus an "
+                    + "HttpOnly refresh cookie. Use credentials: include.")
+    public ResponseEntity<LoginResponse> login(
+            @Valid @RequestBody LoginRequest request) {
+        return session(refresh.login(request));
+    }
+
+    /** @param raw private cookie @param role optional tab expectation
+     * @return unchanged access-token JSON and rotated HttpOnly cookie */
+    @PostMapping("/refresh")
+    @Operation(summary = "Rotate an HttpOnly refresh credential",
+            description = "No request body. Optional X-Expected-Role guards "
+                    + "against cross-role cookie replacement between tabs.")
+    @ApiResponse(responseCode = "200", description = "Credential rotated")
+    @ApiResponse(responseCode = "401", description = "Refresh rejected",
+            content = @io.swagger.v3.oas.annotations.media.Content(
+                    schema = @Schema(implementation = RefreshError.class)))
+    public ResponseEntity<LoginResponse> refresh(
+            @Parameter(hidden = true)
+            @CookieValue(name = "${app.jwt.refresh-cookie-name:"
+                    + "eq_refresh_token}", required = false) String raw,
+            @Parameter(schema = @Schema(example = "COORDINATOR"))
+            @RequestHeader(name = "X-Expected-Role", required = false)
+            String role) {
+        return session(refresh.refresh(raw, role));
+    }
+
+    /** @param raw optional cookie @return always an empty logout receipt */
+    @PostMapping("/logout")
+    @Operation(summary = "Revoke this refresh family and clear its cookie")
+    @ApiResponse(responseCode = "204", description = "Cookie cleared")
+    public ResponseEntity<Void> logout(
+            @Parameter(hidden = true)
+            @CookieValue(name = "${app.jwt.refresh-cookie-name:"
+                    + "eq_refresh_token}", required = false) String raw) {
+        refresh.logout(raw);
+        return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE,
+                cookie("", 0)).header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .build();
+    }
+
+    /** @param failure safe rejection @return stable 401 JSON */
+    @ExceptionHandler(Failure.class)
+    public ResponseEntity<RefreshError> refreshFailure(Failure failure) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(new RefreshError(failure.code(), failure.getMessage()));
+    }
+
+    private ResponseEntity<LoginResponse> session(
+            RefreshSessionService.Session result) {
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,
+                cookie(result.raw(), ttl))
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(result.response());
+    }
+
+    private String cookie(String raw, long seconds) {
+        return ResponseCookie.from(cookieName, raw).httpOnly(true)
+                .secure(secure).sameSite("Strict").path("/api/auth")
+                .maxAge(seconds).build().toString();
     }
 
     /**

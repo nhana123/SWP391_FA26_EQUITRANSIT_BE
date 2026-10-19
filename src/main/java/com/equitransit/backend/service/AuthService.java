@@ -33,7 +33,6 @@ import com.equitransit.backend.repository.AccountRoleRepository;
 import com.equitransit.backend.repository.UserAccountRepository;
 import com.equitransit.backend.repository.CustomerRepository;
 import com.equitransit.backend.repository.AuthenticationTokenRepository;
-import com.equitransit.backend.security.JwtTokenService;
 import com.equitransit.backend.security.TokenTools;
 
 
@@ -51,11 +50,10 @@ public class AuthService {
     private final CustomerRepository customers;
     private final AuthenticationTokenRepository tokens;
     private final PasswordEncoder passwords;
-    private final JwtTokenService jwt;
     private final Clock clock;
     private final ApplicationEventPublisher events;
     private final String frontend;
-    private final String dummyHash;
+    private final RefreshSessionService refresh;
 
     /**
      * Creates the authentication service.
@@ -64,7 +62,6 @@ public class AuthService {
      * @param customers the customer repository
      * @param tokens the token repository
      * @param passwords the password encoder
-     * @param jwt the access-token issuer
      * @param clock the UTC clock
      * @param events the after-commit event publisher
      * @param frontend the frontend base URL
@@ -72,19 +69,19 @@ public class AuthService {
     public AuthService(AccountRoleRepository roles,
             UserAccountRepository users, CustomerRepository customers,
             AuthenticationTokenRepository tokens, PasswordEncoder passwords,
-            JwtTokenService jwt, Clock clock,
+            Clock clock,
             ApplicationEventPublisher events,
-            @Value("${app.frontend-url}") String frontend) {
+            @Value("${app.frontend-url}") String frontend,
+            RefreshSessionService refresh) {
         this.roles = roles;
         this.users = users;
         this.customers = customers;
         this.tokens = tokens;
         this.passwords = passwords;
-        this.jwt = jwt;
         this.clock = clock;
         this.events = events;
         this.frontend = frontend;
-        this.dummyHash = passwords.encode(TokenTools.randomToken());
+        this.refresh = refresh;
     }
 
     /**
@@ -124,21 +121,9 @@ public class AuthService {
      * @param request the sign-in credentials
      * @return the access-token response
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public LoginResponse login(LoginRequest request) {
-        UserAccount user = users.findByEmailIgnoreCase(
-                normalizeEmail(request.getEmail())).orElse(null);
-        String hash = user == null ? dummyHash : user.getPasswordHash();
-        boolean valid = request.getPassword()
-                .getBytes(StandardCharsets.UTF_8).length
-                <= ValidationLimits.PASSWORD_MAX_LENGTH
-                && passwords.matches(request.getPassword(), hash);
-
-        if (!valid || user == null || !"ACTIVE".equals(user.getStatus())) {
-            throw new ApiException(HttpStatus.UNAUTHORIZED,
-                    "Invalid credentials or account unavailable.");
-        }
-        return jwt.issue(user);
+        return refresh.login(request).response();
     }
 
     /**
@@ -221,6 +206,14 @@ public class AuthService {
         user.setPasswordHash(passwords.encode(request.getPassword()));
         token.setUsedAt(now());
         tokens.invalidate(user.getUserId(), RESET_PASSWORD);
+        refresh.revokeUser(user.getUserId(), "PASSWORD_CHANGED");
+    }
+
+    /** @param user account key @param reason safe revocation code */
+    @Transactional(propagation =
+            org.springframework.transaction.annotation.Propagation.MANDATORY)
+    public void revokeSessions(long user, String reason) {
+        refresh.revokeUser(user, reason);
     }
 
     private AuthenticationToken lockValidToken(String raw, String purpose) {
