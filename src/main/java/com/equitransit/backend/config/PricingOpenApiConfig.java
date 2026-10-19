@@ -45,11 +45,14 @@ public class PricingOpenApiConfig {
             value.setType("string");
             value.setTypes(Set.of("string"));
             value.setEnum(new ArrayList<>(property.getEnum()));
+            Schema<Object> nullValue = new Schema<>();
+
+            nullValue.setType("null");
+            nullValue.setTypes(Set.of("null"));
             var union = new ComposedSchema();
 
             union.addAnyOfItem(value);
-            union.addAnyOfItem(new Schema<>().type("null")
-                    .types(Set.of("null")));
+            union.addAnyOfItem(nullValue);
             union.setExample(property.getExample());
             owner.getProperties().put("product", union);
         };

@@ -528,9 +528,9 @@ public class ApiDtoContractTest {
                 "RegisterRequest", "ResetPasswordRequest", "TokenRequest",
                 "CaseAssignmentRequest", "EndCaseAssignmentRequest",
                 "AssessmentRequest")) {
-            for (var fields = schemas.path(name).path("properties").fields();
-                    fields.hasNext();) {
-                JsonNode field = fields.next().getValue();
+            for (var entry : schemas.path(name).path("properties")
+                    .properties()) {
+                JsonNode field = entry.getValue();
                 String types = field.path("type").toString();
 
                 if (types.contains("string") && !field.has("enum")
@@ -667,8 +667,7 @@ public class ApiDtoContractTest {
 
         assertThat(decision.path("example").asText())
                 .isEqualTo("CHANGES_REQUESTED");
-        for (var paths = api.path("paths").fields(); paths.hasNext();) {
-            var path = paths.next();
+        for (var path : api.path("paths").properties()) {
 
             if (!path.getKey().startsWith("/api/manager/")
                     && !path.getKey().startsWith("/api/staff/")) {

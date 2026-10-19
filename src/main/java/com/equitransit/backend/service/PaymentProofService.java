@@ -31,12 +31,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 
 /**
  * Evidence is stored outside URLs/paths and never served as executable HTML.
  */
 @Service
+@Validated
 @PreAuthorize("isAuthenticated()")
 @Transactional(timeout = 15)
 public class PaymentProofService {

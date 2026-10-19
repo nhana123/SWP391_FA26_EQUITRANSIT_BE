@@ -76,10 +76,8 @@ public class PaymentIntegrationTest {
     private String other;
     private String manager;
     private String coordinator;
-    private String specialist;
     private long coordinatorId;
     private long specialistId;
-    private long managerId;
 
     @Autowired
     private MockMvc mvc;
@@ -113,10 +111,9 @@ public class PaymentIntegrationTest {
         owner = account("CUSTOMER");
         other = account("CUSTOMER");
         manager = account("MANAGER");
-        managerId = lastStaff();
         coordinator = account("COORDINATOR");
         coordinatorId = lastStaff();
-        specialist = account("SPECIALIST");
+        account("SPECIALIST");
         specialistId = lastStaff();
         JsonNode horse = post("/api/horses", owner,
                 mapper.readTree("{\"name\":\"Quotation fixture\"}"), 201);
@@ -407,11 +404,6 @@ public class PaymentIntegrationTest {
         assertThat(result.getStatus()).as(result.getContentAsString())
                 .isEqualTo(expected);
         return mapper.readTree(result.getContentAsString());
-    }
-
-    private int count(String table, String column, long id) {
-        return jdbc.queryForObject("SELECT COUNT(*) FROM dbo." + table
-                + " WHERE " + column + "=?", Integer.class, id);
     }
 
     private String base() {

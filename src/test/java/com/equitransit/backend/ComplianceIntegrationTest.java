@@ -73,7 +73,6 @@ public class ComplianceIntegrationTest {
     private String specialist;
     private long coordinatorId;
     private long specialistId;
-    private long managerId;
 
     @Autowired
     private MockMvc mvc;
@@ -108,7 +107,6 @@ public class ComplianceIntegrationTest {
         owner = account("CUSTOMER");
         other = account("CUSTOMER");
         manager = account("MANAGER");
-        managerId = lastStaff();
         coordinator = account("COORDINATOR");
         coordinatorId = lastStaff();
         specialist = account("SPECIALIST");
