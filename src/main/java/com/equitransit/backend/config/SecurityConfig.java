@@ -194,6 +194,11 @@ public class SecurityConfig {
                                 "/api/customer/transport-orders/*"
                                         + "/adjustments/**")
                         .hasRole("CUSTOMER")
+                        .requestMatchers(
+                                "/api/customer/transport-orders/*/handovers",
+                                "/api/customer/transport-orders/*"
+                                        + "/handovers/**")
+                        .hasRole("CUSTOMER")
                         .requestMatchers("/api/customers/**", "/api/horses",
                                 "/api/horses/**", "/api/transport-orders",
                                 "/api/transport-orders/**")

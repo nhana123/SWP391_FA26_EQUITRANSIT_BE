@@ -453,7 +453,16 @@ public class ApiDtoContractTest {
                 "IncidentReportResponse",
                 "OperationalAdjustmentResponse",
                 "CustomerAdjustmentResponse",
-                "PlanEvolutionReceipt")) {
+                "PlanEvolutionReceipt",
+                "IntermediateHandoverCreateRequest",
+                "FinalDeliveryHandoverCreateRequest",
+                "CustomerHandoverDecisionRequest",
+                "ActualCostCreateRequest",
+                "TripHandoverResponse",
+                "CustomerHandoverResponse",
+                "OperationalCompletionReceipt",
+                "ActualCostResponse",
+                "PlanProfitabilityResponse")) {
             assertThat(schemas.has(name)).as(name).isTrue();
             assertExamples(schemas, schemas.get(name), name);
         }
