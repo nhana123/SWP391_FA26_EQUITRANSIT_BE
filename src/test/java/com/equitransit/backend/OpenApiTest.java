@@ -17,6 +17,10 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.
         MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.
+        MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.result.
+        MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.
         MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.
@@ -31,6 +35,42 @@ public class OpenApiTest {
 
     @Autowired
     private MockMvc mvc;
+
+    /** @throws Exception if credentialed CORS permits an untrusted origin */
+    @Test
+    public void refreshCorsIsCredentialedAndOriginBound() throws Exception {
+        mvc.perform(options("/api/auth/refresh")
+                .header("Origin", "http://localhost:5173")
+                .header("Access-Control-Request-Method", "POST")
+                .header("Access-Control-Request-Headers", "X-Expected-Role"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin",
+                        "http://localhost:5173"))
+                .andExpect(header().string("Access-Control-Allow-Credentials",
+                        "true"));
+        mvc.perform(options("/api/auth/refresh")
+                .header("Origin", "https://untrusted.example.invalid")
+                .header("Access-Control-Request-Method", "POST"))
+                .andExpect(status().isForbidden());
+    }
+
+    /** @throws Exception if refresh contracts are missing from OpenAPI */
+    @Test
+    public void refreshCookieEndpointsArePublicAndTyped() throws Exception {
+        mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.openapi").value("3.1.0"))
+                .andExpect(jsonPath("$.paths['/api/auth/refresh'].post"
+                        + ".requestBody").doesNotExist())
+                .andExpect(jsonPath("$.paths['/api/auth/refresh'].post"
+                        + ".security").doesNotExist())
+                .andExpect(jsonPath("$.paths['/api/auth/refresh'].post"
+                        + ".responses['200'].content['application/json']"
+                        + ".schema['$ref']")
+                        .value("#/components/schemas/LoginResponse"))
+                .andExpect(jsonPath("$.paths['/api/auth/logout'].post"
+                        + ".responses['204']").exists());
+    }
 
     /**
      * Documents bearer access only on the protected customer operation.

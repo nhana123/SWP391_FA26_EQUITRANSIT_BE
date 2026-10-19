@@ -161,6 +161,9 @@ public class StaffAdministrationService {
             repository.endAssignments(staff);
         }
         repository.status(staff, body.status(), body.command().recordVersion());
+        if (body.status() != StaffStatus.ACTIVE) {
+            auth.revokeSessions(before.userId(), "STAFF_DEACTIVATED");
+        }
         return finish(actor, staff, StaffAction.STAFF_STATUS_CHANGED,
                 body.command(), hash, before.role(), body.reason());
     }
