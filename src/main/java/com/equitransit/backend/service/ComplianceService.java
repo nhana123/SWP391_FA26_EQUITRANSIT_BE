@@ -515,6 +515,28 @@ public class ComplianceService {
                 valid ? at(q, "ValidUntil") : null);
     }
 
+    /**
+     * Checks whether quarantine release clearance has passed for an order.
+     * @param order the transport order key
+     * @return true when quarantine release clearance passed
+     */
+    public boolean quarantineReleasePassed(long order) {
+        var args = access(order, false);
+        args.put("phase", "QUARANTINE_RELEASE");
+        var rows = data.rows("clearance", args);
+        if (rows.isEmpty()) {
+            return false;
+        }
+        var row = rows.getFirst();
+        String decision = String.valueOf(row.get("Decision"));
+        if (!"PASS".equalsIgnoreCase(decision)
+                && !"CLEARED".equalsIgnoreCase(decision)) {
+            return false;
+        }
+        var expires = at(row, "ExpiresAt");
+        return expires == null || expires.isAfter(now());
+    }
+
     private ComplianceReceipt mutate(long order, QuoteCommand command,
             String action, Object body, boolean specialist,
             Function<Map<String, Object>, Long> write) {
