@@ -37,6 +37,7 @@ import com.equitransit.backend.repository.assessment.AssessmentRepository;
 import com.equitransit.backend.repository.order.OrderRepository;
 import com.equitransit.backend.repository.plan.PlanRepository;
 import com.equitransit.backend.repository.resource.ResourceRepository;
+import com.equitransit.backend.service.pricing.StallFitEvaluator;
 import com.equitransit.backend.security.CurrentActor;
 import com.equitransit.backend.security.CurrentActorService;
 import com.equitransit.backend.security.TokenTools;

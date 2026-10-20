@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import com.equitransit.backend.entity.quote.FinancialObligation;
 import com.equitransit.backend.repository.payment.PaymentRepository;
+import com.equitransit.backend.service.payment.FinancialReadinessPolicy;
 import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Propagation;

@@ -19,6 +19,7 @@ import com.equitransit.backend.entity.order.OrderServiceIntent;
 import com.equitransit.backend.entity.order.ServiceArrangement;
 import com.equitransit.backend.entity.pricing.StallFitResult;
 import com.equitransit.backend.exception.order.OrderException;
+import com.equitransit.backend.service.pricing.StallFitEvaluator;
 
 
 /** F05/F08/F09 assess these intents before quote or external confirmation. */
