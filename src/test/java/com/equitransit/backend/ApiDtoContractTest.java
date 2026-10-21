@@ -226,7 +226,52 @@ public class ApiDtoContractTest {
             }
         }
         assertThat(fields).isGreaterThan(100);
-        assertThat(operations).isEqualTo(10);
+        assertThat(operations).isEqualTo(14);
+    }
+
+    /** @throws Exception if graph schemas lose typed or bounded contracts */
+    @Test
+    public void journeyGraphContractsAreTypedAndBounded() throws Exception {
+        var api = mapper.readTree(mvc.perform(get("/v3/api-docs"))
+                .andExpect(status().isOk()).andReturn().getResponse()
+                .getContentAsString());
+        var schemas = api.at("/components/schemas");
+        String root = "/api/transport-orders/{orderId}/plans";
+
+        for (String name : List.of("GraphDraftRequest", "GraphLayoutRequest",
+                "GraphNodeInput", "GraphNodeDetails", "GraphWireInput",
+                "GraphWireView", "GraphNodePosition", "GraphLayout",
+                "GraphDriverCandidate", "JourneyGraphView")) {
+            assertThat(schemas.has(name)).as(name).isTrue();
+            assertActivityModel(schemas.path(name), schemas,
+                    new java.util.HashSet<>(), false);
+        }
+        assertThat(api.path("paths").path(root + "/graph-drafts")
+                .at("/post/requestBody/content/application~1json/schema/$ref")
+                .asText()).endsWith("/GraphDraftRequest");
+        var graph = api.path("paths").path(root + "/{planId}/graph");
+
+        assertThat(graph.at("/get/responses/200/content/application~1json/"
+                + "schema/$ref").asText()).endsWith("/JourneyGraphView");
+        assertThat(graph.at("/put/requestBody/content/application~1json/"
+                + "schema/$ref").asText()).endsWith("/GraphLayoutRequest");
+        assertThat(api.path("paths").path(root
+                + "/{planId}/legs/{legId}/graph-drivers")
+                .at("/get/responses/200/content/application~1json/schema/"
+                        + "items/$ref").asText())
+                .endsWith("/GraphDriverCandidate");
+        assertThat(schemas.at("/GraphDraftRequest/properties/"
+                + "checkpointNodes/maxItems").asInt()).isEqualTo(21);
+        assertThat(schemas.at("/GraphDraftRequest/properties/wires/maxItems")
+                .asInt()).isEqualTo(20);
+        assertThat(schemas.at("/GraphNodeInput/properties/locationName/"
+                + "maxLength").asInt()).isEqualTo(200);
+        assertThat(schemas.at("/GraphLayoutRequest/properties/positions/"
+                + "maxItems").asInt()).isEqualTo(21);
+        assertThat(schemas.at("/GraphLayout/properties/zoom/minimum")
+                .asDouble()).isEqualTo(0.5);
+        assertThat(schemas.at("/GraphLayout/properties/zoom/maximum")
+                .asDouble()).isEqualTo(1.5);
     }
 
     /** @throws Exception if F11 departure schemas or operations drift */

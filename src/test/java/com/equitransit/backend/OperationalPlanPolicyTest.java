@@ -110,6 +110,23 @@ public class OperationalPlanPolicyTest {
                 .isInstanceOf(OrderException.class);
     }
 
+    /** COMPLETED is a read state, never a manual F10 assignment command. */
+    @Test
+    public void stallAssignmentCannotClaimExecutionCompletion() {
+        var cmd = new PlanCommand(UUID.randomUUID(), "000000000001A2B3");
+
+        for (var acceptance : CarrierAcceptanceState.values()) {
+            assertThatThrownBy(() -> OperationalPlanPolicy
+                    .validateStallRequest(new PlanStallAssignmentRequest(
+                            cmd, 12L, "000000000001A2B3", acceptance,
+                            AssignmentState.COMPLETED, null, "proof.pdf",
+                            null)))
+                    .isInstanceOf(OrderException.class)
+                    .extracting("code")
+                    .isEqualTo("STALL_ASSIGNMENT_STATUS_INVALID");
+        }
+    }
+
     /** Confirmation blockers detect HELD reservations and missing resources. */
     @Test
     public void confirmationBlockersRequireConfirmedEvidenceAcrossAllLegs() {

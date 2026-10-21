@@ -51,6 +51,8 @@ import static org.springframework.test.web.servlet.request.
         MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.
         MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.
+        MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.
         MockMvcResultMatchers.status;
 
@@ -129,6 +131,9 @@ public class OperationalPlanIntegrationTest {
             jdbc.update("DELETE dbo.StallAssignment WHERE LegID" + leg, id);
             jdbc.update("DELETE dbo.TripAssignment WHERE LegID" + leg, id);
             jdbc.update("DELETE dbo.TripLeg WHERE PlanID" + plan, id);
+            jdbc.update("IF OBJECT_ID('dbo.PlanCheckpointNode','U') IS NOT "
+                    + "NULL DELETE dbo.PlanCheckpointNode WHERE PlanID"
+                    + plan, id);
             jdbc.update("DELETE dbo.TransportPlan WHERE OrderID=?", id);
             jdbc.update("DELETE dbo.QuarantineReservation WHERE "
                     + "QuarantineChoiceID IN (SELECT QuarantineChoiceID FROM "
@@ -188,6 +193,161 @@ public class OperationalPlanIntegrationTest {
             jdbc.update("DELETE dbo.Customer WHERE UserID=?", user);
             jdbc.update("DELETE dbo.StaffProfile WHERE UserID=?", user);
             jdbc.update("DELETE dbo.[User] WHERE UserID=?", user);
+        }
+    }
+
+    /** Native graph compile/replay/layout and private draft access proof. */
+    @Test
+    public void graphCompilationAndLayoutPreserveOperationalFacts()
+            throws Exception {
+        long horse = createHorse();
+        var target = createApprovedCase(horse);
+        long order = target.orderId();
+        var dep = OffsetDateTime.now(ZoneOffset.UTC).plusDays(30).withNano(0);
+        var arr = dep.plusHours(8);
+        var payload = mapper.createObjectNode();
+        var draft = payload.putObject("draft");
+
+        draft.set("command", mapper.valueToTree(command(order)));
+        draft.put("revisionId", target.revisionId());
+        draft.put("setAsCurrentDraft", true);
+        var leg = draft.putArray("legs").addObject();
+
+        leg.put("sequenceNo", 1).put("transportMode", "ROAD")
+                .put("startPoint", "Hanoi").put("endPoint", "London")
+                .put("distanceKm", "9200.000")
+                .put("distanceSource", "MANUAL_VERIFIED")
+                .put("startTimezone", "Asia/Ho_Chi_Minh")
+                .put("endTimezone", "Asia/Ho_Chi_Minh")
+                .put("plannedDeparture", dep.toString())
+                .put("plannedArrival", arr.toString());
+        var nodes = payload.putArray("checkpointNodes");
+        var origin = nodes.addObject();
+
+        origin.put("nodeKey", "origin").put("nodeType", "ORIGIN")
+                .put("sequenceOrder", 1).put("locationName", "Hanoi")
+                .put("countryCode", "VN").put("plannedDepartureAt",
+                        dep.toString()).put("dwellMinutes", 0)
+                .put("posX", 100).put("posY", 100);
+        origin.putObject("details").put("contactPerson", "PRIVATE_CONTACT")
+                .put("requireMicrochipCheck", true);
+        nodes.addObject().put("nodeKey", "destination")
+                .put("nodeType", "DESTINATION").put("sequenceOrder", 2)
+                .put("locationName", "London").put("countryCode", "GB")
+                .put("plannedArrivalAt", arr.toString())
+                .put("dwellMinutes", 0).put("posX", 600).put("posY", 100);
+        payload.putArray("wires").addObject().put("sequenceNo", 1)
+                .put("fromNodeKey", "origin").put("toNodeKey", "destination");
+        payload.putObject("layout").put("zoom", 1).put("panX", 0)
+                .put("panY", 0);
+        var graph = postJson(base(order) + "/graph-drafts", payload,
+                actor("COORDINATOR").token(), 200);
+        long plan = graph.get("planId").asLong();
+        long legId = graph.at("/wires/0/legId").asLong();
+
+        assertThat(graph.at("/checkpointNodes/0/nodeKey").asText())
+                .isEqualTo("origin");
+        assertThat(graph.at("/wires/0/fromNodeKey").asText())
+                .isEqualTo("origin");
+        assertThat(postJson(base(order) + "/graph-drafts", payload,
+                actor("COORDINATOR").token(), 200).get("planId").asLong())
+                .isEqualTo(plan);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM "
+                + "dbo.TransportPlan WHERE OrderID=?", Integer.class, order))
+                .isEqualTo(1);
+        origin.withObject("details").put("contactPerson", "CHANGED_CONTACT");
+        assertThat(postJson(base(order) + "/graph-drafts", payload,
+                actor("COORDINATOR").token(), 409).get("code").asText())
+                .isEqualTo("PLAN_RETRY_CONFLICT");
+        mvc.perform(get(base(order) + "/" + plan + "/graph")
+                .header("Authorization", actor("CUSTOMER").token()))
+                .andExpect(status().isNotFound());
+        mvc.perform(get(base(order) + "/" + plan + "/graph")
+                .header("Authorization", actor("DRIVER").token()))
+                .andExpect(status().isNotFound());
+        var before = jdbc.queryForMap("SELECT PlannedDeparture,"
+                + "PlannedArrival,VehicleID,LegStatus FROM dbo.TripLeg "
+                + "WHERE LegID=?", legId);
+        var positions = List.of(Map.of("nodeKey", "origin", "posX", 150,
+                "posY", 250), Map.of("nodeKey", "destination", "posX", 650,
+                        "posY", 250));
+        var layoutBody = Map.of("command", command(order), "positions",
+                positions, "layout", Map.of("zoom", 1, "panX", 0, "panY", 0));
+        var moved = read(mvc.perform(put(base(order) + "/" + plan + "/graph")
+                .header("Authorization", actor("COORDINATOR").token())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(layoutBody)))
+                .andExpect(status().isOk()).andReturn());
+
+        assertThat(moved.at("/checkpointNodes/0/posX").asInt()).isEqualTo(150);
+        assertThat(jdbc.queryForMap("SELECT PlannedDeparture,"
+                + "PlannedArrival,VehicleID,LegStatus FROM dbo.TripLeg "
+                + "WHERE LegID=?", legId)).isEqualTo(before);
+        mvc.perform(put(base(order) + "/" + plan + "/graph")
+                .header("Authorization", actor("COORDINATOR").token())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(layoutBody)))
+                .andExpect(status().isOk());
+        publishGraphAndCheckProjections(target, plan, legId, dep, arr);
+    }
+
+    private void publishGraphAndCheckProjections(CaseFixture target,
+            long plan, long leg, OffsetDateTime dep, OffsetDateTime arr)
+            throws Exception {
+        long order = target.orderId();
+        var vehicle = createResource("vehicles");
+
+        postJson(base(order) + "/" + plan + "/legs/" + leg
+                + "/road-assignment", Map.of("command", command(order),
+                        "vehicleId", vehicle.get("id").asLong(),
+                        "vehicleRecordVersion",
+                        vehicle.get("recordVersion").asText(),
+                        "driverStaffId", actor("DRIVER").staff(),
+                        "driverBufferMinutes", 15),
+                actor("COORDINATOR").token(), 200);
+        postJson(base(order) + "/" + plan + "/quarantine-reservation",
+                Map.of("command", command(order), "revisionId",
+                        target.revisionId(), "facilityName", "Test facility",
+                        "reservationReference", "TEST-GRAPH-Q", "startsAt",
+                        arr.toString(), "endsAt", arr.plusDays(14).toString(),
+                        "status", "CONFIRMED", "evidenceFileKey", "test-q.pdf",
+                        "expiresAt", arr.plusDays(20).toString()),
+                actor("COORDINATOR").token(), 200);
+        postJson(base(order) + "/" + plan + "/insurance-policy",
+                Map.of("command", command(order), "revisionId",
+                        target.revisionId(), "insurerName", "Test insurer",
+                        "policyNumber", "TEST-GRAPH-POL", "evidenceFileKey",
+                        "test-ins.pdf", "coverageFrom",
+                        dep.minusHours(1).toString(), "coverageTo",
+                        arr.plusDays(15).toString(), "status", "CONFIRMED"),
+                actor("COORDINATOR").token(), 200);
+        long quote = createAcceptedQuote(order, target.revisionId());
+
+        postJson(base(order) + "/" + plan + "/confirm",
+                Map.of("command", command(order), "acceptedQuoteId", quote),
+                actor("COORDINATOR").token(), 200);
+        for (String role : List.of("CUSTOMER", "DRIVER")) {
+            var projected = read(mvc.perform(get(base(order) + "/" + plan
+                    + "/graph").header("Authorization", actor(role).token()))
+                    .andExpect(status().isOk()).andReturn());
+
+            assertThat(projected.get("editable").asBoolean()).isFalse();
+            assertThat(projected.at("/checkpointNodes/0/details").isNull())
+                    .isTrue();
+            assertThat(projected.toString()).doesNotContain("PRIVATE_CONTACT");
+            assertThat(projected.at("/wires/0/driverStaffId").isNull())
+                    .isTrue();
+            if (role.equals("CUSTOMER")) {
+                assertThat(projected.at("/wires/0/vehicleId").isNull())
+                        .isTrue();
+            } else {
+                assertThat(projected.at("/wires/0/assignedToCurrentDriver")
+                        .asBoolean()).isTrue();
+            }
+            mvc.perform(put(base(order) + "/" + plan + "/graph")
+                    .header("Authorization", actor(role).token())
+                    .contentType(MediaType.APPLICATION_JSON).content("{}"))
+                    .andExpect(status().isForbidden());
         }
     }
 

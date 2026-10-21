@@ -17,6 +17,7 @@ import javax.crypto.spec.SecretKeySpec;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpMethod;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -177,6 +178,10 @@ public class SecurityConfig {
                                 "/api/transport-orders/*/compliance",
                                 "/api/transport-orders/*/compliance/**")
                         .hasAnyRole("CUSTOMER", "SPECIALIST")
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/transport-orders/*/plans/*/graph")
+                        .hasAnyRole("CUSTOMER", "MANAGER", "COORDINATOR",
+                                "DRIVER")
                         .requestMatchers(
                                 "/api/transport-orders/*/plans",
                                 "/api/transport-orders/*/plans/**")
