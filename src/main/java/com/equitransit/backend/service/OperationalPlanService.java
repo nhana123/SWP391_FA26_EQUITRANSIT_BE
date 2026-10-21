@@ -148,8 +148,21 @@ public class OperationalPlanService {
      * @return created versioned draft plan */
     public PlanDetailResponse createDraft(@Positive long order,
             @Valid PlanDraftRequest req) {
+        return createDraft(order, req, fingerprint("CREATE_DRAFT", req));
+    }
+
+    /** Atomic graph compilation reuses all existing draft guards/receipts.
+     * @param order parent @param req validated draft @param graph full input
+     * @return created or replayed plan */
+    public PlanDetailResponse createGraphDraft(@Positive long order,
+            @Valid PlanDraftRequest req, Object graph) {
+        return createDraft(order, req,
+                fingerprint("CREATE_GRAPH_DRAFT", graph));
+    }
+
+    private PlanDetailResponse createDraft(long order, PlanDraftRequest req,
+            String hash) {
         var ctx = access(order, true);
-        String hash = fingerprint("CREATE_DRAFT", req);
         var replay = replay(order, ctx.actor(), req.command(), hash);
 
         if (replay.isPresent()) {

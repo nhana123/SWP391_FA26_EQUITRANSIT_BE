@@ -98,7 +98,8 @@ public final class OperationalPlanPolicy {
     /** @param req stall assignment command */
     public static void validateStallRequest(PlanStallAssignmentRequest req) {
         if (req.status() == AssignmentState.CANCELLED
-                || req.status() == AssignmentState.INACTIVE) {
+                || req.status() == AssignmentState.INACTIVE
+                || req.status() == AssignmentState.COMPLETED) {
             throw badRequest("STALL_ASSIGNMENT_STATUS_INVALID",
                     "Use HELD or CONFIRMED when assigning a stall.");
         }

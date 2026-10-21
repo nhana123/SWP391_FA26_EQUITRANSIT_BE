@@ -32,7 +32,7 @@ public final class PlanModels {
     /** Plan version lifecycle state. */
     public enum PlanState {
         DRAFT, PROPOSED, PLANNED, CONFIRMED, ACTIVE, IN_TRANSIT,
-        SUPERSEDED, CANCELLED, REJECTED
+        COMPLETED, SUPERSEDED, CANCELLED, REJECTED
     }
 
     /** Gate readiness status on a transport plan. */
@@ -50,7 +50,9 @@ public final class PlanModels {
     public enum TripRole { DRIVER, GROOM, ATTENDANT, VETERINARIAN, ESCORT }
 
     /** Assignment status for staff or physical stall equipment. */
-    public enum AssignmentState { HELD, CONFIRMED, ACTIVE, CANCELLED, INACTIVE }
+    public enum AssignmentState {
+        HELD, CONFIRMED, ACTIVE, COMPLETED, CANCELLED, INACTIVE
+    }
 
     /** Reservation or policy confirmation status; HELD is never CONFIRMED. */
     public enum ReservationState { HELD, CONFIRMED, CANCELLED, EXPIRED }
