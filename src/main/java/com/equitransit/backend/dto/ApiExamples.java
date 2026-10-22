@@ -41,6 +41,15 @@ public final class ApiExamples {
             "Z\",\"recordVersion\":\"000000000001A2B3" +
             "\",\"measurementsComplete\":true}";
 
+    /** Customer health and vaccination statement example. */
+    public static final String HEALTH_DECLARATION =
+            "{\"influenzaVaccinated\":true,\"lastInfl" +
+            "uenzaVaccinationDate\":\"2026-08-20\",\"v" +
+            "accinationRecordReference\":\"FEI pass" +
+            "port p.12\",\"healthNotes\":\"No illness" +
+            " in the last 30 days.\",\"declaredAccu" +
+            "rate\":true}";
+
     /** Consistent draft documentation example. */
     public static final String DRAFT =
             "{\"horseId\":12,\"originCountryCode\":\"V" +

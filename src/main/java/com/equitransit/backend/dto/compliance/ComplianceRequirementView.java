@@ -41,5 +41,10 @@ public record ComplianceRequirementView(
         @Size(min = 1, max = 50) LegalDecision decision,
         @Schema(example = "Upload the full authority-issued certificate.",
                 nullable = true)
-        String instructions) {
+        String instructions,
+        @Schema(description = "The Specialist's note on the latest review "
+                + "of the latest submission, shown to the owning customer.",
+                example = "The scan is unreadable; upload a clearer copy.",
+                nullable = true)
+        @Size(max = 2000) String feedback) {
 }
