@@ -57,7 +57,11 @@ public final class QuoteApiExamples {
              "cancellationTerms":"Cancellation follows the accepted terms.",
              "issuedAt":"2027-01-10T08:00:00Z",
              "acceptedAt":"2027-01-11T08:00:00Z","items":[
-            """ + LINE + "],\"paymentSchedule\":" + SCHEDULES
+            """ + LINE + """
+            ],"paymentSchedule":[{"scheduleId":401,"sequenceNo":1,
+            "paymentStage":"DEPOSIT","amountDue":"1500.00",
+            "dueAt":"2027-01-15T08:00:00Z"}]
+            """
             + ",\"blockers\":[]}";
     public static final String OFFER = "{\"command\":" + COMMAND + """
             ,"revisionId":201,"serviceCode":"AIRFARE",

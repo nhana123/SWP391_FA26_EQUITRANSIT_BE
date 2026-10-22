@@ -466,7 +466,8 @@ public class QuotationService {
         return new QuoteResponse(summary, order.version(), "USD",
                 request.termsVersion(), request.terms(),
                 request.cancellationTerms(), record.issuedAt(),
-                record.acceptedAt(), saved.lines(), request.paymentSchedule(),
+                record.acceptedAt(), saved.lines(),
+                quotes.scheduleViews(record.id()),
                 saved.blockers());
     }
 

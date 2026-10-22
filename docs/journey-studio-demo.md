@@ -70,14 +70,29 @@ rowversion guards, role projections and layout-only PUT behavior.
    recorded checkpoint uses actual execution timestamps. Planned times
    never imply current presence or continuous GPS tracking.
 
-Browser smoke evidence on this machine covers Coordinator login,
-template/inspector, AIR graph compile/reload, pointer drag, layout save and
-reload, locked semantic pins and a real stall-candidate response. A ROAD
-draft also passed real vehicle/driver candidate selection, assignment and
-reload with no browser page errors. It does
-not certify the entire multi-role departure/delivery lifecycle in a browser.
-Supplier IDs in optional checkpoint metadata remain numeric inputs;
-actual reservations retain their existing forms and validation.
+On 22 October 2026, the dedicated DEMO/SIMULATION order10/plan11 passed
+the browser chain: three-node ROAD/AIR compile/reload, resource assignments,
+flight/stall/quarantine/insurance, confirmation, three gates and authorization,
+Driver receipt/departure/milestones/welfare/ROAD completion, Coordinator AIR
+start/completion and Customer tracking. Accepted quote12's persisted
+installment identity was used by Manager UI to create a payment request;
+simulation receipt/allocation and compliance prerequisites used existing APIs.
+Actual times, shared/unshared visibility and private graph-field redaction
+were checked. Internal-plan access by Customer returned403. The final phases
+had zero page errors or off-order writes; recovered local runner failures
+remain in attempt history without duplicate facts.
+
+Evidence is ignored locally: FE `artifacts/studio-e2e-browser-proof.json`,
+`studio-e2e-payment-request-proof.json`, screenshots and BE
+`.local/journey-studio/studio-e2e-manifest.json`. This verifies the stated
+simulation chain, not real carrier/bank/authority confirmations, two-order
+stall pooling, final quarantine release/delivery or financial closure.
+The added Demo compliance rule is route-wide: other VN-SG checklists may
+need re-evaluation. No production writes, DDL or restore were used.
+
+Manager supplier pickers now use the existing catalogue; Coordinator keeps
+the documented ID fallback because catalogue access is Manager-only.
+Actual reservations retain the existing forms and server validation.
 
 ## Verification commands
 
@@ -94,6 +109,5 @@ npx eslint src/features/plans/studio
 npm run build
 ```
 
-Build still reports the existing large bootstrap bundle warning. Optional
-supplier pickers and a full browser lifecycle remain follow-up work before
-requesting production promotion.
+Build still reports the existing large bootstrap bundle warning. Production
+promotion of migration018 remains a separate reviewed deployment decision.

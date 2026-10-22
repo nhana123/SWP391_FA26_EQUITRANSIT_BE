@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.equitransit.backend.dto.ApiExamples;
 import com.equitransit.backend.dto.quote.QuotePrepareRequest;
 import com.equitransit.backend.dto.quote.QuoteApiExamples;
+import com.equitransit.backend.dto.quote.QuoteResponse;
 import com.equitransit.backend.dto.request.HorseProfileRequest;
 import com.equitransit.backend.dto.request.EmailRequest;
 import com.equitransit.backend.dto.request.LoginRequest;
@@ -972,6 +973,25 @@ public class ApiDtoContractTest {
         assertThat(schemas.get("QuoteResponse").toString())
                 .doesNotContain("supplierCost", "margin", "purchaseUnitPrice",
                         "additionalProp1");
+        assertThat(schemas.at("/QuoteResponse/properties/paymentSchedule/items"
+                + "/$ref").asText()).endsWith("/QuoteScheduleView");
+        assertThat(schemas.at("/QuoteScheduleView/properties/scheduleId"
+                + "/example").asLong()).isEqualTo(401);
+        assertThat(schemas.at("/QuoteSchedule/properties")
+                .has("scheduleId")).isFalse();
+        ObjectNode legacyReceipt = (ObjectNode) mapper.readTree(
+                QuoteApiExamples.RESPONSE);
+        ObjectNode legacyInstallment = (ObjectNode) legacyReceipt
+                .path("paymentSchedule").get(0);
+
+        legacyInstallment.remove("scheduleId");
+        QuoteResponse replay = mapper.treeToValue(legacyReceipt,
+                QuoteResponse.class);
+
+        assertThat(replay.paymentSchedule().getFirst().scheduleId())
+                .isNull();
+        assertThat(replay.paymentSchedule().getFirst().sequenceNo())
+                .isEqualTo(1);
         assertThat(schemas.at("/QuotePrepareRequest/properties/terms/minLength")
                 .asInt()).isEqualTo(1);
         assertThat(schemas.at("/QuoteCommand/properties/recordVersion/pattern")
