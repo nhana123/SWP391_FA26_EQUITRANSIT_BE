@@ -190,6 +190,12 @@ public class OrderDraftRequest {
             example = ApiExamples.SERVICES)
     private OrderServicePreferences services;
 
+    @Valid
+    @Schema(
+            example = ApiExamples.HEALTH_DECLARATION,
+            nullable = true)
+    private HealthDeclaration healthDeclaration;
+
 
     /**
      * Returns horseId.
@@ -541,5 +547,21 @@ public class OrderDraftRequest {
      */
     public void setServices(OrderServicePreferences services) {
         this.services = services;
+    }
+
+    /**
+     * Returns healthDeclaration.
+     * @return the healthDeclaration
+     */
+    public HealthDeclaration getHealthDeclaration() {
+        return healthDeclaration;
+    }
+
+    /**
+     * Sets healthDeclaration.
+     * @param healthDeclaration the value to store
+     */
+    public void setHealthDeclaration(HealthDeclaration healthDeclaration) {
+        this.healthDeclaration = healthDeclaration;
     }
 }

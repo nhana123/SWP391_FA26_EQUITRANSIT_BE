@@ -19,6 +19,7 @@ import java.util.Locale;
 import java.util.Set;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import com.equitransit.backend.dto.request.HealthDeclaration;
 import com.equitransit.backend.dto.request.OrderDraftRequest;
 import com.equitransit.backend.entity.OrderWriteData;
 import com.equitransit.backend.exception.OrderException;
@@ -80,6 +81,7 @@ public class OrderDraftPolicy {
         draft.setTransitAirports(airports);
         draft.setSpecialNeeds(optional(source.getSpecialNeeds()));
         draft.setServices(source.getServices());
+        draft.setHealthDeclaration(declaration(source.getHealthDeclaration()));
         if (new HashSet<>(airports).size() != airports.size()) {
             throw invalid("Transit airports must not be duplicated.");
         }
@@ -157,6 +159,21 @@ public class OrderDraftPolicy {
                         draft.getEventStartAt())) {
             throw invalid("Delivery deadline must not follow the event start.");
         }
+    }
+
+    /** Trims text; a vaccination date needs a vaccinated answer. */
+    private HealthDeclaration declaration(HealthDeclaration value) {
+        if (value == null) {
+            return null;
+        }
+        if (value.lastInfluenzaVaccinationDate() != null
+                && !Boolean.TRUE.equals(value.influenzaVaccinated())) {
+            throw invalid("A vaccination date needs a vaccinated answer.");
+        }
+        return new HealthDeclaration(value.influenzaVaccinated(),
+                value.lastInfluenzaVaccinationDate(),
+                optional(value.vaccinationRecordReference()),
+                optional(value.healthNotes()), value.declaredAccurate());
     }
 
     private String country(String value) {

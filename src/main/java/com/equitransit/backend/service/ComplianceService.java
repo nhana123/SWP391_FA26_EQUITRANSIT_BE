@@ -402,7 +402,8 @@ public class ComplianceService {
                                 : com.equitransit.backend.entity.compliance.
                                         LegalDecision.valueOf(r.get(
                                                 "Decision").toString()),
-                        (String) r.get("Instructions")))
+                        (String) r.get("Instructions"),
+                        (String) r.get("Feedback")))
                 .toList();
         long revision = (long) args.get("revision");
 
