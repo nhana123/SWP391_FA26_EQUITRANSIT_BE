@@ -80,6 +80,28 @@ public class ComplianceRepository {
                 Integer.class) == 1;
     }
 
+    /**
+     * Reads only the order-level quarantine release gate.
+     *
+     * This query is intentionally independent of actor-scoped F08 access:
+     * F14 needs the gate result, but must not expose F08 documents.
+     *
+     * @param orderId transport order key
+     * @return true when the current revision is cleared and not expired
+     */
+    public boolean quarantineReleasePassed(long orderId) {
+        String sql = "SELECT COUNT(*) "
+                + "FROM dbo.ComplianceClearance c "
+                + "JOIN dbo.TransportOrder o ON o.CurrentRevisionID="
+                + "c.RevisionID WHERE o.OrderID=:orderId "
+                + "AND c.PhaseCode='QUARANTINE_RELEASE' "
+                + "AND c.Status IN ('PASS', 'CLEARED') "
+                + "AND (c.ExpiresAt IS NULL OR c.ExpiresAt>SYSUTCDATETIME())";
+        Integer count = jdbc.queryForObject(sql,
+                Map.of("orderId", orderId), Integer.class);
+        return count != null && count > 0;
+    }
+
     /** @param key service-owned query @param args bound values @return rows */
     public List<Map<String, Object>> rows(String key,
             Map<String, ?> args) {

@@ -60,26 +60,12 @@ public class FinalDeliveryValidator {
      */
     public void validateQuarantineRelease(long orderId) {
         ComplianceService compliance = complianceProvider.getIfAvailable();
-        if (compliance != null) {
-            try {
-                boolean passed = compliance.quarantineReleasePassed(orderId);
-                if (!passed) {
-                    throw new OrderException(HttpStatus.CONFLICT,
-                            "QUARANTINE_RELEASE_REQUIRED",
-                            "Final delivery cannot be completed without a "
-                                    + "valid QUARANTINE_RELEASE clearance.");
-                }
-            } catch (OrderException oe) {
-                throw oe;
-            } catch (Exception e) {
-                // If compliance service threw specific business denial
-                if (e.getMessage() != null
-                        && e.getMessage().contains("QUARANTINE_RELEASE")) {
-                    throw new OrderException(HttpStatus.CONFLICT,
-                            "QUARANTINE_RELEASE_REQUIRED", e.getMessage());
-                }
-                // fallback if method thrown
-            }
+        if (compliance == null
+                || !compliance.quarantineReleasePassed(orderId)) {
+            throw new OrderException(HttpStatus.CONFLICT,
+                    "QUARANTINE_RELEASE_REQUIRED",
+                    "Final delivery cannot be completed without a "
+                            + "valid QUARANTINE_RELEASE clearance.");
         }
     }
 
