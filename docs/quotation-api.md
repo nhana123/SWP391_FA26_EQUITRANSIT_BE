@@ -55,6 +55,11 @@ uncertain retry. An identical successful retry returns the original receipt,
 which is historical, not necessarily the latest order version. GET current
 state after success/replay. Changed input with an old UUID returns 409
 `QUOTE_RETRY_CONFLICT`; stale versions return `ORDER_VERSION_CONFLICT`.
+Current response schedules include persisted `scheduleId` for selecting an
+installment in F07. Quotation input remains unchanged and has no schedule ID.
+Older stored action receipts may omit this added identity; reload the current
+quotation rather than treating `sequenceNo` as an ID. See the
+[payment contract](manual-bank-payments-api.md#selecting-an-installment).
 All mutation paths lock the parent order before quote/source writes. They use
 the same parent lock as F03/F04, so acceptance and a direct revision cannot
 both win with one observed version.

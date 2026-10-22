@@ -9,6 +9,7 @@ package com.equitransit.backend.repository;
 
 
 import com.equitransit.backend.dto.quote.QuoteSchedule;
+import com.equitransit.backend.dto.quote.QuoteScheduleView;
 import com.equitransit.backend.dto.quote.QuoteSummary;
 import com.equitransit.backend.dto.quote.SupplierOfferRequest;
 import com.equitransit.backend.entity.quote.QuoteRecord;
@@ -346,6 +347,22 @@ public class QuoteRepository {
                                 row.getString("PaymentStage"),
                                 row.getBigDecimal("AmountDue").toPlainString(),
                                 time(row.getTimestamp("DueAt"))));
+    }
+
+    /**
+     * @param quote parent-authorized persisted quotation
+     * @return schedule keys required for exact payment request commands
+     */
+    public List<QuoteScheduleView> scheduleViews(long quote) {
+        return jdbc.query("SELECT ScheduleID,SequenceNo,PaymentStage,"
+                + "AmountDue,DueAt FROM dbo.QuotePaymentSchedule"
+                + " WHERE QuoteID=:id ORDER BY SequenceNo",
+                new MapSqlParameterSource("id", quote), (row, index) ->
+                new QuoteScheduleView(row.getLong("ScheduleID"),
+                        row.getInt("SequenceNo"),
+                        row.getString("PaymentStage"),
+                        row.getBigDecimal("AmountDue").toPlainString(),
+                        time(row.getTimestamp("DueAt"))));
     }
 
     /**

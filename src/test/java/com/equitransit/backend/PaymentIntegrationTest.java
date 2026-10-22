@@ -426,9 +426,13 @@ public class PaymentIntegrationTest {
     private void paymentFixture() throws Exception {
         acceptedQuote = issued();
         action(acceptedQuote, "ACCEPT", owner, 200);
-        long schedule = jdbc.queryForObject("SELECT ScheduleID FROM"
+        long schedule = get(base() + "/quotes/" + acceptedQuote, manager,
+                200).at("/paymentSchedule/0/scheduleId").asLong();
+
+        assertThat(schedule).isEqualTo(jdbc.queryForObject("SELECT ScheduleID"
+                + " FROM"
                 + " dbo.QuotePaymentSchedule WHERE QuoteID=?", Long.class,
-                acceptedQuote);
+                acceptedQuote));
         ObjectNode body = paymentBody();
 
         body.put("quoteId", acceptedQuote);
