@@ -248,6 +248,8 @@ public class TripHandoverService {
 
         LegRow leg = findLegOrThrow(legId);
         OrderScopeRow order = findOrderScopeOrThrow(legId);
+        validateAfterDeparture(request.handoverTime(),
+                leg.actualDeparture());
 
         var h = new TripHandover();
         h.setLegId(legId);
@@ -288,6 +290,8 @@ public class TripHandoverService {
                     "Final delivery can only be executed on the final "
                             + "destination leg of the plan.");
         }
+        validateAfterDeparture(request.handoverTime(),
+                leg.actualDeparture());
 
         OrderReceiverRow expectedReceiver = handovers.findOrderReceiver(
                 order.orderId()).orElse(null);
@@ -386,6 +390,15 @@ public class TripHandoverService {
             throw new OrderException(HttpStatus.BAD_REQUEST,
                     "FUTURE_TIMESTAMP_NOT_PERMITTED",
                     "HandoverTime cannot be in the future: " + time);
+        }
+    }
+
+    private void validateAfterDeparture(OffsetDateTime occurredAt,
+            OffsetDateTime actualDeparture) {
+        if (actualDeparture != null && occurredAt.isBefore(actualDeparture)) {
+            throw new OrderException(HttpStatus.UNPROCESSABLE_ENTITY,
+                    "HANDOVER_TIME_BEFORE_DEPARTURE",
+                    "Handover time cannot precede the actual leg departure.");
         }
     }
 

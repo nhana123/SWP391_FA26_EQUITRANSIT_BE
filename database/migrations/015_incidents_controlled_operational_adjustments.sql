@@ -227,9 +227,23 @@ IF NOT EXISTS (SELECT 1 FROM sys.columns c WHERE c.object_id=OBJECT_ID(N'dbo.Ope
     THROW 51015, 'OperationalAdjustment.CustomerResponseNotes differs from the source schema.', 1;
 
 -- Default Constraints.
-IF OBJECT_ID(N'dbo.DF_OrderChangeRequest_CreatedAt') IS NULL
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.default_constraints dc
+    WHERE dc.parent_object_id=OBJECT_ID(N'dbo.OrderChangeRequest')
+        AND dc.parent_column_id=(
+            SELECT COLUMNPROPERTY(
+                OBJECT_ID(N'dbo.OrderChangeRequest'), N'CreatedAt',
+                'ColumnId')))
     EXEC sys.sp_executesql N'ALTER TABLE [dbo].[OrderChangeRequest] ADD CONSTRAINT [DF_OrderChangeRequest_CreatedAt] DEFAULT (sysutcdatetime()) FOR [CreatedAt];';
-IF OBJECT_ID(N'dbo.DF_OperationalAdjustment_ProposedAt') IS NULL
+IF NOT EXISTS (
+    SELECT 1
+    FROM sys.default_constraints dc
+    WHERE dc.parent_object_id=OBJECT_ID(N'dbo.OperationalAdjustment')
+        AND dc.parent_column_id=(
+            SELECT COLUMNPROPERTY(
+                OBJECT_ID(N'dbo.OperationalAdjustment'), N'ProposedAt',
+                'ColumnId')))
     EXEC sys.sp_executesql N'ALTER TABLE [dbo].[OperationalAdjustment] ADD CONSTRAINT [DF_OperationalAdjustment_ProposedAt] DEFAULT (sysutcdatetime()) FOR [ProposedAt];';
 
 -- Indexes.
