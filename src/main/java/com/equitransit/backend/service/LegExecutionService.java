@@ -116,6 +116,9 @@ public class LegExecutionService {
                                 ? null : id(r, "SupersedesLogID"),
                         Boolean.TRUE.equals(r.get("IsCustomerVisible"))))
                 .toList();
+        var receivers = data.rows("receiver", a);
+        var receiver = receivers.isEmpty() ? Map.<String, Object>of()
+                : receivers.getFirst();
         var last = at(data.rows("milestoneLast", a).getFirst(), "LastUpdate");
         var careLast = at(data.rows("welfareLast", a).getFirst(), "LastUpdate");
 
@@ -128,7 +131,8 @@ public class LegExecutionService {
                 data.number("legCount", a),
                 data.number("milestoneCount", a),
                 data.number("welfareCount", a), last, legs, milestones,
-                welfare);
+                welfare, text(receiver, "ReceiverName"),
+                text(receiver, "ReceiverAuthority"));
     }
 
     /** @param order parent @param leg target @param body evidence @return

@@ -157,6 +157,8 @@ public class LegExecutionRepository {
                 + "(:leg,:staff,'WELFARE','CRITICAL',:at,"
                 + "'Urgent welfare observation; staff response required.',"
                 + "'OPEN'); SELECT ID FROM @ids;";
+            case "receiver" -> "SELECT ReceiverName, ReceiverAuthority "
+                + "FROM dbo.TransportOrder WHERE OrderID=:order";
             case "legCount" -> "SELECT COUNT_BIG(*) FROM dbo.TripLeg "
                 + "WHERE PlanID=:plan AND (:driver=0 OR LegID IN "
                 + "(SELECT LegID FROM dbo.TripAssignment WHERE "
