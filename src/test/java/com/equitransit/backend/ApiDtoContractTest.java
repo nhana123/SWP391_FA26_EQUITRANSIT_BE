@@ -355,7 +355,7 @@ public class ApiDtoContractTest {
                 operations++;
             }
         }
-        assertThat(operations).isEqualTo(16);
+        assertThat(operations).isEqualTo(17);
     }
 
     /** @throws Exception if the F16 HTTP schemas cannot be generated */

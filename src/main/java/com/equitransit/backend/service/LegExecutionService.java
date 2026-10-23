@@ -294,6 +294,11 @@ public class LegExecutionService {
             LegExecutionPolicy.require(
                     "IN_TRANSIT".equals(row.get("LegStatus")),
                     "LEG_NOT_IN_TRANSIT");
+            var departure = at(row, "ActualDeparture");
+            LegExecutionPolicy.require(departure == null
+                    || request.occurredAt() == null
+                    || !request.occurredAt().isBefore(departure),
+                    "HANDOVER_TIME_BEFORE_DEPARTURE");
             fact(row, a, request.occurredAt(), request.sourceCode(),
                     request.sourceReference(), now);
         }
@@ -401,7 +406,7 @@ public class LegExecutionService {
 
     private static OffsetDateTime at(Map<String, Object> row, String key) {
         return row.get(key) == null ? null
-                : ((Timestamp) row.get(key)).toInstant()
+                : ((Timestamp) row.get(key)).toLocalDateTime()
                         .atOffset(ZoneOffset.UTC);
     }
 

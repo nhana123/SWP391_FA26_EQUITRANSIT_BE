@@ -28,8 +28,9 @@ public record ComplianceChecklistRequest(
         @Schema(example = "PRE_EXPORT")
         @NotNull CompliancePhase phase,
         @Schema(example = "[\"SG\"]")
-        @NotNull @Size(max = 15)
-        List<@Pattern(regexp = "^[A-Z]{2}$") String> transitCountryCodes,
+        @Size(max = 15)
+        List<@NotNull @Pattern(regexp = "^[A-Z]{2}$") String>
+                transitCountryCodes,
         @Schema(example = "Authority route assessment reference")
         @NotBlank @Size(min = 1, max = 1000) String sourceReference,
         @Schema(example = "2027-02-20T12:00:00Z")

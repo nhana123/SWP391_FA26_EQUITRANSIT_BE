@@ -98,7 +98,7 @@ public class ServiceSourceRepository {
     }
 
     /**
-     * Reads only the exact current confirmed plan's individually sourced legs.
+     * Reads the exact current plan's individually sourced pricing distances.
      * @param order owned parent
      * @param revision exact current submitted revision
      * @param now server time
@@ -106,7 +106,36 @@ public class ServiceSourceRepository {
      */
     public ItineraryPricingContext itinerary(long order, long revision,
             OffsetDateTime now) {
-        return itinerary(order, revision, now, false);
+        return itinerary(order, revision, now, true);
+    }
+
+    /**
+     * Reads a retail estimate bound to the current plan and revision.
+     * @param order authorized parent order
+     * @param revision current revision
+     * @param now server time
+     * @return unambiguous positive estimate, never supplier purchase cost
+     */
+    public java.util.Optional<java.math.BigDecimal> airfare(long order,
+            long revision, OffsetDateTime now) {
+        if (!available("dbo.SupplierOffer", List.of("RetailUnitPrice",
+                "RecordedBy", "RecordedAt"))) {
+            return java.util.Optional.empty();
+        }
+        var rows = jdbc.query("SELECT RetailUnitPrice * Quantity AS Amount"
+                + " FROM dbo.SupplierOffer WITH (HOLDLOCK) WHERE ("
+                + QuoteSourceRepository.planAirfare() + ")"
+                + " AND RevisionID=:revision AND Currency='USD'"
+                + " AND RecordedAt<=:now AND ValidUntil>:now"
+                + " AND RetailUnitPrice>0 AND Quantity=1"
+                + " AND EXISTS (SELECT 1 FROM dbo.OrderRevision r"
+                + " WHERE r.RevisionID=:revision AND r.OrderID=:order)",
+                new MapSqlParameterSource("order", order)
+                        .addValue("revision", revision)
+                        .addValue("now", now.toLocalDateTime()),
+                (row, index) -> row.getBigDecimal("Amount"));
+        return rows.size() == 1 ? java.util.Optional.of(rows.getFirst())
+                : java.util.Optional.empty();
     }
 
     /**
@@ -137,13 +166,15 @@ public class ServiceSourceRepository {
                 + " LEFT JOIN dbo.TripLeg l ON l.PlanID=p.PlanID"
                 + " AND l.TransportMode IN ('ROAD','AIR')"
                 + " OUTER APPLY (SELECT COUNT(*) AS ValidStaff"
-                + " FROM dbo.OrderAssignment a JOIN dbo.StaffProfile s"
-                + " ON s.StaffID=a.StaffID JOIN dbo.[User] u"
+                + " FROM dbo.StaffProfile s JOIN dbo.[User] u"
                 + " ON u.UserID=s.UserID JOIN dbo.[Role] r ON r.RoleID=u.RoleID"
-                + " WHERE a.OrderID=o.OrderID AND a.EndedAt IS NULL"
-                + " AND a.AssignmentRole='COORDINATOR'"
-                + " AND a.StaffID=l.DistanceConfirmedBy"
-                + " AND r.RoleCode='COORDINATOR' AND u.Status='ACTIVE') proof"
+                + " WHERE s.StaffID=l.DistanceConfirmedBy"
+                + " AND u.Status='ACTIVE' AND s.StaffStatus='ACTIVE'"
+                + " AND (r.RoleCode='MANAGER' OR (r.RoleCode='COORDINATOR'"
+                + " AND EXISTS (SELECT 1 FROM dbo.OrderAssignment a"
+                + " WHERE a.OrderID=o.OrderID AND a.StaffID=s.StaffID"
+                + " AND a.EndedAt IS NULL"
+                + " AND a.AssignmentRole='COORDINATOR')))) proof"
                 + " WHERE o.OrderID=:order GROUP BY p.PlanID";
 
         if (!available("dbo.TripLeg", List.of("DistanceSource",

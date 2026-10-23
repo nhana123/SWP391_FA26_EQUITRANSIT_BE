@@ -65,6 +65,9 @@ public class ResourceCatalogService {
     /** @param kind catalogue @param page bounded @param size bounded
      * @param type response @return internal staff page */
     @Transactional(readOnly = true, timeout = 15)
+    @PreAuthorize("@domainAccessPolicy.isManager() or "
+            + "(hasRole('COORDINATOR') and "
+            + "@domainAccessPolicy.isCaseStaff())")
     public <T> List<T> list(ResourceKind kind, int page, int size,
             Class<T> type) {
         ready();
@@ -76,6 +79,9 @@ public class ResourceCatalogService {
 
     /** @param kind catalogue @return count for the bounded page */
     @Transactional(readOnly = true, timeout = 15)
+    @PreAuthorize("@domainAccessPolicy.isManager() or "
+            + "(hasRole('COORDINATOR') and "
+            + "@domainAccessPolicy.isCaseStaff())")
     public long count(ResourceKind kind) {
         ready();
         return repository.count(kind);
@@ -83,6 +89,9 @@ public class ResourceCatalogService {
 
     /** @param kind catalogue @param id key @param type DTO @return detail */
     @Transactional(readOnly = true, timeout = 15)
+    @PreAuthorize("@domainAccessPolicy.isManager() or "
+            + "(hasRole('COORDINATOR') and "
+            + "@domainAccessPolicy.isCaseStaff())")
     public <T> T get(ResourceKind kind, long id, Class<T> type) {
         ready();
         return repository.get(kind, id, type);
@@ -275,7 +284,14 @@ public class ResourceCatalogService {
     }
 
     private void ready() {
-        actors.current();
+        var actor = actors.current();
+        if (actor.staffId() == null
+                || !List.of("MANAGER", "COORDINATOR")
+                        .contains(actor.roleCode())
+                || !staff.activeStaff(actor.staffId(), actor.roleCode())) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "An active catalogue reader is required.");
+        }
         if (!repository.ready()) {
             throw new OrderException(HttpStatus.SERVICE_UNAVAILABLE,
                     "RESOURCE_SCHEMA_PENDING", "Deploy resource migration010.");

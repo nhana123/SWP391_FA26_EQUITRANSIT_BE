@@ -304,7 +304,8 @@ public class TripHandoverRepository {
     }
 
     private Timestamp utc(OffsetDateTime odt) {
-        return odt == null ? null : Timestamp.valueOf(odt.toLocalDateTime());
+        return odt == null ? null : Timestamp.valueOf(odt
+                .withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime());
     }
 
     private OffsetDateTime time(Timestamp ts) {

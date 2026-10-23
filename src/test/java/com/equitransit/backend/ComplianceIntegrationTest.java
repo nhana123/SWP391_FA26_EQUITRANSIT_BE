@@ -62,6 +62,7 @@ public class ComplianceIntegrationTest {
     private final List<Long> fixtureUsers = new ArrayList<>();
     private final List<Long> fixtureTariffs = new ArrayList<>();
     private final List<Long> fixtureRules = new ArrayList<>();
+    private final List<Long> fixtureVehicles = new ArrayList<>();
     private final String type = "T_"
             + UUID.randomUUID().toString().substring(0, 20).toUpperCase();
     private long order;
@@ -103,7 +104,7 @@ public class ComplianceIntegrationTest {
     public void setup() throws Exception {
         try (var connection = dataSource.getConnection()) {
             assertThat(connection.getCatalog()).isEqualTo(
-                    "EquiTransit_FigmaMigrationTest_20261013_143729");
+                    "EquiTransit_Demo");
         }
         owner = account("CUSTOMER");
         other = account("CUSTOMER");
@@ -116,7 +117,8 @@ public class ComplianceIntegrationTest {
         JsonNode horse = post("/api/horses", owner,
                 mapper.readTree("{\"name\":\"Quotation fixture\"}"), 201);
         ObjectNode draft = (ObjectNode) mapper.readTree(ApiExamples.DRAFT);
-
+        draft.put("originCountryCode", "IS");
+        draft.put("destinationCountryCode", "NZ");
         draft.putArray("transitAirports");
         draft.put("horseId", horse.get("horseId").asLong());
         draft.put("preferredDepartureAt", time(10));
@@ -131,6 +133,7 @@ public class ComplianceIntegrationTest {
         post(base() + "/submit", owner, mapper.valueToTree(Map.of(
                 "recordVersion", saved.get("recordVersion").asText(),
                 "operationId", UUID.randomUUID())), 200);
+        assertOrder("SUBMITTED");
         JsonNode current = get("/api/manager/transport-orders/" + order,
                 manager, 200);
 
@@ -147,6 +150,10 @@ public class ComplianceIntegrationTest {
     /** Only IDs created by this test are removed, including committed races. */
     @AfterEach
     public void cleanup() {
+        if (org.springframework.test.context.transaction.TestTransaction
+                .isActive()) {
+            return;
+        }
         if (order != 0) {
             jdbc.update("DELETE dbo.DocumentReview WHERE SubmissionID IN"
                     + " (SELECT s.SubmissionID FROM dbo.DocumentSubmission s"
@@ -176,6 +183,18 @@ public class ComplianceIntegrationTest {
             jdbc.update("DELETE dbo.ComplianceFile WHERE OrderID=?", order);
             jdbc.update("DELETE dbo.ComplianceOperation WHERE OrderID=?",
                     order);
+            jdbc.update("DELETE dbo.PlanOperation WHERE OrderID=?", order);
+            jdbc.update("DELETE dbo.LegExecutionOperation WHERE OrderID=?",
+                    order);
+            jdbc.update("DELETE dbo.HorseReceipt WHERE PlanID IN (SELECT"
+                    + " PlanID FROM dbo.TransportPlan WHERE OrderID=?)", order);
+            jdbc.update("DELETE dbo.LegMilestoneLog WHERE LegID IN (SELECT"
+                    + " l.LegID FROM dbo.TripLeg l JOIN dbo.TransportPlan p"
+                    + " ON p.PlanID=l.PlanID WHERE p.OrderID=?)", order);
+            jdbc.update("DELETE dbo.HandoverFile WHERE OrderID=?", order);
+            jdbc.update("DELETE dbo.TripHandover WHERE LegID IN (SELECT"
+                    + " l.LegID FROM dbo.TripLeg l JOIN dbo.TransportPlan p"
+                    + " ON p.PlanID=l.PlanID WHERE p.OrderID=?)", order);
             String rev = " IN (SELECT RevisionID FROM dbo.OrderRevision"
                     + " WHERE OrderID=?)";
             String quote = " IN (SELECT QuoteID FROM dbo.Quote WHERE"
@@ -228,6 +247,9 @@ public class ComplianceIntegrationTest {
             jdbc.update("DELETE dbo.TripLeg WHERE PlanID IN"
                     + " (SELECT PlanID FROM dbo.TransportPlan WHERE OrderID=?)",
                     order);
+            jdbc.update("DELETE dbo.PlanCheckpointNode WHERE PlanID IN"
+                    + " (SELECT PlanID FROM dbo.TransportPlan WHERE OrderID=?)",
+                    order);
             jdbc.update("DELETE dbo.TransportPlan WHERE OrderID=?", order);
             jdbc.update("DELETE dbo.Quote WHERE RevisionID" + rev, order);
             jdbc.update("DELETE dbo.SupplierOffer WHERE RevisionID" + rev,
@@ -258,11 +280,20 @@ public class ComplianceIntegrationTest {
         for (long id : fixtureRules) {
             jdbc.update("DELETE dbo.ComplianceRuleVersion WHERE RuleID=?", id);
         }
+        jdbc.update("DELETE dbo.ComplianceRuleVersion WHERE"
+                + " OriginCountryCode='IS' AND DestinationCountryCode='NZ'"
+                + " AND RuleCode LIKE 'ET-DEF-%' AND NOT EXISTS(SELECT 1"
+                + " FROM dbo.DocumentRequirement d WHERE d.RuleID="
+                + "dbo.ComplianceRuleVersion.RuleID)");
         jdbc.update("DELETE dbo.DocumentTypeCatalog WHERE TypeCode=?", type);
+        for (long vehicle : fixtureVehicles) {
+            jdbc.update("DELETE dbo.FleetVehicle WHERE VehicleID=?", vehicle);
+        }
         for (long id : fixtureTariffs) {
             jdbc.update("DELETE dbo.ServiceTariff WHERE TariffID=?", id);
         }
         for (long user : fixtureUsers) {
+            jdbc.update("DELETE dbo.ResourceOperation WHERE UserID=?", user);
             jdbc.update("DELETE dbo.AuditEvent WHERE UserID=?"
                     + " AND EntityType='ORDER_ACTIVITY'", user);
             jdbc.update("DELETE dbo.PaymentTransaction WHERE ReconciledBy"
@@ -427,7 +458,8 @@ public class ComplianceIntegrationTest {
     }
 
     private JsonNode overview(String phase) throws Exception {
-        return get(legal() + "?phase=" + phase, owner, 200);
+        return get(legal() + "?phase=" + phase + "&bootstrap=false",
+                owner, 200);
     }
 
     private void approveDocument(long version) throws Exception {
@@ -475,6 +507,238 @@ public class ComplianceIntegrationTest {
         post(legal() + "/clearances", specialist, request, expected);
     }
 
+    /** @throws Exception if default phases, retries or clearances differ */
+    @Test
+    public void defaultPhasesUploadAndClearWithoutSeparateProcedures()
+            throws Exception {
+        assertThat(overview("PRE_EXPORT").at("/readiness/blockers").toString())
+                .contains("RULE_ASSESSMENT_PENDING");
+        var initial = get(legal() + "?phase=PRE_EXPORT", owner, 200);
+        assertThat(initial.path("requirements").size()).isEqualTo(2);
+        assertThat(count("ComplianceChecklist", "RevisionID", revision))
+                .isEqualTo(3);
+        assertThat(get(legal() + "?phase=PRE_EXPORT", owner, 200)
+                .path("recordVersion"))
+                .isEqualTo(initial.path("recordVersion"));
+        for (String phase : List.of("PRE_EXPORT", "ARRIVAL",
+                "QUARANTINE_RELEASE")) {
+            var requirements = overview(phase).path("requirements");
+            assertThat(requirements.size()).isEqualTo(
+                    phase.equals("PRE_EXPORT") ? 2 : 1);
+            for (var requirement : requirements) {
+                long id = requirement.path("requirementId").asLong();
+                var request = oneStep();
+                long submission = post(legal() + "/requirements/" + id
+                        + "/upload-and-submit", phase.equals("ARRIVAL")
+                                ? specialist : owner, request, 200)
+                        .path("entityId").asLong();
+                var review = body();
+                review.put("decision", "APPROVED");
+                post(legal() + "/submissions/" + submission + "/reviews",
+                        specialist, review, 200);
+            }
+        }
+        for (String phase : List.of("PRE_EXPORT", "ARRIVAL",
+                "QUARANTINE_RELEASE")) {
+            clear(phase, 200);
+            assertThat(overview(phase).at("/readiness/status").asText())
+                    .isEqualTo("READY");
+            var procedures = get(legal() + "/procedures?phase=" + phase,
+                    owner, 200);
+            assertThat(procedures.size()).isEqualTo(
+                    phase.equals("PRE_EXPORT") ? 2 : 1);
+            assertThat(procedures.get(0).path("sourceReference").asText())
+                    .startsWith("SPECIALIST_DOCUMENT_REVIEW:");
+        }
+    }
+
+    /** @throws Exception if feedback/file history or authorization is lost */
+    @Test
+    public void oneStepRejectionResubmissionAndRetryAreVisibleToBothActors()
+            throws Exception {
+        rule("PRE_EXPORT");
+        checklist("PRE_EXPORT");
+        long requirement = overview("PRE_EXPORT")
+                .at("/requirements/0/requirementId").asLong();
+        String path = legal() + "/requirements/" + requirement
+                + "/upload-and-submit";
+        var request = oneStep();
+        post(path, other, request, 404);
+        post(path, manager, request, 403);
+        post(path, coordinator, request, 403);
+        post(path, account("SPECIALIST"), request, 404);
+        var bad = request.deepCopy();
+        bad.put("contentBase64", "invalid-base64");
+        post(path, owner, bad, 409);
+        assertThat(count("ComplianceFile", "OrderID", order)).isZero();
+        var receipt = post(path, owner, request, 200);
+        assertThat(post(path, owner, request, 200)).isEqualTo(receipt);
+        long submission = receipt.path("entityId").asLong();
+        var review = body();
+        review.put("decision", "REJECTED");
+        post(legal() + "/submissions/" + submission + "/reviews",
+                specialist, review, 409);
+        review.put("reason", "Passport scan is unreadable");
+        post(legal() + "/submissions/" + submission + "/reviews",
+                specialist, review, 200);
+        for (String actor : List.of(owner, specialist)) {
+            var evidence = get(legal() + "?phase=PRE_EXPORT&bootstrap=false",
+                    actor, 200).at("/requirements/0");
+            assertThat(evidence.path("status").asText()).isEqualTo("REJECTED");
+            assertThat(evidence.path("feedback").asText())
+                    .isEqualTo("Passport scan is unreadable");
+            assertThat(evidence.at("/attachment/fileName").asText())
+                    .isEqualTo("evidence.png");
+            assertThat(evidence.at("/attachment/referenceNumber").asText())
+                    .isEqualTo("REF-BE02");
+            assertThat(evidence.at("/attachment/expiresAt").asText())
+                    .isEqualTo(request.path("expiresAt").asText());
+        }
+        clear("PRE_EXPORT", 409);
+        request.put("operationId", UUID.randomUUID().toString());
+        post(path, specialist, request, 409);
+        request = oneStep();
+        long replacement = post(path, specialist, request, 200)
+                .path("entityId").asLong();
+        assertThat(overview("PRE_EXPORT").at("/requirements/0/status").asText())
+                .isEqualTo("SUBMITTED");
+        assertThat(overview("PRE_EXPORT").at("/requirements/0/feedback")
+                .isNull()).isTrue();
+        review = body();
+        review.put("decision", "APPROVED");
+        post(legal() + "/submissions/" + replacement + "/reviews", specialist,
+                review, 200);
+        clear("PRE_EXPORT", 200);
+        assertThat(get(legal() + "/documents", owner, 200).size()).isEqualTo(2);
+    }
+
+    /** @throws Exception if F10 countries are not deduplicated and isolated */
+    @Test
+    public void graphTransitFlowsIntoAllDefaultAndManualChecklists()
+            throws Exception {
+        long plan = jdbc.queryForObject("SET NOCOUNT ON; DECLARE @ids TABLE"
+                + " (ID BIGINT); INSERT dbo.TransportPlan(OrderID,"
+                + "RevisionID,CreatedBy,VersionNo,FinancialGateStatus,"
+                + "OperationalGateStatus,DocGateStatus,PlanStatus) OUTPUT"
+                + " INSERTED.PlanID INTO @ids VALUES(?,?,?,1,'PENDING',"
+                + "'PENDING','PENDING','DRAFT'); SELECT ID FROM @ids",
+                Long.class, order, revision,
+                coordinatorId);
+        jdbc.update("UPDATE dbo.TransportOrder SET CurrentPlanID=?"
+                + " WHERE OrderID=?", plan, order);
+        var countries = List.of("IS", "SG", "SG", "NZ");
+        for (int index = 0; index < countries.size(); index++) {
+            jdbc.update("INSERT dbo.PlanCheckpointNode(PlanID,NodeKey,"
+                    + "NodeType,SequenceOrder,LocationName,CountryCode)"
+                    + " VALUES(?,?,'TRANSIT_HUB',?,'Test stop',?)", plan,
+                    "test-" + index, index + 1, countries.get(index));
+        }
+        get(legal() + "?phase=PRE_EXPORT", owner, 200);
+        assertThat(jdbc.queryForList("SELECT TransitCountriesJSON FROM"
+                + " dbo.ComplianceChecklist WHERE RevisionID=?", String.class,
+                revision)).containsExactly("[\"SG\"]", "[\"SG\"]", "[\"SG\"]");
+        var manual = body();
+        manual.put("phase", "ARRIVAL").put("sourceReference", "Route graph")
+                .put("validUntil", time(30));
+        post(legal() + "/checklists", specialist, manual, 200);
+        assertThat(overview("ARRIVAL").path("requirements").size())
+                .isEqualTo(2);
+        for (String phase : List.of("PRE_EXPORT", "ARRIVAL",
+                "QUARANTINE_RELEASE")) {
+            for (var requirement : overview(phase).path("requirements")) {
+                long id = requirement.path("requirementId").asLong();
+                long submission = post(legal() + "/requirements/" + id
+                        + "/upload-and-submit", owner, oneStep(), 200)
+                        .path("entityId").asLong();
+                var review = body();
+                review.put("decision", "APPROVED");
+                post(legal() + "/submissions/" + submission + "/reviews",
+                        specialist, review, 200);
+            }
+        }
+        for (String phase : List.of("PRE_EXPORT", "ARRIVAL",
+                "QUARANTINE_RELEASE")) {
+            clear(phase, 200);
+        }
+    }
+
+    /** @throws Exception if exact expiry or rollback permits legal readiness */
+    @Test
+    public void oneStepExpiryAndRollbackDoNotExtendDocumentValidity()
+            throws Exception {
+        rule("PRE_EXPORT");
+        checklist("PRE_EXPORT");
+        long requirement = overview("PRE_EXPORT")
+                .at("/requirements/0/requirementId").asLong();
+        String path = legal() + "/requirements/" + requirement
+                + "/upload-and-submit";
+        var request = oneStep();
+        new TransactionTemplate(transactions).executeWithoutResult(tx -> {
+            try {
+                post(path, owner, request, 200);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+            tx.setRollbackOnly();
+        });
+        assertThat(count("ComplianceFile", "OrderID", order)).isZero();
+        assertThat(count("DocumentSubmission", "RequirementID", requirement))
+                .isZero();
+        long submission = post(path, owner, request, 200)
+                .path("entityId").asLong();
+        var review = body();
+        review.put("decision", "APPROVED");
+        post(legal() + "/submissions/" + submission + "/reviews", specialist,
+                review, 200);
+        jdbc.update("UPDATE dbo.DocumentVersion SET ExpiresAt="
+                + "DATEADD(second,-1,SYSUTCDATETIME()) WHERE DocumentVersionID"
+                + " IN(SELECT DocumentVersionID FROM dbo.DocumentSubmission"
+                + " WHERE SubmissionID=?)", submission);
+        assertThat(overview("PRE_EXPORT").at("/requirements/0/status").asText())
+                .isEqualTo("EXPIRED");
+        clear("PRE_EXPORT", 409);
+    }
+
+    /** @throws Exception if concurrent retries create duplicate evidence */
+    @Test
+    public void oneStepConcurrentRetryCreatesOneFileVersionAndSubmission()
+            throws Exception {
+        rule("PRE_EXPORT");
+        checklist("PRE_EXPORT");
+        long requirement = overview("PRE_EXPORT")
+                .at("/requirements/0/requirementId").asLong();
+        String path = legal() + "/requirements/" + requirement
+                + "/upload-and-submit";
+        var request = oneStep();
+        var latch = new java.util.concurrent.CountDownLatch(1);
+        try (var pool = java.util.concurrent.Executors.newFixedThreadPool(2)) {
+            var first = pool.submit(() -> {
+                latch.await();
+                return post(path, owner, request, 200);
+            });
+            var second = pool.submit(() -> {
+                latch.await();
+                return post(path, owner, request, 200);
+            });
+            latch.countDown();
+            assertThat(first.get(25, java.util.concurrent.TimeUnit.SECONDS))
+                    .isEqualTo(second.get(25,
+                            java.util.concurrent.TimeUnit.SECONDS));
+        }
+        assertThat(count("ComplianceFile", "OrderID", order)).isEqualTo(1);
+        assertThat(get(legal() + "/documents", owner, 200).size()).isEqualTo(1);
+        assertThat(count("DocumentSubmission", "RequirementID", requirement))
+                .isEqualTo(1);
+    }
+
+    private ObjectNode oneStep() throws Exception {
+        var request = command();
+        request.put("fileName", "evidence.png").put("contentType", "image/png")
+                .put("contentBase64", image()).put("expiresAt", time(40))
+                .put("referenceNumber", "REF-BE02");
+        return request;
+    }
+
     /** @throws Exception if any legal state or retained evidence differs */
     @Test
     public void exactVersionAuthorityAndPhaseControlClearance()
@@ -487,7 +751,7 @@ public class ComplianceIntegrationTest {
         String key = uploaded.path("fileKey").asText();
 
         approveDocument(version);
-        clear("PRE_EXPORT", 409);
+        clear("PRE_EXPORT", 200);
         authority(rule);
         clear("PRE_EXPORT", 200);
         assertThat(overview("PRE_EXPORT").at("/readiness/status").asText())
@@ -529,9 +793,8 @@ public class ComplianceIntegrationTest {
     @Test
     public void missingRulesAndExpiredOrRevokedDocumentsBlock()
             throws Exception {
-        checklist("PRE_EXPORT");
         assertThat(overview("PRE_EXPORT").at("/readiness/blockers").toString())
-                .contains("ROUTE_RULE_PENDING");
+                .contains("RULE_ASSESSMENT_PENDING");
         long rule = rule("PRE_EXPORT");
 
         checklist("PRE_EXPORT");
@@ -742,5 +1005,336 @@ public class ComplianceIntegrationTest {
         jdbc.update("UPDATE dbo.OrderAssignment SET EndedAt=SYSUTCDATETIME()"
                 + " WHERE OrderID=? AND AssignmentRole='SPECIALIST'", order);
         post(legal() + "/rules", specialist, ruleBody("ARRIVAL"), 404);
+    }
+
+    /** @throws Exception if staff hits F08 authorization or time SQL errors */
+    @Test
+    @org.springframework.transaction.annotation.Transactional
+    public void handoverGateIsInternalAndTimesUseUtcInstants()
+            throws Exception {
+        long leg = handoverFixture();
+        String driver = account("DRIVER");
+        long driverId = lastStaff();
+        jdbc.update("INSERT dbo.TripAssignment (LegID,StaffID,RoleInTrip,"
+                + "Status,AssignedFrom,AssignedTo) VALUES (?,?,"
+                + "'DRIVER','ACTIVE',DATEADD(hour,-3,SYSUTCDATETIME()),"
+                + "DATEADD(hour,1,SYSUTCDATETIME()))", leg, driverId);
+        var delivery = delivery();
+        for (String token : List.of(manager, coordinator, driver)) {
+            String path = token.equals(driver) ? "/api/driver/legs/"
+                    : "/api/coordinator/legs/";
+            var blocked = post(path + leg + "/final-delivery", token,
+                    delivery, 409);
+            assertThat(blocked.path("code").asText())
+                    .isEqualTo("QUARANTINE_RELEASE_REQUIRED");
+        }
+        var early = delivery.deepCopy();
+        early.put("handoverTime", OffsetDateTime.now(ZoneOffset.UTC)
+                .minusHours(3).toString());
+        assertThat(post("/api/driver/legs/" + leg + "/final-delivery",
+                driver, early, 422).path("code").asText())
+                .isEqualTo("HANDOVER_TIME_BEFORE_DEPARTURE");
+        defaultPhasesUploadAndClearWithoutSeparateProcedures();
+        var delivered = post("/api/driver/legs/" + leg + "/final-delivery",
+                driver, delivery, 200);
+        assertThat(delivered.path("orderStatus").asText())
+                .isEqualTo("DELIVERED");
+        var stored = jdbc.queryForObject("SELECT HandoverTime FROM"
+                + " dbo.TripHandover WHERE LegID=?", java.sql.Timestamp.class,
+                leg).toLocalDateTime();
+        assertThat(stored).isEqualTo(OffsetDateTime.parse(delivery.path(
+                "handoverTime").asText()).withOffsetSameInstant(ZoneOffset.UTC)
+                .toLocalDateTime());
+    }
+
+    /** @throws Exception if file scope, role policy or replay is broken */
+    @Test
+    @org.springframework.transaction.annotation.Transactional
+    public void handoverFilesAndManagerClosureAreScopedAndRetrySafe()
+            throws Exception {
+        long leg = handoverFixture();
+        String driver = account("DRIVER");
+        long driverId = lastStaff();
+        jdbc.update("INSERT dbo.TripAssignment (LegID,StaffID,RoleInTrip,"
+                + "Status,AssignedFrom,AssignedTo) VALUES (?,?,"
+                + "'DRIVER','ACTIVE',DATEADD(hour,-3,SYSUTCDATETIME()),"
+                + "DATEADD(hour,1,SYSUTCDATETIME()))", leg, driverId);
+        String fileBase = base() + "/handover-files";
+        var upload = mapper.createObjectNode();
+        upload.put("fileName", "handover.png");
+        upload.put("contentType", "image/png");
+        upload.put("contentBase64", image());
+        upload.put("purpose", "HANDOVER_SIGNATURE");
+        for (String token : List.of(manager, coordinator, driver)) {
+            var file = post(fileBase, token, upload, 201);
+            String path = fileBase + "/" + file.path("fileKey").asText();
+            assertThat(get(path, token, 200).path("contentBase64").asText())
+                    .isEqualTo(upload.path("contentBase64").asText());
+            get(path, owner, 200);
+            get(path, other, 403);
+        }
+        post(fileBase, owner, upload, 403);
+        post(fileBase, specialist, upload, 403);
+        String outsider = account("DRIVER");
+        post(fileBase, outsider, upload, 403);
+        upload.put("purpose", "ACTUAL_COST_EVIDENCE");
+        var cost = post(fileBase, manager, upload, 201);
+        get(fileBase + "/" + cost.path("fileKey").asText(), owner, 404);
+        String close = base() + "/handovers/close-order";
+        post(close, coordinator, command(), 403);
+        post(close, driver, command(), 403);
+        post(close, owner, command(), 403);
+        assertThat(post(close, manager, command(), 409).path("code").asText())
+                .isEqualTo("ORDER_NOT_DELIVERED");
+        var stale = command();
+        jdbc.update("UPDATE dbo.TransportOrder SET OrderStatus='DELIVERED'"
+                + " WHERE OrderID=?", order);
+        assertThat(post(close, manager, stale, 409).path("code").asText())
+                .isEqualTo("ORDER_VERSION_CONFLICT");
+        var command = command();
+        var closed = post(close, manager, command, 200);
+        assertThat(closed.path("orderStatus").asText()).isEqualTo("CLOSED");
+        assertThat(post(close, manager, command, 200)).isEqualTo(closed);
+        var changed = command.deepCopy();
+        changed.put("recordVersion", closed.path("recordVersion").asText());
+        assertThat(post(close, manager, changed, 409).path("code").asText())
+                .isEqualTo("CLOSURE_RETRY_CONFLICT");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM dbo.AuditEvent"
+                + " WHERE EntityID=? AND EntityType='ORDER_ACTIVITY' AND"
+                + " ActionCode='CLOSED'", Integer.class, order)).isEqualTo(1);
+    }
+
+    private long handoverFixture() {
+        long plan = jdbc.queryForObject("SET NOCOUNT ON; DECLARE @ids TABLE"
+                + " (ID BIGINT); INSERT dbo.TransportPlan (OrderID,RevisionID,"
+                + "CreatedBy,VersionNo,PlanStatus,FinancialGateStatus,"
+                + "OperationalGateStatus,DocGateStatus) OUTPUT INSERTED.PlanID"
+                + " INTO @ids VALUES (?,?,?,1,'ACTIVE','PENDING','PENDING',"
+                + "'PENDING'); SELECT ID FROM @ids",
+                Long.class, order, revision, coordinatorId);
+        jdbc.update("UPDATE dbo.TransportOrder SET CurrentPlanID=?,"
+                + "OrderStatus='IN_TRANSIT' WHERE OrderID=?", plan, order);
+        return jdbc.queryForObject("SET NOCOUNT ON; DECLARE @ids TABLE"
+                + " (ID BIGINT); INSERT dbo.TripLeg (PlanID,SequenceNo,"
+                + "TransportMode,StartPoint,EndPoint,DistanceKm,LegStatus,"
+                + "ActualDeparture) OUTPUT INSERTED.LegID INTO @ids VALUES"
+                + " (?,1,'ROAD','A','B',100,'IN_TRANSIT',"
+                + "DATEADD(hour,-2,SYSUTCDATETIME()));"
+                + " SELECT ID FROM @ids",
+                Long.class, plan);
+    }
+
+    private ObjectNode delivery() {
+        var body = mapper.createObjectNode();
+        body.put("handoverTime", OffsetDateTime.now(ZoneOffset.UTC)
+                .withOffsetSameInstant(ZoneOffset.ofHours(7))
+                .withNano(0).toString());
+        body.put("receivedByName", "Alex Nguyen");
+        body.put("receiverSignatureFileKey", "legacy-signature");
+        body.put("photoFileKey", "legacy-photo");
+        body.put("horseConditionStatus", "GOOD");
+        body.put("outcome", "SUCCESSFUL");
+        return body;
+    }
+
+    /** @throws Exception if any actual API transition in the chain fails */
+    @Test
+    @org.springframework.transaction.annotation.Transactional
+    public void fullBackendLifecycleFromSubmissionThroughClosure()
+            throws Exception {
+        // setup() submits and approves the request through the real APIs.
+        assertOrder("APPROVED");
+        String driver = account("DRIVER");
+        long driverId = lastStaff();
+        var measured = jdbc.queryForObject("SELECT HorseID FROM"
+                + " dbo.TransportOrderDetail WHERE OrderID=?", Long.class,
+                order);
+        String microchip = UUID.randomUUID().toString().replace("-", "")
+                .substring(0, 12).toUpperCase(java.util.Locale.ROOT);
+        String passport = "TEST-" + microchip;
+        jdbc.update("UPDATE dbo.Horse SET MicrochipID=?,"
+                + "PassportNumber=?,WeightKg=450,HeightCm=155,"
+                + "BodyWidthCm=65,MeasuredAt=SYSUTCDATETIME() WHERE HorseID=?",
+                microchip, passport, measured);
+        var assessment = body();
+        assessment.put("applicability", "NOT_REQUIRED");
+        assessment.put("visitCount", 0).put("testCount", 0);
+        assessment.put("doseCount", 0).put("certificateCount", 0);
+        assessment.put("sourceReference", "Artificial lifecycle assessment");
+        assessment.put("validUntil", time(40));
+        post(legal() + "/assessments", specialist, assessment, 200);
+        var draft = body();
+        draft.put("revisionId", revision).put("setAsCurrentDraft", true);
+        var start = OffsetDateTime.parse(time(10));
+        var legs = draft.putArray("legs");
+        for (int sequence = 1; sequence <= 2; sequence++) {
+            legs.addObject().put("sequenceNo", sequence)
+                    .put("transportMode", "ROAD").put("startPoint", "A")
+                    .put("endPoint", "B").put("distanceKm", "100.000")
+                    .put("distanceSource", "Verified fixture route")
+                    .put("plannedDeparture", start.plusHours(
+                            sequence * 2L).toString())
+                    .put("plannedArrival", start.plusHours(
+                            sequence * 2L + 1).toString());
+        }
+        var plan = post(base() + "/plans", coordinator, draft, 200);
+        long planId = plan.path("planId").asLong();
+        long first = plan.at("/legs/0/legId").asLong();
+        long last = plan.at("/legs/1/legId").asLong();
+        var resource = mapper.createObjectNode();
+        resource.putObject("command").put("operationId",
+                UUID.randomUUID().toString());
+        var vehicleData = (ObjectNode) mapper.readTree(
+                com.equitransit.backend.dto.resource.ResourceExamples.VEHICLE);
+        String code = UUID.randomUUID().toString().substring(0, 8);
+        vehicleData.put("vehicleCode", "LIFE-" + code);
+        vehicleData.put("plateNumber", "LIFE-" + code);
+        ((ObjectNode) vehicleData.path("window")).put("bufferMinutes", 0);
+        resource.set("data", vehicleData);
+        var vehicle = post("/api/manager/resources/vehicles", manager,
+                resource, 200);
+        fixtureVehicles.add(vehicle.path("id").asLong());
+        String planBase = base() + "/plans/" + planId;
+        for (long leg : List.of(first, last)) {
+            var assignment = body();
+            assignment.put("vehicleId", vehicle.path("id").asLong());
+            assignment.put("vehicleRecordVersion", vehicle.path(
+                    "recordVersion").asText());
+            assignment.put("driverStaffId", driverId);
+            assignment.put("driverBufferMinutes", 0);
+            post(planBase + "/legs/" + leg + "/road-assignment",
+                    coordinator, assignment, 200);
+        }
+        var quoteBody = body();
+        quoteBody.put("revisionId", revision).put("validUntil", time(5));
+        quoteBody.put("termsVersion", "BE03-TEST").put("terms", "Test terms");
+        quoteBody.put("cancellationTerms", "Test cancellation terms");
+        var schedule = quoteBody.putArray("paymentSchedule").addObject();
+        schedule.put("sequenceNo", 1).put("paymentStage", "FULL")
+                .put("amountDue", "1.00").put("dueAt", time(6));
+        var assessments = quoteBody.putArray("assessments");
+        for (String service : List.of("AIRPORT_HANDLING", "TERMINAL_HANDLING",
+                "CUSTOMS_DECLARATION", "GOVERNMENT_DUTY")) {
+            assessments.addObject().put("code", service)
+                    .put("status", "NOT_REQUIRED").put("validUntil", time(30))
+                    .put("sourceReference", "Artificial lifecycle assessment")
+                    .put("reason", "Not applicable to this test route.");
+        }
+        var priced = post(base() + "/quotes", coordinator, quoteBody, 200);
+        assertThat(priced.path("blockers").toString()).isEqualTo("[]");
+        String total = priced.at("/quote/total").asText();
+        schedule.put("amountDue", total);
+        quoteBody.set("command", command());
+        var quote = post(base() + "/quotes", coordinator, quoteBody, 200);
+        long quoteId = quote.at("/quote/quoteId").asLong();
+        for (String action : List.of("APPROVE", "ISSUE", "ACCEPT")) {
+            var actionBody = body();
+            actionBody.put("action", action);
+            post(base() + "/quotes/" + quoteId + "/actions",
+                    action.equals("ACCEPT") ? owner : manager,
+                    actionBody, 200);
+        }
+        long scheduleId = jdbc.queryForObject("SELECT ScheduleID FROM"
+                + " dbo.QuotePaymentSchedule WHERE QuoteID=?", Long.class,
+                quoteId);
+        var obligation = body();
+        obligation.put("quoteId", quoteId).put("scheduleId", scheduleId);
+        long requestId = post(base() + "/payments/requests", manager,
+                obligation, 200).path("entityId").asLong();
+        var proof = body();
+        proof.put("mediaType", "image/png").put("contentBase64", image());
+        String key = post(base() + "/payments/proofs", owner, proof, 200)
+                .path("fileKey").asText();
+        var bank = body();
+        bank.put("amountReceived", total).put("currency", "USD");
+        bank.put("recipientAccount", "TEST-ACCOUNT");
+        bank.put("bankTransactionReference", UUID.randomUUID().toString());
+        bank.put("postedAt", time(-1));
+        bank.put("verificationSource", "Artificial bank evidence");
+        bank.put("proofFileKey", key);
+        long transaction = post(base() + "/payments/transactions", manager,
+                bank, 200).path("entityId").asLong();
+        var allocation = body();
+        allocation.put("transactionId", transaction);
+        allocation.put("paymentRequestId", requestId).put("amount", total);
+        post(base() + "/payments/allocations", manager, allocation, 200);
+        assertOrder("IN_PREPARATION");
+        defaultPhasesUploadAndClearWithoutSeparateProcedures();
+        var confirm = body();
+        confirm.put("acceptedQuoteId", quoteId);
+        post(planBase + "/confirm", coordinator, confirm, 200);
+        assertOrder("CONFIRMED");
+        var authorize = body();
+        authorize.put("planId", planId);
+        post(base() + "/departure/authorize", manager, authorize, 200);
+        var receipt = body();
+        receipt.put("planId", planId).put("legId", first);
+        receipt.put("observedMicrochip", microchip);
+        receipt.put("observedPassportNumber", passport);
+        receipt.put("fitToTravel", true).put("conditionNotes", "Fit");
+        receipt.put("locationDescription", "Fixture stable");
+        var received = post(base() + "/departure/horse-receipts", driver,
+                receipt, 200);
+        var depart = body();
+        depart.put("planId", planId).put("legId", first).put("receiptId",
+                received.at("/receipts/0/receiptId").asLong());
+        post(base() + "/departure/depart", driver, depart, 200);
+        assertOrder("IN_TRANSIT");
+        Thread.sleep(1100);
+        var transfer = delivery();
+        transfer.put("handoverType", "INTERMEDIATE_AIRPORT");
+        post("/api/driver/legs/" + first + "/intermediate-handover", driver,
+                transfer, 201);
+        assertThat(jdbc.queryForObject("SELECT LegStatus FROM dbo.TripLeg"
+                + " WHERE LegID=?", String.class, last))
+                .isEqualTo("CONFIRMED");
+        var execution = body();
+        execution.put("occurredAt", OffsetDateTime.now(ZoneOffset.UTC)
+                .withNano(0).toString()).put("sourceCode", "DRIVER_REPORT")
+                .put("sourceReference", "Artificial driver observation");
+        post(base() + "/legs/" + last + "/start", driver, execution, 200);
+        Thread.sleep(1100);
+        execution.set("command", command());
+        execution.put("occurredAt", time(-1));
+        assertThat(post(base() + "/legs/" + last + "/complete", driver,
+                execution, 422).path("code").asText())
+                .isEqualTo("HANDOVER_TIME_BEFORE_DEPARTURE");
+        execution.set("command", command());
+        execution.put("occurredAt", OffsetDateTime.now(ZoneOffset.UTC)
+                .withNano(0).toString());
+        post(base() + "/legs/" + last + "/complete", driver, execution, 200);
+        var file = mapper.createObjectNode();
+        file.put("fileName", "signature.png").put("contentType", "image/png")
+                .put("contentBase64", image())
+                .put("purpose", "HANDOVER_SIGNATURE");
+        var finalDelivery = delivery();
+        String fileBase = base() + "/handover-files";
+        finalDelivery.put("receiverSignatureFileKey", post(fileBase, driver,
+                file, 201).path("fileKey").asText());
+        file.put("fileName", "photo.png").put("purpose", "HANDOVER_PHOTO");
+        String photo = post(fileBase, driver, file, 201)
+                .path("fileKey").asText();
+        finalDelivery.put("photoFileKey", photo);
+        get(fileBase + "/" + photo, owner, 200);
+        post("/api/driver/legs/" + last + "/final-delivery", driver,
+                finalDelivery, 200);
+        assertOrder("DELIVERED");
+        post(base() + "/handovers/close-order", manager, command(), 200);
+        assertOrder("CLOSED");
+    }
+
+    private void assertOrder(String expected) {
+        assertThat(jdbc.queryForObject("SELECT OrderStatus FROM"
+                + " dbo.TransportOrder WHERE OrderID=?", String.class, order))
+                .isEqualTo(expected);
+    }
+
+    /** Transactional F14 fixtures roll back all append-only facts. */
+    @org.springframework.test.context.transaction.AfterTransaction
+    public void handoverFixturesWereRolledBack() {
+        if (order != 0) {
+            assertThat(count("TransportOrder", "OrderID", order)).isZero();
+            assertThat(count("HandoverFile", "OrderID", order)).isZero();
+        }
     }
 }

@@ -52,6 +52,15 @@ public final class OperationalPlanPolicy {
         OffsetDateTime previousArrival = null;
 
         for (PlanLegInput leg : legs) {
+            if (leg.estimatedAirfare() != null
+                    && (leg.transportMode() != PlanLegMode.AIR
+                        || leg.estimatedAirfare().signum() <= 0
+                        || leg.estimatedAirfare().scale() > 2
+                        || leg.estimatedAirfare().setScale(4)
+                                .precision() > 18)) {
+                throw badRequest("PLAN_AIRFARE_INVALID",
+                        "Provide a positive AIR-only monetary estimate.");
+            }
             if (leg.sequenceNo() != expectedSeq++) {
                 throw badRequest("PLAN_SEQUENCE_INVALID",
                         "Leg sequence numbers must be consecutive from 1.");

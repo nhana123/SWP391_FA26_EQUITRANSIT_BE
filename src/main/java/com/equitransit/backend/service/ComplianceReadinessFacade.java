@@ -154,6 +154,9 @@ public class ComplianceReadinessFacade {
                                         .equals(requirement.get(
                                                 "LatestVersionID")),
                         "APPROVED".equals(requirement.get("Decision")), asOf);
+                var exactExpiry = at(requirement, "ExpiresAt");
+                valid = valid && (exactExpiry == null
+                        || exactExpiry.isAfter(asOf));
 
                 if (valid && at(requirement, "ReviewedAt") != null
                         && !at(requirement, "ReviewedAt").isAfter(asOf)
@@ -164,6 +167,7 @@ public class ComplianceReadinessFacade {
                     expires = earlier(expires, expiry.toLocalDate()
                             .plusDays(1).atStartOfDay()
                             .atOffset(ZoneOffset.UTC));
+                    expires = earlier(expires, exactExpiry);
                 }
             }
             if (!satisfied) {

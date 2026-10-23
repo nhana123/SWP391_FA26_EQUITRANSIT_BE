@@ -11,23 +11,31 @@ import com.equitransit.backend.dto.handover.HandoverCustomerDecision;
 import com.equitransit.backend.dto.handover.HandoverOutcome;
 import com.equitransit.backend.dto.handover.HandoverType;
 import com.equitransit.backend.dto.handover.HorseConditionStatus;
-import com.equitransit.backend.dto.handover.request.CustomerHandoverDecisionRequest;
-import com.equitransit.backend.dto.handover.request.FinalDeliveryHandoverCreateRequest;
-import com.equitransit.backend.dto.handover.request.IntermediateHandoverCreateRequest;
+import com.equitransit.backend.dto.handover.request.
+        CustomerHandoverDecisionRequest;
+import com.equitransit.backend.dto.handover.request.
+        FinalDeliveryHandoverCreateRequest;
+import com.equitransit.backend.dto.handover.request.
+        IntermediateHandoverCreateRequest;
 import com.equitransit.backend.dto.handover.response.CustomerHandoverResponse;
-import com.equitransit.backend.dto.handover.response.OperationalCompletionReceipt;
+import com.equitransit.backend.dto.handover.response.
+        OperationalCompletionReceipt;
 import com.equitransit.backend.dto.handover.response.TripHandoverResponse;
 import com.equitransit.backend.entity.handover.TripHandover;
 import com.equitransit.backend.exception.OrderException;
 import com.equitransit.backend.repository.execution.LegExecutionRepository;
-import com.equitransit.backend.repository.execution.LegExecutionRepository.LegRow;
-import com.equitransit.backend.repository.execution.LegExecutionRepository.OrderScopeRow;
-import com.equitransit.backend.repository.execution.LegExecutionRepository.TripAssignmentRow;
+import com.equitransit.backend.repository.execution.LegExecutionRepository.
+        LegRow;
+import com.equitransit.backend.repository.execution.LegExecutionRepository.
+        OrderScopeRow;
+import com.equitransit.backend.repository.execution.LegExecutionRepository.
+        TripAssignmentRow;
 import com.equitransit.backend.repository.handover.TripHandoverRepository;
-import com.equitransit.backend.repository.handover.TripHandoverRepository.OrderReceiverRow;
+import com.equitransit.backend.repository.handover.TripHandoverRepository.
+        OrderReceiverRow;
 import com.equitransit.backend.security.CurrentActor;
 import com.equitransit.backend.security.CurrentActorService;
-import com.equitransit.backend.service.ComplianceService;
+import com.equitransit.backend.service.QuarantineReleaseGate;
 import com.equitransit.backend.service.handover.FinalDeliveryValidator;
 import com.equitransit.backend.service.handover.TripHandoverService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,7 +52,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.support.StaticListableBeanFactory;
+
 import org.springframework.security.access.AccessDeniedException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,7 +90,7 @@ public class TripHandoverCompletionTest {
     private CurrentActorService actorService;
 
     @Mock
-    private ComplianceService complianceService;
+    private QuarantineReleaseGate complianceService;
 
     private FinalDeliveryValidator validator;
     private TripHandoverService service;
@@ -96,11 +104,7 @@ public class TripHandoverCompletionTest {
                 ZoneOffset.UTC);
         mapper = new ObjectMapper();
 
-        var beanFactory = new StaticListableBeanFactory();
-        beanFactory.addBean("complianceService", complianceService);
-        var provider = beanFactory.getBeanProvider(ComplianceService.class);
-
-        validator = new FinalDeliveryValidator(provider);
+        validator = new FinalDeliveryValidator(complianceService);
         service = new TripHandoverService(handoverRepository, legRepository,
                 validator, actorService, mapper, fixedClock);
     }
@@ -287,7 +291,7 @@ public class TripHandoverCompletionTest {
         when(handoverRepository.findOrderReceiver(ORDER_ID))
                 .thenReturn(Optional.of(receiver));
 
-        when(complianceService.quarantineReleasePassed(ORDER_ID))
+        when(complianceService.passed(ORDER_ID))
                 .thenReturn(true);
 
         when(handoverRepository.insert(any(TripHandover.class)))
@@ -348,7 +352,7 @@ public class TripHandoverCompletionTest {
         when(handoverRepository.findOrderReceiver(ORDER_ID))
                 .thenReturn(Optional.of(receiver));
 
-        when(complianceService.quarantineReleasePassed(ORDER_ID))
+        when(complianceService.passed(ORDER_ID))
                 .thenReturn(false);
 
         var request = new FinalDeliveryHandoverCreateRequest(
@@ -393,7 +397,7 @@ public class TripHandoverCompletionTest {
         when(handoverRepository.findOrderReceiver(ORDER_ID)).thenReturn(
                 Optional.of(new OrderReceiverRow("Jean-Pierre Dubois",
                         "+33612345678", "jp@dubois.fr", "OWNER")));
-        when(complianceService.quarantineReleasePassed(ORDER_ID))
+        when(complianceService.passed(ORDER_ID))
                 .thenReturn(true);
         when(handoverRepository.insert(any(TripHandover.class)))
                 .thenReturn(HANDOVER_ID);
@@ -441,7 +445,7 @@ public class TripHandoverCompletionTest {
         when(handoverRepository.findOrderReceiver(ORDER_ID))
                 .thenReturn(Optional.of(receiver));
 
-        when(complianceService.quarantineReleasePassed(ORDER_ID))
+        when(complianceService.passed(ORDER_ID))
                 .thenReturn(true);
 
         var request = new FinalDeliveryHandoverCreateRequest(
@@ -492,7 +496,7 @@ public class TripHandoverCompletionTest {
         when(handoverRepository.findOrderReceiver(ORDER_ID))
                 .thenReturn(Optional.of(receiver));
 
-        when(complianceService.quarantineReleasePassed(ORDER_ID))
+        when(complianceService.passed(ORDER_ID))
                 .thenReturn(true);
 
         when(handoverRepository.insert(any(TripHandover.class)))

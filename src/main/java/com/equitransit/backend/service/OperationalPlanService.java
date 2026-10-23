@@ -170,18 +170,13 @@ public class OperationalPlanService {
         }
         requireVersion(ctx.parent(), req.command(), req.revisionId());
         OperationalPlanPolicy.validateLegs(req.legs());
-        Long confirmer = distanceConfirmer(order, ctx.actor());
+        Long confirmer = ctx.actor().staffId();
 
         for (PlanLegInput leg : req.legs()) {
             if (leg.supplierId() != null
                     && !resources.activeSupplier(leg.supplierId())) {
                 throw conflict("SUPPLIER_INACTIVE",
                         "Leg supplier is inactive or missing.");
-            }
-            if (leg.distanceSource() != null && confirmer == null) {
-                throw conflict("COORDINATOR_REQUIRED_FOR_DISTANCE",
-                        "An active assigned Coordinator is required to "
-                                + "confirm sourced leg distances.");
             }
         }
         var now = now();
@@ -211,6 +206,7 @@ public class OperationalPlanService {
         } else {
             plans.touchOrder(order);
         }
+        plans.recordAirfareEstimate(req, planId, ctx.actor().staffId(), now);
         return finish(order, planId, ctx.actor(), req.command(),
                 "CREATE_DRAFT", hash);
     }
@@ -563,16 +559,6 @@ public class OperationalPlanService {
             throw conflict("PLAN_REVISION_CONFLICT",
                     "Plan must target the current approved order revision.");
         }
-    }
-
-    private Long distanceConfirmer(long order, CurrentActor actor) {
-        if ("COORDINATOR".equals(actor.roleCode())) {
-            return actor.staffId();
-        }
-        return cases.assignments(order, true, 0, 20).stream()
-                .filter(a -> "COORDINATOR".equals(a.role())
-                        && cases.activeStaff(a.staffId(), "COORDINATOR"))
-                .map(a -> a.staffId()).findFirst().orElse(null);
     }
 
     private AccessContext access(long order, boolean write) {

@@ -55,7 +55,8 @@ public class ComplianceRepository {
                 + "sys.columns WHERE "
                 + "object_id=OBJECT_ID('dbo.DocumentVersion') AND "
                 + "name IN ('RevokedAt', 'RevokedBy', "
-                + "'RevocationReason'))=3 AND (SELECT COUNT(*) FROM "
+                + "'RevocationReason','ExpiresAt'))=4 AND (SELECT COUNT(*)"
+                + " FROM "
                 + "sys.columns WHERE "
                 + "object_id=OBJECT_ID('dbo.AuthorityProcedure') "
                 + "AND name IN ('RuleID', 'SourceReference'))=2 AND "
@@ -118,6 +119,17 @@ public class ComplianceRepository {
         return jdbc.queryForObject(statement(key), args, Long.class);
     }
 
+    /** @param args authorized current order/revision @return graph countries */
+    public List<String> transitCountries(Map<String, ?> args) {
+        boolean present = Boolean.TRUE.equals(jdbc.getJdbcTemplate()
+                .queryForObject("SELECT CASE WHEN OBJECT_ID("
+                        + "'dbo.PlanCheckpointNode','U') IS NULL THEN 0"
+                        + " ELSE 1 END", Boolean.class));
+        return present ? rows("planTransits", args).stream()
+                .map(row -> row.get("CountryCode").toString()).toList()
+                        : List.of();
+    }
+
     private String statement(String key) {
         return switch (key) {
             case "ruleFamily" ->
@@ -139,7 +151,8 @@ public class ComplianceRepository {
                     + "dbo.[User] u ON u.UserID=s.UserID JOIN dbo.[Role] r "
                     + "ON r.RoleID=u.RoleID WHERE a.OrderID=:order AND "
                     + "a.EndedAt IS NULL AND a.AssignmentRole='SPECIALIST' "
-                    + "AND r.RoleCode='SPECIALIST' AND u.Status='ACTIVE'";
+                    + "AND r.RoleCode='SPECIALIST' AND u.Status='ACTIVE'"
+                    + " AND s.StaffStatus='ACTIVE'";
             case "rulesByChecklist" ->
                     "SELECT TOP(101) r.* FROM dbo.ComplianceRuleVersion r "
                     + "JOIN dbo.ComplianceChecklist c ON "
@@ -165,6 +178,16 @@ public class ComplianceRepository {
                     + "o.DeliveryDeadline FROM dbo.TransportOrder o JOIN "
                     + "dbo.TransportOrderDetail d ON d.OrderID=o.OrderID "
                     + "WHERE o.OrderID=:order";
+            case "planTransits" ->
+                    "SELECT DISTINCT n.CountryCode FROM dbo.TransportOrder o"
+                    + " JOIN dbo.TransportPlan p ON p.PlanID=o.CurrentPlanID"
+                    + " AND p.OrderID=o.OrderID AND p.RevisionID=:revision"
+                    + " JOIN dbo.PlanCheckpointNode n ON n.PlanID=p.PlanID"
+                    + " WHERE o.OrderID=:order AND p.PlanStatus NOT IN"
+                    + " ('SUPERSEDED','CANCELLED','REJECTED')"
+                    + " AND n.CountryCode IS NOT NULL"
+                    + " AND n.CountryCode<>:origin"
+                    + " AND n.CountryCode<>:destination ORDER BY n.CountryCode";
             case "rules" ->
                     "SELECT TOP(101) r.* FROM dbo.ComplianceRuleVersion r "
                     + "JOIN dbo.DocumentTypeCatalog t ON "
@@ -172,6 +195,7 @@ public class ComplianceRepository {
                     + "r.OriginCountryCode=:origin AND "
                     + "r.DestinationCountryCode=:destination AND "
                     + "r.PhaseCode=:phase AND r.ReviewedAt<=:now AND "
+                    + "(r.EffectiveTo IS NULL OR r.EffectiveTo>:now) AND "
                     + "r.EffectiveFrom<=:now AND (r.TransitCountryCode IS "
                     + "NULL OR r.TransitCountryCode IN (SELECT value FROM "
                     + "OPENJSON(:transits))) AND NOT EXISTS(SELECT 1 FROM "
@@ -238,6 +262,8 @@ public class ComplianceRepository {
                     + "d.DocumentType, d.PhaseCode, d.Instructions, d.Status, "
                     + "d.IsMandatory, s.SubmissionID, s.DocumentVersionID, "
                     + "v.ExpiryDate,v.IssuedDate,v.RevokedAt,v.UploadedAt,"
+                    + "v.ExpiresAt,v.FileKey,v.OriginalFileName,v.ContentType,"
+                    + "v.FileSizeBytes,v.DocumentNumber,review.ReviewID,"
                     + " CASE WHEN "
                     + "EXISTS(SELECT 1 FROM dbo.ComplianceFile f WHERE "
                     + "f.FileKey=TRY_CONVERT(uniqueidentifier, v.FileKey) "
@@ -250,7 +276,7 @@ public class ComplianceRepository {
                     + "s.RequirementID=d.RequirementID ORDER BY "
                     + "s.SubmissionID DESC) s LEFT JOIN dbo.DocumentVersion "
                     + "v ON v.DocumentVersionID=s.DocumentVersionID OUTER "
-                    + "APPLY(SELECT TOP(1) r.Decision, r.Feedback, "
+                    + "APPLY(SELECT TOP(1) r.ReviewID,r.Decision, r.Feedback, "
                     + "r.ReviewedBy, r.ReviewedAt FROM dbo.DocumentReview r "
                     + "WHERE "
                     + "r.SubmissionID=s.SubmissionID ORDER BY r.ReviewID "
@@ -276,12 +302,13 @@ public class ComplianceRepository {
             case "versionInsert" ->
                     "INSERT dbo.DocumentVersion(DocumentID, VersionNo, "
                     + "DocumentNumber, FileKey, FileHash, IssuedDate, "
-                    + "ExpiryDate, UploadedBy, OriginalFileName, "
+                    + "ExpiryDate,ExpiresAt, UploadedBy, OriginalFileName, "
                     + "ContentType, FileSizeBytes) OUTPUT "
                     + "INSERTED.DocumentVersionID VALUES(:document, (SELECT "
                     + "COALESCE(MAX(VersionNo), 0)+1 FROM "
                     + "dbo.DocumentVersion WHERE DocumentID=:document), "
-                    + ":number, :key, :fileHash, :issued, :expiry, :user, "
+                    + ":number, :key, :fileHash, :issued, :expiry, :expires,"
+                    + " :user, "
                     + ":name, :mime, :length)";
             case "version" ->
                     "SELECT v.*, h.DocumentType FROM dbo.DocumentVersion "
@@ -345,7 +372,7 @@ public class ComplianceRepository {
                     + "EvidenceFileKey, DecidedAt, ExpiresAt, HoldReason, "
                     + "RecordedBy, SourceReference) OUTPUT "
                     + "INSERTED.ProcedureID VALUES(:revision, :rule, "
-                    + "'LEGAL_APPROVAL', :phase, :authorityName, "
+                    + ":procedure, :phase, :authorityName, "
                     + ":reference, :decision, :key, :decided, :until, "
                     + ":hold, :staff, :source)";
             case "procedures" ->
@@ -376,6 +403,10 @@ public class ComplianceRepository {
                     "UPDATE dbo.ComplianceClearance SET "
                     + "Status='SUPERSEDED' WHERE RevisionID=:revision AND "
                     + "Status='CLEARED'";
+            case "invalidatePhase" ->
+                    "UPDATE dbo.ComplianceClearance SET Status='SUPERSEDED'"
+                    + " WHERE RevisionID=:revision AND PhaseCode=:phase"
+                    + " AND Status='CLEARED'";
             case "quarantine" ->
                     "SELECT * FROM dbo.RevisionQuarantineAssessment WHERE "
                     + "RevisionID=:revision AND SupersededAt IS NULL";

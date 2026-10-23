@@ -196,6 +196,13 @@ public class QuoteRepository {
                     && (s.code().equals(line.code())
                             || line.code().startsWith(s.code() + "_"))
                     && s.unit().equals(line.unit())).findFirst().orElse(null);
+            var offer = snapshot.sources().stream().filter(s -> s.offer()
+                    && "AIRFARE".equals(line.code())
+                    && s.code().equals(line.code())
+                    && s.unit().equals(line.unit())
+                    && s.rate().compareTo(new BigDecimal(line.unitRate())) == 0
+                    && s.quantity().compareTo(new BigDecimal(line.quantity()))
+                            == 0).findFirst().orElse(null);
 
             values.add(new MapSqlParameterSource("quote", id)
                     .addValue("code", line.code())
@@ -208,8 +215,9 @@ public class QuoteRepository {
                     .addValue("tariff", evidence == null
                             ? tariff == null ? null : tariff.id()
                             : evidence.tariffId())
-                    .addValue("offer", evidence == null ? null
-                            : evidence.offerId())
+                    .addValue("offer", evidence != null
+                            && evidence.offerId() != null ? evidence.offerId()
+                                    : offer == null ? null : offer.id())
                     .addValue("inputs", json.write(java.util.Map.of(
                             "schemaVersion", 1, "line", line,
                             "revisionId", request.revisionId(),

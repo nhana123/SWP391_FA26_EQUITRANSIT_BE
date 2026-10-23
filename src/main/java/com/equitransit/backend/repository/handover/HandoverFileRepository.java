@@ -40,7 +40,11 @@ public class HandoverFileRepository {
     public boolean staffCanAccess(long orderId, long staffId, String role) {
         String sql = "SELECT COUNT(*) FROM dbo.[User] u "
                 + "JOIN dbo.StaffProfile s ON s.UserID=u.UserID "
-                + "WHERE s.StaffID=:staff AND u.Status='ACTIVE' AND "
+                + "JOIN dbo.[Role] r ON r.RoleID=u.RoleID "
+                + "WHERE s.StaffID=:staff AND u.Status='ACTIVE' "
+                + "AND s.StaffStatus='ACTIVE' AND r.RoleCode=:role "
+                + "AND EXISTS (SELECT 1 FROM dbo.TransportOrder "
+                + "WHERE OrderID=:order) AND "
                 + "((:role='MANAGER') OR (:role='COORDINATOR' AND EXISTS "
                 + "(SELECT 1 FROM "
                 + "dbo.OrderAssignment a WHERE a.OrderID=:order "
@@ -49,9 +53,11 @@ public class HandoverFileRepository {
                 + "AND EXISTS (SELECT 1 FROM dbo.TripAssignment ta JOIN "
                 + "dbo.TripLeg l "
                 + "ON l.LegID=ta.LegID JOIN dbo.TransportPlan p ON "
-                + "p.PlanID=l.PlanID WHERE p.OrderID=:order "
+                + "p.PlanID=l.PlanID JOIN dbo.TransportOrder o ON "
+                + "o.CurrentPlanID=p.PlanID WHERE p.OrderID=:order "
                 + "AND ta.StaffID=:staff AND ta.RoleInTrip='DRIVER' "
-                + "AND ta.Status IN ('CONFIRMED','ASSIGNED','ACTIVE'))))";
+                + "AND ta.Status IN ('CONFIRMED','ASSIGNED','ACTIVE',"
+                + "'COMPLETED'))))";
         Integer count = jdbc.queryForObject(sql, new MapSqlParameterSource()
                 .addValue("order", orderId)
                 .addValue("staff", staffId)

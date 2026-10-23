@@ -92,6 +92,10 @@ public class OperationalPlanIntegrationTest {
     private JwtTokenService tokens;
     @Autowired
     private PlanRepository repository;
+    @Autowired
+    private com.equitransit.backend.repository.ServiceSourceRepository pricing;
+    @Autowired
+    private com.equitransit.backend.repository.QuoteSourceRepository offers;
 
     /** @throws Exception if the isolated test catalog guard fails */
     @BeforeEach
@@ -99,7 +103,8 @@ public class OperationalPlanIntegrationTest {
         try (var connection = source.getConnection()) {
             assertThat(connection.getCatalog()).isIn(
                     "EquiTransit_FigmaMigrationTest_20261013_143729",
-                    "EquiTransit_FigmaMigrationTest_Bootstrap_20261018");
+                    "EquiTransit_FigmaMigrationTest_Bootstrap_20261018",
+                    "EquiTransit_FigmaMigrationTest_BE01_20261023");
         }
         assertThat(repository.ready()).isTrue();
         passwordHash = passwords.encode("TestPassword123!");
@@ -348,6 +353,99 @@ public class OperationalPlanIntegrationTest {
                     .header("Authorization", actor(role).token())
                     .contentType(MediaType.APPLICATION_JSON).content("{}"))
                     .andExpect(status().isForbidden());
+        }
+    }
+
+    /** Draft prices and distances follow the current plan, without hand IDs.
+     * @throws Exception on HTTP or fixture failure */
+    @Test
+    public void draftAirfareIsRevisionBoundAndRetrySafe() throws Exception {
+        for (String role : List.of("MANAGER", "COORDINATOR")) {
+            var target = createApprovedCase(createHorse());
+            long order = target.orderId();
+            long revision = target.revisionId();
+            if (role.equals("COORDINATOR")) {
+                jdbc.update("UPDATE dbo.TransportOrder SET"
+                        + " OrderStatus='IN_PREPARATION' WHERE OrderID=?",
+                        order);
+            }
+            var dep = OffsetDateTime.now(ZoneOffset.UTC).plusDays(7)
+                    .withNano(0);
+            var body = mapper.createObjectNode();
+            body.set("command", mapper.valueToTree(command(order)));
+            body.put("revisionId", revision).put("setAsCurrentDraft", true);
+            var legs = body.putArray("legs");
+            for (int index = 0; index < 2; index++) {
+                legs.addObject().put("sequenceNo", index + 1)
+                        .put("transportMode", "AIR").put("startPoint", "A")
+                        .put("endPoint", "B").put("distanceKm", "1000")
+                        .put("plannedDeparture", dep.plusHours(index * 4)
+                                .toString())
+                        .put("plannedArrival", dep.plusHours(index * 4 + 2)
+                                .toString())
+                        .put("estimatedAirfare", index == 0 ? "700" : "500");
+            }
+            var plan = postJson(base(order), body, actor(role).token(), 200);
+            assertThat(postJson(base(order), body, actor(role).token(), 200))
+                    .isEqualTo(plan);
+            assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM"
+                    + " dbo.SupplierOffer WHERE RevisionID=?", Integer.class,
+                    revision)).isEqualTo(1);
+            assertThat(plan.at("/legs/0/distanceConfirmedBy").asLong())
+                    .isEqualTo(actor(role).staff());
+            var now = OffsetDateTime.now(ZoneOffset.UTC);
+            assertThat(pricing.itinerary(order, revision, now).airKm())
+                    .isEqualByComparingTo("2000");
+            assertThat(pricing.airfare(order, revision, now).orElseThrow())
+                    .isEqualByComparingTo("1200");
+            assertThat(offers.read(revision, List.of(), List.of(), now))
+                    .singleElement().satisfies(offer -> {
+                        assertThat(offer.rate()).isEqualByComparingTo("1200");
+                        assertThat(offer.code()).isEqualTo("AIRFARE");
+                    });
+            assertThat(pricing.airfare(order, revision + 999999, now))
+                    .isEmpty();
+            var disclosure = read(mvc.perform(get("/api/transport-orders/"
+                    + order + "/services")
+                    .header("Authorization", actor("CUSTOMER").token()))
+                    .andExpect(status().isOk()).andReturn());
+            assertThat(disclosure.toString()).doesNotContain(
+                    "AIRFARE_PENDING");
+            var quotation = mapper.createObjectNode();
+            quotation.set("command", mapper.valueToTree(command(order)));
+            quotation.put("revisionId", revision)
+                    .put("validUntil", dep.minusDays(1).toString())
+                    .put("termsVersion", "BE01-TEST")
+                    .put("terms", "Test payment terms")
+                    .put("cancellationTerms", "Test cancellation terms");
+            quotation.putArray("assessments");
+            quotation.putArray("paymentSchedule").addObject()
+                    .put("sequenceNo", 1).put("paymentStage", "FULL")
+                    .put("amountDue", "1200.00")
+                    .put("dueAt", dep.minusDays(1).toString());
+            var quote = postJson("/api/transport-orders/" + order + "/quotes",
+                    quotation, actor(role).token(), 200);
+            assertThat(quote.get("blockers").toString()).doesNotContain(
+                    "AIRFARE_PENDING", "ITINERARY_PENDING");
+            var items = new ArrayList<JsonNode>();
+            quote.path("items").forEach(items::add);
+            assertThat(items).filteredOn(item -> item.get("code").asText()
+                    .equals("AIRFARE")).singleElement().satisfies(item ->
+                            assertThat(item.get("amount").asText())
+                                    .isEqualTo("1200.00"));
+            assertThat(jdbc.queryForObject("SELECT o.OfferReference FROM"
+                    + " dbo.QuoteItem i JOIN dbo.SupplierOffer o"
+                    + " ON o.OfferID=i.OfferID WHERE i.QuoteID=?"
+                    + " AND i.ServiceCode='AIRFARE'", String.class,
+                    quote.at("/quote/quoteId").asLong()))
+                    .isEqualTo("PLAN-AIRFARE:" + plan.get("planId").asLong());
+            body.set("command", mapper.valueToTree(command(order)));
+            ((ObjectNode) legs.get(0)).put("estimatedAirfare", "900");
+            postJson(base(order), body, actor(role).token(), 200);
+            assertThat(offers.read(revision, List.of(), List.of(),
+                    OffsetDateTime.now(ZoneOffset.UTC)))
+                    .singleElement().satisfies(offer -> assertThat(offer.rate())
+                            .isEqualByComparingTo("1400"));
         }
     }
 

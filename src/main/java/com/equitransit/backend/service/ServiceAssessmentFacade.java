@@ -154,6 +154,18 @@ public class ServiceAssessmentFacade {
     }
 
     /**
+     * @param order authorized parent
+     * @param revision exact revision, null before submission
+     * @param now server time
+     * @return current plan retail airfare estimate, if recorded
+     */
+    public Optional<java.math.BigDecimal> airfare(long order, Long revision,
+            OffsetDateTime now) {
+        return revision == null ? Optional.empty()
+                : sources.airfare(order, revision, now);
+    }
+
+    /**
      * Keeps UNKNOWN distinct from explicitly verified NOT_REQUIRED.
      * @param order authorized parent
      * @param revision exact revision or null
