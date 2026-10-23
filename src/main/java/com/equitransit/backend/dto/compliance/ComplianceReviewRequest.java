@@ -9,6 +9,7 @@ package com.equitransit.backend.dto.compliance;
 
 
 import com.equitransit.backend.dto.validation.OptionalText;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -26,5 +27,6 @@ public record ComplianceReviewRequest(
         @NotNull LegalDecision decision,
         @Schema(example = "Evidence matches the requirement.",
                 nullable = true)
+        @JsonAlias({"notes", "reason"})
         @OptionalText @Size(min = 1, max = 2000) String feedback) {
 }

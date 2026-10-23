@@ -288,6 +288,10 @@ public class PaymentRepository {
                     "INSERT dbo.AuditEvent (UserID,EntityType,EntityID,"
                     + "ActionCode,ChangeSnapshot) VALUES (:user,"
                     + "'ORDER_PAYMENT',:order,:action,:receipt)";
+            case "prepareOrder" ->
+                    "UPDATE dbo.TransportOrder SET OrderStatus=CASE WHEN "
+                    + "OrderStatus='APPROVED' THEN 'IN_PREPARATION' ELSE "
+                    + "OrderStatus END WHERE OrderID=:order";
             case "bump" ->
                     "UPDATE dbo.TransportOrder SET "
                     + "OrderStatus=OrderStatus WHERE OrderID=:order";

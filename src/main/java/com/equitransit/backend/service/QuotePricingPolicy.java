@@ -127,6 +127,16 @@ public class QuotePricingPolicy {
 
         retained.addAll(sources.read(request.revisionId(), tariffIds,
                 List.of(), now));
+        var airfare = request.assessments().stream()
+                .filter(e -> e.code().name().equals("AIRFARE"))
+                .findFirst().orElse(null);
+        retained = retained.stream().distinct().filter(s -> !s.offer()
+                || !"AIRFARE".equals(s.code()) || airfare == null
+                || (airfare.status() == QuoteEvidenceStatus.PRICED
+                        && airfare.offerId() == null
+                        && airfare.tariffId() == null)
+                || (airfare.offerId() != null
+                        && s.id() == airfare.offerId())).toList();
         for (var rate : retained) {
             if (rate.validUntil() != null
                     && rate.validUntil().isBefore(request.validUntil())) {
@@ -195,6 +205,31 @@ public class QuotePricingPolicy {
 
     private QuoteLine line(ServiceChargeResponse row, QuoteEvidence evidence,
             List<QuotePriceSource> rates, OffsetDateTime expiry) {
+        if ("AIRFARE".equals(row.code()) && (evidence == null
+                || (evidence.status() == QuoteEvidenceStatus.PRICED
+                        && evidence.offerId() == null
+                        && evidence.tariffId() == null))) {
+            var offers = rates.stream().filter(s -> s.offer()
+                    && "AIRFARE".equals(s.code())).toList();
+            if (offers.size() == 1 && offers.getFirst().validUntil() != null
+                    && !offers.getFirst().validUntil().isBefore(expiry)
+                    && !FREE.contains(row.pricingStatus())) {
+                var offer = offers.getFirst();
+                if (evidence != null && evidence.quantity() != null
+                        && new BigDecimal(evidence.quantity())
+                                .compareTo(offer.quantity()) != 0) {
+                    throw invalid("Offer quantity does not match its scope.");
+                }
+                var priced = priced(row, offer.quantity(), offer.rate());
+                return new QuoteLine(priced.code(), priced.costGroup(),
+                        priced.description(), offer.unit(), priced.quantity(),
+                        priced.unitRate(), priced.amount(),
+                        priced.pricingStatus(), priced.blockers());
+            }
+            if (!FREE.contains(row.pricingStatus())) {
+                return view(row, null, null, null, "PENDING");
+            }
+        }
         if (FREE.contains(row.pricingStatus())
                 && !("INCLUDED".equals(row.pricingStatus())
                         && evidence != null)) {

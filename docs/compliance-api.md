@@ -11,6 +11,10 @@ boundary is unchanged. Terminal/cancelled cases cannot accept new legal writes.
 
 ## Workflow for FE
 
+The streamlined BE-02 workflow is documented in [BE-02.md](BE-02.md).
+GET initializes missing checklists by default; the explicit assessment and
+two-step document endpoints below remain available for advanced workflows.
+
 1. Specialist POST `/rules` publishes an immutable source-backed rule version
    for this case's origin/destination, a phase and optional transit country.
    RuleCode retains the same route/phase/type across versions. Document type
@@ -18,11 +22,13 @@ boundary is unchanged. Terminal/cancelled cases cannot accept new legal writes.
    be used. A new catalog type may be registered with its displayName. SourceURL
    must be an HTTPS reference; the server never fetches arbitrary supplied URLs.
    This records a human legal assessment, not verification of the issuing body.
-2. Specialist POST `/checklists` with phase, complete `transitCountryCodes`,
-   `sourceReference` and `validUntil`. Transit countries are human-assessed from
-   the actual route; no airport-to-country mapping is invented. Airports present
-   with no assessed countries is rejected. Missing base/any transit rule leaves
-   readiness PENDING. At most100 active rules per phase. Matching current rules
+2. Specialist POST `/checklists` with phase, optional `transitCountryCodes`,
+   `sourceReference` and `validUntil`. Omitted/empty countries are read from
+   the current F10 checkpoint countries, excluding origin/destination.
+   No airport-to-country mapping is invented. Airports present
+   with no resolved countries are rejected. Absent active base/transit rules
+   are provisioned as explicit default workflow templates. At most100 active
+   rules per phase. Matching current rules
    become mandatory requirements; every assessment snapshot is retained in
    ComplianceChecklistHistory while ComplianceChecklist is the current projection.
    Global rules can affect other matching cases: readiness always reevaluates
@@ -36,9 +42,10 @@ boundary is unchanged. Terminal/cancelled cases cannot accept new legal writes.
    Existing versions may be reused, but each new requirement needs submission
    and Specialist review. Reuse never implies auto-approval.
 5. Specialist POST `/submissions/{id}/reviews` with decision APPROVED/REJECTED/
-   REVOKED and optional customer-facing feedback. The submission pins the exact
+   REVOKED and customer-facing feedback (required for REJECTED; `notes` and
+   `reason` are aliases). The submission pins the exact
    version. A superseded submission cannot be reviewed as the current one.
-6. Specialist POST `/files` for authority evidence, then POST `/procedures`
+6. Optionally, Specialist POST `/files`, then POST `/procedures`
    with ruleId, authorityName, applicationReference, decision, sourceReference,
    evidenceFileKey, decidedAt, expiresAt and optional holdReason. APPROVED needs
    inspected evidence uploaded by the recorder for this order/revision, a real
@@ -57,14 +64,20 @@ boundary is unchanged. Terminal/cancelled cases cannot accept new legal writes.
    change workflow if the new facts affect the customer's obligations.
 8. Specialist POST `/clearances` with phase and expiresAt. Every current rule,
    exact document review and required authority result must pass, and clearance
-   expiry cannot exceed the earliest evidence/checklist/rule expiry. Optional
+   expiry cannot exceed the earliest evidence/checklist/rule expiry. If all
+   documents are approved and a required procedure has never been recorded,
+   Clear records a Specialist document clearance using the approved file and
+   review ID. Explicit pending/rejected/revoked/expired procedures still block.
+   Optional
    rule EffectiveTo=null represents an open-ended rule, bounded by checklist
    validity; it is not a missing-rule exemption. AuthorityRequired=false must
    be explicitly recorded in the sourced rule. The API requires an explicit
    authorityRequired boolean; omission is rejected. Existing rows default
    to authority evidence required at the SQL schema level.
 
-Every POST includes `command`: `{recordVersion, operationId}`. Version is the
+Legacy POSTs include `command`: `{recordVersion, operationId}`. The new
+`/requirements/{id}/upload-and-submit` accepts these two fields at the top level.
+Version is the
 16-hex SQL rowversion from the current order/overview; operationId is a UUID.
 A retry must keep the entire original body and UUID; it returns the original
 receipt without duplicate files/reviews/clearances. Different input with that
@@ -76,7 +89,11 @@ legal command. The order's rowversion is advanced atomically with each mutation.
 ## Read operations
 
 - GET base `?phase=PRE_EXPORT&page=0&size=20`: current revision, recordVersion,
-  fresh readiness and paginated requirements. Page0..100000,size1..100.
+  fresh readiness and paginated requirements, including latest attachment
+  metadata, effective status and review feedback. Missing checklists for all
+  three phases are initialized for approved/preparation/confirmed/transit cases.
+  Pass `bootstrap=false` for a read without provisioning. Internal readiness
+  consumers never bootstrap. Page0..100000,size1..100.
   `status` on a requirement is its checklist projection; `decision` is the exact
   latest submission review. The root readiness/blockers determine legal status.
 - GET `/rules?phase=...`: bounded current route rule versions and public sources.
@@ -125,13 +142,16 @@ review and phase evidence are reread transactionally; F11 must evaluate this
 facade in its final departure transaction along with its other gates.
 
 All `datetime2` writes/reads use explicit UTC LocalDateTime conversion; document
-expiry dates include the complete UTC expiry day. Set-based queries load current
+legacy expiry dates include the complete UTC expiry day. One-step submissions
+also retain exact UTC ExpiresAt; whichever bound is earlier governs readiness.
+Set-based queries load current
 requirements, reviews, authority facts and active Specialist IDs in bounded
 batches, with no queries in per-row validation loops. File histories use SQL
 pagination. Query timeout10s, transaction timeout15s, catalog lock timeout5s.
 
 Errors:400 invalid DTO/query,401 unauthenticated,403 forbidden role,404 unavailable
-owned/assigned evidence,409 stale/retry/business conflict,503 missing009 schema.
+owned/assigned evidence,409 stale/retry/business conflict,503 missing schema
+through020.
 No automatic Manager override, fabricated clearance, financial acceptance,
 quarantine release or physical departure is implemented by these endpoints.
 
@@ -144,7 +164,8 @@ cannot become valid private evidence merely by migrating. Upload validated new
 versions and record sourced results. Do not rewrite/delete legal history to fix
 an expired or replaced file. Use a new version/review/result instead.
 
-Only the isolated database EquiTransit_FigmaMigrationTest_20261013_143729 was
-used for migration/reapply and native test fixtures. No real database deployment
-is part of this implementation. No guarantee of operational departure readiness
+BE-02 applies additive migration020 and idempotent seed only to EquiTransit_Demo;
+both scripts reject any other catalog. BE-02 native fixtures also run only there
+and remove their own IDs. No production deployment is part of this task.
+No guarantee of operational departure readiness
 is inferred from compilation or a PRE_EXPORT clearance.

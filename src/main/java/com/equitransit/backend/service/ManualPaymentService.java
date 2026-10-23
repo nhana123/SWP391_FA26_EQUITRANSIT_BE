@@ -332,7 +332,8 @@ public class ManualPaymentService {
         long id = write.apply(context);
 
         check(id > 0, "PAYMENT_SOURCE_MISMATCH");
-        ledger.update("bump", args);
+        ledger.update(input instanceof AllocationCommand
+                ? "prepareOrder" : "bump", args);
         var receipt = new PaymentMutationReceipt(id,
                 cases.order(order, false).orElseThrow().version());
 

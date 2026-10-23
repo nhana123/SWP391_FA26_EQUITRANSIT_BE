@@ -13,5 +13,5 @@ package com.equitransit.backend.entity.compliance;
 
 /** Checklist lifecycle codes. */
 public enum RequirementStatus {
-    PENDING, SUPERSEDED
+    PENDING, SUBMITTED, APPROVED, REJECTED, EXPIRED, REVOKED, SUPERSEDED
 }

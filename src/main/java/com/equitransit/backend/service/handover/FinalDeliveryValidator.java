@@ -7,13 +7,14 @@
  */
 package com.equitransit.backend.service.handover;
 
-import com.equitransit.backend.dto.handover.request.FinalDeliveryHandoverCreateRequest;
+import com.equitransit.backend.dto.handover.request.
+        FinalDeliveryHandoverCreateRequest;
 import com.equitransit.backend.exception.OrderException;
-import com.equitransit.backend.repository.handover.TripHandoverRepository.OrderReceiverRow;
-import com.equitransit.backend.service.ComplianceService;
+import com.equitransit.backend.repository.handover.TripHandoverRepository.
+        OrderReceiverRow;
+import com.equitransit.backend.service.QuarantineReleaseGate;
 import java.util.Locale;
 import java.util.Set;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -28,15 +29,15 @@ public class FinalDeliveryValidator {
             "AUTHORIZED_REPRESENTATIVE", "PROXY", "AGENT"
     );
 
-    private final ObjectProvider<ComplianceService> complianceProvider;
+    private final QuarantineReleaseGate quarantine;
 
     /**
      * Creates final delivery validator.
-     * @param complianceProvider optional compliance service provider
+     * @param quarantine internal read-only clearance boundary
      */
     public FinalDeliveryValidator(
-            ObjectProvider<ComplianceService> complianceProvider) {
-        this.complianceProvider = complianceProvider;
+            QuarantineReleaseGate quarantine) {
+        this.quarantine = quarantine;
     }
 
     /**
@@ -59,9 +60,7 @@ public class FinalDeliveryValidator {
      * @param orderId order PK
      */
     public void validateQuarantineRelease(long orderId) {
-        ComplianceService compliance = complianceProvider.getIfAvailable();
-        if (compliance == null
-                || !compliance.quarantineReleasePassed(orderId)) {
+        if (!quarantine.passed(orderId)) {
             throw new OrderException(HttpStatus.CONFLICT,
                     "QUARANTINE_RELEASE_REQUIRED",
                     "Final delivery cannot be completed without a "

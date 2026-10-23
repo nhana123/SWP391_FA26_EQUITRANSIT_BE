@@ -161,6 +161,9 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/api/health", "/api/auth/**")
                         .permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/manager/resources/**")
+                        .hasAnyRole("MANAGER", "COORDINATOR")
                         .requestMatchers("/api/manager/**")
                         .hasRole("MANAGER")
                         .requestMatchers("/api/staff/**")
@@ -199,6 +202,16 @@ public class SecurityConfig {
                                 "/api/transport-orders/*/legs/*/welfare-logs")
                         .hasAnyRole("CUSTOMER", "MANAGER",
                                 "COORDINATOR", "DRIVER")
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/transport-orders/*/handover-files/*")
+                        .hasAnyRole("CUSTOMER", "DRIVER", "COORDINATOR",
+                                "MANAGER")
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/transport-orders/*/handover-files")
+                        .hasAnyRole("DRIVER", "COORDINATOR", "MANAGER")
+                        .requestMatchers(
+                                "/api/transport-orders/*/handovers/close-order")
+                        .hasRole("MANAGER")
                         .requestMatchers("/api/driver/**")
                         .hasRole("DRIVER")
                         .requestMatchers("/api/coordinator/**")

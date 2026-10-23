@@ -23,6 +23,7 @@ import com.equitransit.backend.dto.compliance.ComplianceRuleRequest;
 import com.equitransit.backend.dto.compliance.ComplianceRuleView;
 import com.equitransit.backend.dto.compliance.ComplianceSubmissionRequest;
 import com.equitransit.backend.dto.compliance.ComplianceUploadRequest;
+import com.equitransit.backend.dto.compliance.ComplianceUploadSubmitRequest;
 import com.equitransit.backend.dto.compliance.ComplianceReceipt;
 import com.equitransit.backend.dto.compliance.ComplianceOverview;
 import com.equitransit.backend.entity.compliance.CompliancePhase;
@@ -98,6 +99,16 @@ public class ComplianceController {
         return service.uploadFile(order, body);
     }
 
+    /** @param order parent @param id requirement @param body file command
+     * @return atomic upload and submission receipt */
+    @PostMapping("/requirements/{id}/upload-and-submit")
+    public ComplianceReceipt uploadAndSubmit(
+            @PathVariable @Positive long order,
+            @PathVariable @Positive long id,
+            @Valid @RequestBody ComplianceUploadSubmitRequest body) {
+        return service.uploadAndSubmit(order, id, body);
+    }
+
     /** @param order parent @param body validated command
      * @param id exact evidence @return retained operation receipt */
     @PostMapping("/requirements/{id}/submissions")
@@ -156,15 +167,17 @@ public class ComplianceController {
     }
 
     /** @param order parent @param phase phase @param page zero based
-     * @param size bounded limit @return phase-specific evidence */
+     * @param size bounded limit @param bootstrap initialize missing checklists
+     * @return phase-specific evidence */
     @GetMapping
     public ComplianceOverview overview(@PathVariable @Positive long order,
             @RequestParam CompliancePhase phase,
             @Parameter(schema = @Schema(example = "0"))
             @RequestParam(defaultValue = "0") @Min(0) @Max(100000) int page,
             @Parameter(schema = @Schema(example = "20"))
-            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
-        return service.overview(order, phase, page, size);
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
+            @RequestParam(defaultValue = "true") boolean bootstrap) {
+        return service.overview(order, phase, page, size, bootstrap);
     }
 
     /** @param order parent @param page zero based @param size bounded limit

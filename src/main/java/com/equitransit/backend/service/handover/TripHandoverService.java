@@ -8,19 +8,26 @@
 package com.equitransit.backend.service.handover;
 
 import com.equitransit.backend.dto.handover.HandoverType;
-import com.equitransit.backend.dto.handover.request.CustomerHandoverDecisionRequest;
-import com.equitransit.backend.dto.handover.request.FinalDeliveryHandoverCreateRequest;
-import com.equitransit.backend.dto.handover.request.IntermediateHandoverCreateRequest;
+import com.equitransit.backend.dto.handover.request.
+        CustomerHandoverDecisionRequest;
+import com.equitransit.backend.dto.handover.request.
+        FinalDeliveryHandoverCreateRequest;
+import com.equitransit.backend.dto.handover.request.
+        IntermediateHandoverCreateRequest;
 import com.equitransit.backend.dto.handover.response.CustomerHandoverResponse;
-import com.equitransit.backend.dto.handover.response.OperationalCompletionReceipt;
+import com.equitransit.backend.dto.handover.response.
+        OperationalCompletionReceipt;
 import com.equitransit.backend.dto.handover.response.TripHandoverResponse;
 import com.equitransit.backend.entity.handover.TripHandover;
 import com.equitransit.backend.exception.OrderException;
 import com.equitransit.backend.repository.execution.LegExecutionRepository;
-import com.equitransit.backend.repository.execution.LegExecutionRepository.LegRow;
-import com.equitransit.backend.repository.execution.LegExecutionRepository.OrderScopeRow;
+import com.equitransit.backend.repository.execution.LegExecutionRepository.
+        LegRow;
+import com.equitransit.backend.repository.execution.LegExecutionRepository.
+        OrderScopeRow;
 import com.equitransit.backend.repository.handover.TripHandoverRepository;
-import com.equitransit.backend.repository.handover.TripHandoverRepository.OrderReceiverRow;
+import com.equitransit.backend.repository.handover.TripHandoverRepository.
+        OrderReceiverRow;
 import com.equitransit.backend.security.CurrentActor;
 import com.equitransit.backend.security.CurrentActorService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -340,7 +347,9 @@ public class TripHandoverService {
         if (actor.staffId() == null) {
             throw new AccessDeniedException("Driver staff profile required.");
         }
-        var assignment = legs.findDriverAssignment(legId, actor.staffId());
+        var assignment = legs.findDriverAssignment(legId, actor.staffId())
+                .or(() -> legs.findCompletedDriverAssignment(legId,
+                        actor.staffId()));
         if (assignment.isEmpty()) {
             throw new AccessDeniedException("Driver is not actively assigned "
                     + "to leg: " + legId);

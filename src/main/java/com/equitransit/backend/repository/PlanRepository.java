@@ -8,6 +8,7 @@
 package com.equitransit.backend.repository;
 
 import com.equitransit.backend.dto.plan.PlanModels.AssignmentState;
+import com.equitransit.backend.dto.plan.PlanModels.PlanDraftRequest;
 import com.equitransit.backend.dto.plan.PlanModels.CarrierAcceptanceState;
 import com.equitransit.backend.dto.plan.PlanModels.GateState;
 import com.equitransit.backend.dto.plan.PlanModels.LegState;
@@ -137,7 +138,7 @@ public class PlanRepository {
      * @param now server UTC @return generated LegID */
     public long insertLeg(long plan, PlanLegInput leg, Long staff,
             OffsetDateTime now) {
-        boolean sourced = leg.distanceSource() != null;
+        boolean sourced = staff != null;
         var args = new MapSqlParameterSource("plan", plan)
                 .addValue("seq", leg.sequenceNo())
                 .addValue("mode", leg.transportMode().name())
@@ -154,7 +155,9 @@ public class PlanRepository {
                 .addValue("conn", leg.connectionBufferMinutes())
                 .addValue("rest", leg.restDurationMinutes())
                 .addValue("care", leg.careInstructions())
-                .addValue("src", sourced ? leg.distanceSource().trim() : null)
+                .addValue("src", sourced ? (leg.distanceSource() == null
+                        ? "Staff plan distance estimate"
+                        : leg.distanceSource().trim()) : null)
                 .addValue("by", sourced ? staff : null)
                 .addValue("at", sourced ? utc(now) : null);
 
@@ -169,6 +172,50 @@ public class PlanRepository {
                 + "(:plan,:seq,:mode,:start,:end,:km,:dep,:arr,'PLANNED',:stz,"
                 + ":etz,:sup,:flt,:conn,:rest,:care,:src,:by,:at); "
                 + "SELECT ID FROM @ids", args, Long.class);
+    }
+
+    /** Save a retail estimate, not carrier acceptance or purchase evidence.
+     * @param draft validated draft @param plan new plan
+     * @param staff recording actor @param now server time */
+    public void recordAirfareEstimate(PlanDraftRequest draft, long plan,
+            long staff, OffsetDateTime now) {
+        var total = draft.legs().stream()
+                .filter(l -> l.transportMode() == PlanLegMode.AIR)
+                .map(PlanLegInput::estimatedAirfare)
+                .filter(java.util.Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (total.signum() == 0) {
+            return;
+        }
+        if (total.setScale(4).precision() > 18) {
+            throw new OrderException(HttpStatus.BAD_REQUEST,
+                    "PLAN_AIRFARE_INVALID", "Airfare total exceeds limits.");
+        }
+        var expiry = draft.legs().getFirst().plannedDeparture();
+        if (!expiry.isAfter(now)) {
+            throw new OrderException(HttpStatus.BAD_REQUEST,
+                    "PLAN_AIRFARE_EXPIRED", "Estimate departure is past.");
+        }
+        var args = new MapSqlParameterSource("revision", draft.revisionId())
+                .addValue("reference", "PLAN-AIRFARE:" + plan)
+                .addValue("amount", total).addValue("staff", staff)
+                .addValue("now", utc(now)).addValue("expiry", utc(expiry));
+        if (draft.setAsCurrentDraft()) {
+            jdbc.update("UPDATE dbo.SupplierOffer SET Status='EXPIRED'"
+                    + " WHERE RevisionID=:revision AND ServiceCode='AIRFARE'"
+                    + " AND OfferReference LIKE 'PLAN-AIRFARE:%'"
+                    + " AND ProviderName='Plan airfare estimate'"
+                    + " AND EvidenceFileKey IS NULL"
+                    + " AND Status='SELECTED'", args);
+        }
+        // Purchase cost is unknown; only RetailUnitPrice is an estimate.
+        jdbc.update("INSERT dbo.SupplierOffer (RevisionID,ProviderName,"
+                + "OfferReference,ServiceCode,UnitCode,Quantity,UnitPrice,"
+                + "RetailUnitPrice,Currency,IncludesStall,IncludedCharges,"
+                + "ValidUntil,Status,RecordedBy,RecordedAt) VALUES"
+                + " (:revision,'Plan airfare estimate',:reference,'AIRFARE',"
+                + "'SHIPMENT',1,0,:amount,'USD',0,NULL,:expiry,"
+                + "'SELECTED',:staff,:now)", args);
     }
 
     /** @param order parent @param plan current plan ID */
@@ -703,7 +750,8 @@ public class PlanRepository {
                 Map.of("quote", quote, "now", utc(now), "plan", plan,
                         "order", order));
         jdbc.update("UPDATE dbo.TransportOrder SET CurrentPlanID=:plan,"
-                + "OrderStatus=CASE WHEN OrderStatus='APPROVED' "
+                + "OrderStatus=CASE WHEN OrderStatus IN "
+                + "('APPROVED','IN_PREPARATION') "
                 + "THEN 'CONFIRMED' ELSE OrderStatus END,"
                 + "UpdatedAt=SYSUTCDATETIME() WHERE OrderID=:order",
                 Map.of("plan", plan, "order", order));

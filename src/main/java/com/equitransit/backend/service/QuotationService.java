@@ -247,7 +247,8 @@ public class QuotationService {
         QuoteRecord record = record(id, quote);
 
         version(order, request.command());
-        if (!"APPROVED".equals(order.status())
+        if (!List.of("APPROVED", "IN_PREPARATION")
+                .contains(order.status())
                 || !java.util.Objects.equals(order.revisionId(),
                         record.revision())) {
             throw conflict("QUOTE_REVISION_CONFLICT",
@@ -386,7 +387,8 @@ public class QuotationService {
     private void editable(CaseOrder order, QuoteCommand command,
             long revision) {
         version(order, command);
-        if (!"APPROVED".equals(order.status())
+        if (!List.of("APPROVED", "IN_PREPARATION")
+                .contains(order.status())
                 || order.revisionId() == null || order.revisionId() != revision
                 || commitments.protectedOrder(order.orderId())) {
             throw conflict("QUOTE_ORDER_PROTECTED",
@@ -416,7 +418,8 @@ public class QuotationService {
             return actor;
         }
         if ("COORDINATOR".equals(role)
-                && "APPROVED".equals(order.status())
+                && List.of("APPROVED", "IN_PREPARATION")
+                        .contains(order.status())
                 && cases.assigned(order.orderId(), actor.staffId(),
                         CaseRole.COORDINATOR)) {
             return actor;

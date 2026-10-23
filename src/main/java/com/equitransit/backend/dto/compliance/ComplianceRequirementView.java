@@ -46,5 +46,7 @@ public record ComplianceRequirementView(
                 + "of the latest submission, shown to the owning customer.",
                 example = "The scan is unreadable; upload a clearer copy.",
                 nullable = true)
-        @Size(max = 2000) String feedback) {
+        @Size(max = 2000) String feedback,
+        @Schema(example = "{}")
+        ComplianceAttachmentView attachment) {
 }
