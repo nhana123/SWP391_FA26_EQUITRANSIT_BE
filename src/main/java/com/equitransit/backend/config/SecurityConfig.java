@@ -162,6 +162,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/health", "/api/auth/**")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET,
+                                "/api/lookups/countries",
+                                "/api/lookups/locations",
+                                "/api/lookups/document-templates",
+                                "/api/lookups/document-templates/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET,
                                 "/api/manager/resources/**")
                         .hasAnyRole("MANAGER", "COORDINATOR")
                         .requestMatchers("/api/manager/**")

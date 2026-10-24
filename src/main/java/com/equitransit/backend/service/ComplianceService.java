@@ -15,6 +15,7 @@ import com.equitransit.backend.dto.compliance.ComplianceAuthorityView;
 import com.equitransit.backend.dto.compliance.ComplianceChecklistRequest;
 import com.equitransit.backend.dto.compliance.ComplianceClearanceRequest;
 import com.equitransit.backend.dto.compliance.ComplianceDocumentView;
+import com.equitransit.backend.dto.compliance.ComplianceDocumentsView;
 import com.equitransit.backend.dto.compliance.ComplianceFileRequest;
 import com.equitransit.backend.dto.compliance.ComplianceFileView;
 import com.equitransit.backend.dto.compliance.ComplianceRequirementView;
@@ -84,6 +85,8 @@ public class ComplianceService {
     private final ObjectMapper mapper;
     private final Clock clock;
     private final ComplianceAutomation automation;
+    private FileStorageService localFiles;
+
 
     /**
      * @param data legal persistence @param cases parent locks
@@ -182,6 +185,12 @@ public class ComplianceService {
         });
     }
 
+    /** @param storage private storage shared by multipart and submission */
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configureLocalStorage(FileStorageService storage) {
+        localFiles = storage;
+    }
+
     /** @param order owned case @param body immutable version 
      * @return identity */
     public ComplianceReceipt upload(long order,
@@ -218,31 +227,89 @@ public class ComplianceService {
             @Valid ComplianceUploadSubmitRequest body) {
         var command = new QuoteCommand(body.recordVersion(),
                 body.operationId());
-        return mutate(order, command, "UPLOAD_SUBMIT:" + id, body, false,
+        return mutate(order, command, "UPLOAD_SUBMIT:" + id,
+                submissionFingerprint(body), false,
                 args -> {
-                    require(body.expiresAt().isAfter(now())
-                            && body.expiresAt().getYear() <= 9997,
-                            "DOCUMENT_DATES_INVALID");
                     args.put("id", id);
                     var requirement = one("requirement", args);
                     args.put("type", requirement.get("DocumentType"));
+                    int choices = (body.fileKey() == null ? 0 : 1)
+                            + (body.existingDocumentVersionId() == null ? 0 : 1)
+                            + (body.contentBase64() == null ? 0 : 1);
+                    require(choices == 1, "DOCUMENT_SOURCE_REQUIRED");
+                    if (body.existingDocumentVersionId() != null) {
+                        args.put("id", body.existingDocumentVersionId());
+                        var version = one("version", args);
+                        require(version.get("DocumentType").equals(
+                                requirement.get("DocumentType")),
+                                "DOCUMENT_TYPE_MISMATCH");
+                        require(version.get("RevokedAt") == null
+                                && date(version, "IssuedDate") != null
+                                && !date(version, "IssuedDate").isAfter(
+                                        now().toLocalDate())
+                                && documentExpiry(version) != null
+                                && documentExpiry(version).isAfter(now()),
+                                "DOCUMENT_EXPIRED_OR_REVOKED");
+                        checkPolicyAge(args, date(version, "IssuedDate"));
+                        require(data.rows("latestVersion", args).stream()
+                                .anyMatch(v -> number(v, "DocumentVersionID")
+                                == body.existingDocumentVersionId()),
+                                "DOCUMENT_VERSION_SUPERSEDED");
+                        args.put("requirement", id);
+                        args.put("version", body.existingDocumentVersionId());
+                        data.update("invalidate", args);
+                        return data.insert("submissionInsert", args);
+                    }
+                    var issued = body.issuedDate() == null
+                            ? now().toLocalDate() : body.issuedDate();
+                    require(body.fileKey() == null
+                            || body.issuedDate() != null
+                            && body.expiryDate() != null,
+                            "DOCUMENT_DATES_REQUIRED");
+                    require(body.expiryDate() == null
+                            || body.expiryDate().getYear() <= 9997
+                            && !body.expiryDate().isBefore(issued),
+                            "DOCUMENT_DATES_INVALID");
+                    var expires = body.expiresAt() != null ? body.expiresAt()
+                            : body.expiryDate() == null ? null
+                            : body.expiryDate().plusDays(1).atStartOfDay()
+                                    .atOffset(ZoneOffset.UTC);
+                    require(expires != null && expires.isAfter(now())
+                            && expires.getYear() <= 9997
+                            && !issued.isAfter(now().toLocalDate())
+                            && !issued.isAfter(expires.toLocalDate()),
+                            "DOCUMENT_DATES_INVALID");
+                    checkPolicyAge(args, issued);
                     var types = data.rows("catalog", args);
                     require(!types.isEmpty() && Boolean.TRUE.equals(
                             types.getFirst().get("IsActive")),
                             "DOCUMENT_TYPE_UNKNOWN");
-                    storeFile(args, body.fileName(), body.contentType(),
-                            body.contentBase64());
+                    if (body.fileKey() == null) {
+                        require(body.fileName() != null
+                                && body.contentType() != null,
+                                "FILE_TYPE_INVALID");
+                        storeFile(args, body.fileName(), body.contentType(),
+                                body.contentBase64());
+                    } else {
+                        var meta = localFiles.metadata(body.fileKey());
+                        args.put("key", meta.fileKey().toString());
+                        args.put("name", meta.fileName());
+                        args.put("mime", meta.contentType());
+                        args.put("length", meta.fileSizeBytes());
+                        args.put("fileHash", localHash(meta.fileKey()));
+                    }
                     var documents = data.rows("document", args);
                     args.put("document", documents.isEmpty()
                             ? data.insert("documentInsert", args)
                             : number(documents.getFirst(), "DocumentID"));
-                    args.put("number", body.referenceNumber());
-                    args.put("issued", java.sql.Date.valueOf(
-                            now().toLocalDate()));
-                    args.put("expiry", java.sql.Date.valueOf(body.expiresAt()
-                            .withOffsetSameInstant(ZoneOffset.UTC)
-                            .toLocalDate()));
-                    args.put("expires", time(body.expiresAt()));
+                    args.put("number", body.documentNumber() == null
+                            ? body.referenceNumber() : body.documentNumber());
+                    args.put("issued", java.sql.Date.valueOf(issued));
+                    args.put("expiry", java.sql.Date.valueOf(
+                            body.expiryDate() == null ? expires
+                                    .withOffsetSameInstant(ZoneOffset.UTC)
+                                    .toLocalDate() : body.expiryDate()));
+                    args.put("expires", time(expires));
                     long version = data.insert("versionInsert", args);
                     args.put("requirement", id);
                     args.put("version", version);
@@ -480,13 +547,61 @@ public class ComplianceService {
                         at(r, "RevokedAt"))).toList();
     }
 
+    /** @param order owned/assigned @param phase optional phase @param page page
+     * @param size limit @return required documents and reusable horse papers */
+    public ComplianceDocumentsView documentChecklist(long order,
+                    CompliancePhase phase, int page,
+                    int size) {
+        var args = access(order, false);
+        var entries = new java.util.ArrayList<
+                ComplianceDocumentsView.Requirement>();
+        var phases = phase == null ? List.of(CompliancePhase.values())
+                : List.of(phase);
+        for (var item : phases) {
+            for (var r : overview(order, item, 0, 100, true).requirements()) {
+                entries.add(new ComplianceDocumentsView.Requirement(
+                                r.requirementId(),
+                                number(args, "horse"), r.documentType(),
+                                r.phase(), r.status()
+                                        == RequirementStatus.PENDING
+                                        ? "PENDING_SUBMISSION"
+                                        : r.status().name(), r.submissionId(),
+                                r.documentVersionId(), r.instructions(),
+                                r.feedback(), r.attachment()));
+            }
+        }
+        return new ComplianceDocumentsView(cases.order(order, false)
+                        .orElseThrow().version(), entries.stream()
+                                .skip((long) page * size).limit(size).toList(),
+                        documents(order, page, size), entries.size(),
+                        page, size);
+    }
+
     /** @param order owned/assigned @param key opaque identity 
      * @return content */
     public ComplianceFileView file(long order, UUID key) {
         var args = access(order, false);
 
         args.put("key", key);
-        var row = one("fileRead", args);
+        var saved = data.rows("fileRead", args);
+        if (saved.isEmpty() && localFiles != null) {
+            args.put("key", key.toString());
+            require(!data.rows("fileVersion", args).isEmpty(),
+                    "LEGAL_EVIDENCE_NOT_FOUND");
+            var meta = localFiles.metadata(key);
+            try (var stream = localFiles.loadAsResource(key.toString())
+                    .getInputStream()) {
+                return new ComplianceFileView(key, meta.contentType(),
+                        meta.fileName(), Base64.getEncoder().encodeToString(
+                                stream.readAllBytes()));
+            } catch (java.io.IOException error) {
+                throw missing();
+            }
+        }
+        if (saved.isEmpty()) {
+            throw missing();
+        }
+        var row = saved.getFirst();
 
         return new ComplianceFileView(key, row.get("ContentType").toString(),
                 row.get("OriginalFileName").toString(), Base64.getEncoder()
@@ -628,6 +743,14 @@ public class ComplianceService {
         if (row.get("RevokedAt") != null) {
             return RequirementStatus.REVOKED;
         }
+        if (row.get("MaxAgeDays") != null) {
+            var issued = date(row, "IssuedDate");
+            if (issued == null || issued.plusDays(Integer.parseInt(
+                    row.get("MaxAgeDays").toString()))
+                    .isBefore(now().toLocalDate())) {
+                return RequirementStatus.EXPIRED;
+            }
+        }
         var expiry = documentExpiry(row);
         if (expiry != null && !expiry.isAfter(now())) {
             return RequirementStatus.EXPIRED;
@@ -755,6 +878,46 @@ public class ComplianceService {
             throw new IllegalStateException("SHA-256 unavailable.", error);
         }
         return data.insert("fileInsert", args);
+    }
+
+    private String localHash(UUID key) {
+        try (var stream = localFiles.loadAsResource(key.toString())
+                .getInputStream()) {
+            return java.util.HexFormat.of().formatHex(java.security
+                    .MessageDigest.getInstance("SHA-256")
+                    .digest(stream.readAllBytes()));
+        } catch (java.io.IOException
+                | java.security.NoSuchAlgorithmException error) {
+            throw new IllegalStateException("Private file unavailable.", error);
+        }
+    }
+
+    private Object submissionFingerprint(ComplianceUploadSubmitRequest body) {
+        if (body.fileKey() == null && body.existingDocumentVersionId() == null
+                && body.documentNumber() == null && body.issuedDate() == null
+                && body.expiryDate() == null) {
+            com.fasterxml.jackson.databind.node.ObjectNode tree = mapper
+                    .valueToTree(body);
+            tree.remove(List.of("fileKey", "existingDocumentVersionId",
+                    "documentNumber", "issuedDate", "expiryDate"));
+            return tree;
+        }
+        return body;
+    }
+
+    private void checkPolicyAge(Map<String, Object> args,
+            java.time.LocalDate issued) {
+        if (data.localFilesReady()) {
+            for (var policy : data.rows("documentPolicies", args)) {
+                if (args.get("type").equals(policy.get("DocumentType"))
+                        && policy.get("ValidityDays") instanceof Number days) {
+                    require(issued != null && !issued.isAfter(now()
+                            .toLocalDate()) && !issued.plusDays(days.intValue())
+                                    .isBefore(now().toLocalDate()),
+                            "DOCUMENT_VALIDITY_EXCEEDED");
+                }
+            }
+        }
     }
 
     private List<Map<String, Object>> routeRules(Map<String, Object> args,

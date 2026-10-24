@@ -52,6 +52,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /** Native legal fixtures are removed only from the exact isolated catalog. */
 @SpringBootTest(properties = {
         "spring.datasource.url=${EQ_COMPLIANCE_TEST_DB_URL}",
+        "app.compliance.auto-approval=false",
         "spring.jpa.hibernate.ddl-auto=validate"})
 @AutoConfigureMockMvc(print = MockMvcPrint.NONE)
 @ActiveProfiles({"test", "horse-test"})
@@ -514,7 +515,11 @@ public class ComplianceIntegrationTest {
         assertThat(overview("PRE_EXPORT").at("/readiness/blockers").toString())
                 .contains("RULE_ASSESSMENT_PENDING");
         var initial = get(legal() + "?phase=PRE_EXPORT", owner, 200);
-        assertThat(initial.path("requirements").size()).isEqualTo(2);
+        int baseDocuments = jdbc.queryForObject("SELECT CASE WHEN "
+                + "OBJECT_ID('dbo.ComplianceDocumentPolicy') IS NULL "
+                + "THEN 2 ELSE 4 END", Integer.class);
+        assertThat(initial.path("requirements").size())
+                .isEqualTo(baseDocuments);
         assertThat(count("ComplianceChecklist", "RevisionID", revision))
                 .isEqualTo(3);
         assertThat(get(legal() + "?phase=PRE_EXPORT", owner, 200)
@@ -524,7 +529,7 @@ public class ComplianceIntegrationTest {
                 "QUARANTINE_RELEASE")) {
             var requirements = overview(phase).path("requirements");
             assertThat(requirements.size()).isEqualTo(
-                    phase.equals("PRE_EXPORT") ? 2 : 1);
+                    phase.equals("PRE_EXPORT") ? baseDocuments : 1);
             for (var requirement : requirements) {
                 long id = requirement.path("requirementId").asLong();
                 var request = oneStep();
@@ -546,7 +551,7 @@ public class ComplianceIntegrationTest {
             var procedures = get(legal() + "/procedures?phase=" + phase,
                     owner, 200);
             assertThat(procedures.size()).isEqualTo(
-                    phase.equals("PRE_EXPORT") ? 2 : 1);
+                    phase.equals("PRE_EXPORT") ? baseDocuments : 1);
             assertThat(procedures.get(0).path("sourceReference").asText())
                     .startsWith("SPECIALIST_DOCUMENT_REVIEW:");
         }
@@ -609,7 +614,8 @@ public class ComplianceIntegrationTest {
         post(legal() + "/submissions/" + replacement + "/reviews", specialist,
                 review, 200);
         clear("PRE_EXPORT", 200);
-        assertThat(get(legal() + "/documents", owner, 200).size()).isEqualTo(2);
+        assertThat(get(legal() + "/documents?view=versions", owner, 200).size())
+                .isEqualTo(2);
     }
 
     /** @throws Exception if F10 countries are not deduplicated and isolated */
@@ -726,7 +732,8 @@ public class ComplianceIntegrationTest {
                             java.util.concurrent.TimeUnit.SECONDS));
         }
         assertThat(count("ComplianceFile", "OrderID", order)).isEqualTo(1);
-        assertThat(get(legal() + "/documents", owner, 200).size()).isEqualTo(1);
+        assertThat(get(legal() + "/documents?view=versions", owner, 200).size())
+                .isEqualTo(1);
         assertThat(count("DocumentSubmission", "RequirementID", requirement))
                 .isEqualTo(1);
     }
@@ -767,7 +774,8 @@ public class ComplianceIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT ContentBytes FROM"
                 + " dbo.ComplianceFile WHERE FileKey=?", byte[].class, key))
                 .isEqualTo(original);
-        assertThat(get(legal() + "/documents", owner, 200).size()).isEqualTo(2);
+        assertThat(get(legal() + "/documents?view=versions", owner, 200).size())
+                .isEqualTo(2);
         assertThat(get(legal() + "/files/" + key, owner, 200)
                 .path("contentBase64").asText()).isEqualTo(image());
     }
@@ -940,7 +948,8 @@ public class ComplianceIntegrationTest {
                     .isEqualTo(second.get(25,
                             java.util.concurrent.TimeUnit.SECONDS));
         }
-        assertThat(get(legal() + "/documents", owner, 200).size()).isEqualTo(1);
+        assertThat(get(legal() + "/documents?view=versions", owner, 200).size())
+                .isEqualTo(1);
         assertThat(count("ComplianceFile", "OrderID", order)).isEqualTo(1);
     }
 
@@ -984,7 +993,8 @@ public class ComplianceIntegrationTest {
         jdbc.update("UPDATE dbo.DocumentVersion SET FileKey='legacy/file.pdf',"
                 + "IssuedDate=NULL,ExpiryDate=NULL WHERE DocumentVersionID=?",
                 version);
-        var history = get(legal() + "/documents", owner, 200).get(0);
+        var history = get(legal() + "/documents?view=versions", owner, 200)
+                .get(0);
 
         assertThat(history.path("fileKey").isNull()).isTrue();
         assertThat(history.path("issuedDate").isNull()).isTrue();

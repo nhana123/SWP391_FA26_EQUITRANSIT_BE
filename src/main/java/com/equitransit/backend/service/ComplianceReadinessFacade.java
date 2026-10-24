@@ -157,6 +157,14 @@ public class ComplianceReadinessFacade {
                 var exactExpiry = at(requirement, "ExpiresAt");
                 valid = valid && (exactExpiry == null
                         || exactExpiry.isAfter(asOf));
+                if (requirement.get("MaxAgeDays") != null) {
+                    var maximum = issued == null ? asOf : issued.toLocalDate()
+                            .plusDays(Integer.parseInt(requirement.get(
+                                    "MaxAgeDays").toString()) + 1L)
+                            .atStartOfDay().atOffset(ZoneOffset.UTC);
+                    valid = valid && maximum.isAfter(asOf);
+                    expires = earlier(expires, maximum);
+                }
 
                 if (valid && at(requirement, "ReviewedAt") != null
                         && !at(requirement, "ReviewedAt").isAfter(asOf)

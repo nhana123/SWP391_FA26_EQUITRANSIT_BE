@@ -29,6 +29,7 @@ import com.equitransit.backend.dto.compliance.ComplianceOverview;
 import com.equitransit.backend.entity.compliance.CompliancePhase;
 import com.equitransit.backend.service.ComplianceService;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
@@ -102,6 +103,7 @@ public class ComplianceController {
     /** @param order parent @param id requirement @param body file command
      * @return atomic upload and submission receipt */
     @PostMapping("/requirements/{id}/upload-and-submit")
+    @Operation(summary = "Submit base64, a private fileKey, or a horse version")
     public ComplianceReceipt uploadAndSubmit(
             @PathVariable @Positive long order,
             @PathVariable @Positive long id,
@@ -182,7 +184,8 @@ public class ComplianceController {
 
     /** @param order parent @param page zero based @param size bounded limit
      * @return immutable file-version metadata */
-    @GetMapping("/documents")
+    @GetMapping(value = "/documents", params = "view=versions")
+    @Operation(hidden = true)
     public List<ComplianceDocumentView> documents(
             @PathVariable @Positive long order,
             @Parameter(schema = @Schema(example = "0"))
@@ -190,6 +193,20 @@ public class ComplianceController {
             @Parameter(schema = @Schema(example = "20"))
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
         return service.documents(order, page, size);
+    }
+
+    /** @param order case @param phase optional phase @param page page
+     * @param size limit @return required papers and reusable version history */
+    @GetMapping(value = "/documents", params = "!view")
+    @Operation(summary = "Get required papers, review feedback and horse files")
+    public com.equitransit.backend.dto.compliance.ComplianceDocumentsView
+            documentChecklist(@PathVariable @Positive long order,
+                    @RequestParam(required = false) CompliancePhase phase,
+                    @RequestParam(defaultValue = "0")
+                    @Min(0) @Max(100000) int page,
+                    @RequestParam(defaultValue = "20")
+                    @Min(1) @Max(100) int size) {
+        return service.documentChecklist(order, phase, page, size);
     }
 
     /** @param order parent @param key opaque key @return private JSON file */

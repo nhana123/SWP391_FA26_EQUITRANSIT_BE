@@ -211,6 +211,24 @@ public class ResourceRepository {
             }
             results.put(r.getLong("ResourceID"), List.copyOf(blockers));
         });
+        if (kind == ResourceKind.VEHICLE && journeyTableExists()) {
+            jdbc.query("SELECT DISTINCT t.VehicleID FROM journey.Trip t"
+                    + " JOIN dbo.FleetVehicle v ON v.VehicleID=t.VehicleID"
+                    + " WHERE t.VehicleID IN (:ids) AND t.Status IN"
+                    + " ('PENDING_APPROVAL','SCHEDULED','IN_TRANSIT','ARRIVED')"
+                    + " AND t.StartsAt<DATEADD(minute,"
+                    + "COALESCE(v.BufferMinutes,0),:end)"
+                    + " AND DATEADD(minute,COALESCE(v.BufferMinutes,0),"
+                    + "t.EndsAt)>:start", args, r -> {
+                        var key = r.getLong("VehicleID");
+                        var existing = new java.util.ArrayList<>(
+                                results.getOrDefault(key, List.of()));
+                        if (!existing.contains(ResourceBlocker.OVERLAP)) {
+                            existing.add(ResourceBlocker.OVERLAP);
+                        }
+                        results.put(key, List.copyOf(existing));
+                    });
+        }
         return results;
     }
 
@@ -480,6 +498,10 @@ public class ResourceRepository {
     public List<ResourceBlocker> scheduleBlockers(ResourceKind kind, long key,
                     OffsetDateTime start, OffsetDateTime end, int buffer,
                     long exclude) {
+        if (kind == ResourceKind.VEHICLE && journeyVehicleBusy(key, start,
+                end.plusMinutes(buffer))) {
+            return List.of(ResourceBlocker.OVERLAP);
+        }
         String sql = kind == ResourceKind.VEHICLE
                 ? "SELECT COALESCE(SUM(CASE WHEN a.PlannedDeparture IS NULL OR "
                         + "a.PlannedArrival IS NULL THEN 1 ELSE 0 END),0) "
@@ -545,6 +567,22 @@ public class ResourceRepository {
                     }
                     return List.copyOf(result);
                 });
+    }
+
+    private boolean journeyVehicleBusy(long key, OffsetDateTime start,
+            OffsetDateTime end) {
+        return journeyTableExists() && jdbc.queryForObject(
+                "SELECT COUNT(*) FROM journey.Trip WHERE VehicleID=:id"
+                        + " AND Status IN ('PENDING_APPROVAL','SCHEDULED',"
+                        + "'IN_TRANSIT','ARRIVED') AND StartsAt<:end"
+                        + " AND EndsAt>:start",
+                Map.of("id", key, "start", utc(start), "end", utc(end)),
+                Integer.class) > 0;
+    }
+
+    private boolean journeyTableExists() {
+        return jdbc.getJdbcTemplate().queryForObject(
+                "SELECT OBJECT_ID('journey.Trip','U')", Long.class) != null;
     }
 
     private String select(ResourceKind kind) {

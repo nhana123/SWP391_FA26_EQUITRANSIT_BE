@@ -119,6 +119,43 @@ public class ComplianceRepository {
         return jdbc.queryForObject(statement(key), args, Long.class);
     }
 
+    /** @return whether migration024 local file support is deployed */
+    public boolean localFilesReady() {
+        return jdbc.getJdbcTemplate().queryForObject("SELECT CASE WHEN "
+                + "OBJECT_ID('dbo.LocalFileObject','U') IS NULL THEN 0 "
+                + "ELSE 1 END", Integer.class) == 1;
+    }
+
+    private String localEvidence() {
+        return localFilesReady() ? " OR EXISTS(SELECT 1 FROM "
+                + "dbo.LocalFileObject lf WHERE lf.FileKey=TRY_CONVERT("
+                + "uniqueidentifier,v.FileKey) AND lf.FileHash=v.FileHash)"
+                : "";
+    }
+
+    private String localProcedureEvidence() {
+        return localFilesReady() ? " OR EXISTS(SELECT 1 FROM "
+                + "dbo.LocalFileObject lf JOIN dbo.DocumentVersion v "
+                + "ON v.FileKey=CONVERT(varchar(36),lf.FileKey) JOIN "
+                + "dbo.HorseDocument hd ON hd.DocumentID=v.DocumentID "
+                + "WHERE lf.FileKey=TRY_CONVERT(uniqueidentifier,"
+                + "p.EvidenceFileKey) AND lf.FileHash=v.FileHash "
+                + "AND hd.HorseID=:horse)" : "";
+    }
+
+    private String defaultPolicyScope() {
+        return localFilesReady() ? " AND (r.RuleCode NOT LIKE 'ET-DEF-%' "
+                + "OR NOT EXISTS(SELECT 1 FROM dbo.ComplianceDocumentPolicy p "
+                + "WHERE p.DocumentType=r.DocumentType) OR EXISTS(SELECT 1 "
+                + "FROM dbo.ComplianceDocumentPolicy p WHERE p.IsActive=1 "
+                + "AND p.DocumentType=r.DocumentType AND "
+                + "(p.DestinationCountryCode IS NULL OR "
+                + "p.DestinationCountryCode=:destination) AND "
+                + "(p.SexCode IS NULL OR EXISTS(SELECT 1 FROM "
+                + "dbo.TransportOrderDetail od WHERE od.OrderID=:order "
+                + "AND od.SnapshotSexCode=p.SexCode))))" : "";
+    }
+
     /** @param args authorized current order/revision @return graph countries */
     public List<String> transitCountries(Map<String, ?> args) {
         boolean present = Boolean.TRUE.equals(jdbc.getJdbcTemplate()
@@ -132,6 +169,27 @@ public class ComplianceRepository {
 
     private String statement(String key) {
         return switch (key) {
+            case "requirementValidity" ->
+                    "UPDATE d SET ValidityConditionsJSON=CONCAT("
+                    + "'{\"maxAgeDays\":',p.ValidityDays,'}') "
+                    + "FROM dbo.DocumentRequirement d"
+                    + " JOIN dbo.ComplianceDocumentPolicy p ON "
+                    + "p.DocumentType=d.DocumentType AND p.IsActive=1 "
+                    + "WHERE d.RevisionID=:revision AND "
+                    + "d.PhaseCode=:phase AND d.Status<>'SUPERSEDED' AND "
+                    + "p.ValidityDays IS NOT NULL AND "
+                    + "(p.DestinationCountryCode IS NULL OR "
+                    + "p.DestinationCountryCode=:destination) AND "
+                    + "(p.SexCode IS NULL OR EXISTS(SELECT 1 FROM "
+                    + "dbo.TransportOrderDetail od WHERE od.OrderID=:order "
+                    + "AND od.SnapshotSexCode=p.SexCode))";
+            case "documentPolicies" ->
+                    "SELECT p.* FROM dbo.ComplianceDocumentPolicy p WHERE "
+                    + "p.IsActive=1 AND (p.DestinationCountryCode IS NULL OR "
+                    + "p.DestinationCountryCode=:destination) AND "
+                    + "(p.SexCode IS NULL OR EXISTS(SELECT 1 FROM "
+                    + "dbo.TransportOrderDetail d WHERE d.OrderID=:order "
+                    + "AND d.SnapshotSexCode=p.SexCode))";
             case "ruleFamily" ->
                     "SELECT TOP(1) * FROM dbo.ComplianceRuleVersion WHERE"
                     + " RuleCode=:code ORDER BY VersionNo DESC";
@@ -174,7 +232,7 @@ public class ComplianceRepository {
             case "route" ->
                     "SELECT o.OriginCountryCode, "
                     + "o.DestinationCountryCode, o.TransitAirportsJSON, "
-                    + "d.HorseID, o.PreferredDepartureAt, "
+                    + "d.HorseID, d.SnapshotSexCode, o.PreferredDepartureAt, "
                     + "o.DeliveryDeadline FROM dbo.TransportOrder o JOIN "
                     + "dbo.TransportOrderDetail d ON d.OrderID=o.OrderID "
                     + "WHERE o.OrderID=:order";
@@ -203,7 +261,8 @@ public class ComplianceRepository {
                     + "newer.RuleCode=r.RuleCode AND "
                     + "newer.VersionNo>r.VersionNo AND "
                     + "newer.ReviewedAt<=:now AND "
-                    + "newer.EffectiveFrom<=:now) ORDER BY r.RuleID";
+                    + "newer.EffectiveFrom<=:now)" + defaultPolicyScope()
+                    + " ORDER BY r.RuleID";
             case "ruleLock" ->
                     "DECLARE @result INT; EXEC @result=sys.sp_getapplock "
                     + "@Resource=:resource, @LockMode='Exclusive', "
@@ -260,14 +319,17 @@ public class ComplianceRepository {
             case "requirements" ->
                     "SELECT TOP(101) d.RequirementID, d.RuleID, "
                     + "d.DocumentType, d.PhaseCode, d.Instructions, d.Status, "
-                    + "d.IsMandatory, s.SubmissionID, s.DocumentVersionID, "
+                    + "d.IsMandatory, JSON_VALUE(d.ValidityConditionsJSON,"
+                    + "'$.maxAgeDays') AS MaxAgeDays, "
+                    + "s.SubmissionID, s.DocumentVersionID, "
                     + "v.ExpiryDate,v.IssuedDate,v.RevokedAt,v.UploadedAt,"
                     + "v.ExpiresAt,v.FileKey,v.OriginalFileName,v.ContentType,"
                     + "v.FileSizeBytes,v.DocumentNumber,review.ReviewID,"
                     + " CASE WHEN "
                     + "EXISTS(SELECT 1 FROM dbo.ComplianceFile f WHERE "
                     + "f.FileKey=TRY_CONVERT(uniqueidentifier, v.FileKey) "
-                    + "AND f.FileHash=v.FileHash) THEN 1 ELSE 0 END AS "
+                    + "AND f.FileHash=v.FileHash)" + localEvidence()
+                    + " THEN 1 ELSE 0 END AS "
                     + "PrivateFilePresent, review.Decision, review.Feedback, "
                     + "review.ReviewedBy, review.ReviewedAt, "
                     + "latest.DocumentVersionID AS LatestVersionID FROM "
@@ -315,6 +377,15 @@ public class ComplianceRepository {
                     + "v JOIN dbo.HorseDocument h ON "
                     + "h.DocumentID=v.DocumentID WHERE h.HorseID=:horse AND "
                     + "v.DocumentVersionID=:id";
+            case "fileVersion" ->
+                    "SELECT v.* FROM dbo.DocumentVersion v JOIN "
+                    + "dbo.HorseDocument h ON h.DocumentID=v.DocumentID "
+                    + "WHERE h.HorseID=:horse AND v.FileKey=:key";
+            case "latestVersion" ->
+                    "SELECT TOP(1) v.DocumentVersionID FROM "
+                    + "dbo.DocumentVersion v JOIN dbo.HorseDocument h ON "
+                    + "h.DocumentID=v.DocumentID WHERE h.HorseID=:horse AND "
+                    + "h.DocumentType=:type ORDER BY v.DocumentVersionID DESC";
             case "documents" ->
                     "SELECT v.*, h.DocumentType FROM dbo.DocumentVersion "
                     + "v JOIN dbo.HorseDocument h ON "
@@ -380,7 +451,8 @@ public class ComplianceRepository {
                     + "dbo.ComplianceFile f WHERE "
                     + "f.FileKey=TRY_CONVERT(uniqueidentifier, "
                     + "p.EvidenceFileKey) AND f.OrderID=:order AND "
-                    + "f.RevisionID=:revision) THEN 1 ELSE 0 END AS "
+                    + "f.RevisionID=:revision)" + localProcedureEvidence()
+                    + " THEN 1 ELSE 0 END AS "
                     + "PrivateFilePresent FROM dbo.AuthorityProcedure p "
                     + "WHERE p.RevisionID=:revision AND p.PhaseCode=:phase "
                     + "AND NOT EXISTS(SELECT 1 FROM dbo.AuthorityProcedure "

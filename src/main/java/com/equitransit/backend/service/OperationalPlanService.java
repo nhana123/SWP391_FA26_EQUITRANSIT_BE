@@ -453,13 +453,13 @@ public class OperationalPlanService {
                     "Plan has unresolved blockers: "
                             + String.join(", ", blockers));
         }
+        resources.lock();
         if (plans.lockHorseAndCheckOverlap(order, summary.plannedStartTime(),
                 summary.plannedEndTime())) {
             throw conflict("HORSE_SCHEDULE_OVERLAP",
                     "Horse has an overlapping active operational plan on "
                             + "another order.");
         }
-        resources.lock();
         try {
             plans.confirmPlan(order, plan, req.acceptedQuoteId(), now);
         } catch (DataAccessException error) {

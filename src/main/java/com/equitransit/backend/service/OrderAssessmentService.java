@@ -56,6 +56,8 @@ public class OrderAssessmentService {
     private final OrderCommitmentPolicy commitments;
     private final OrderJsonCodec json;
     private final ObjectMapper mapper;
+    private org.springframework.context.ApplicationEventPublisher events;
+
 
     /**
      * Creates the Manager assessment facade.
@@ -78,6 +80,13 @@ public class OrderAssessmentService {
         this.commitments = commitments;
         this.json = json;
         this.mapper = mapper;
+    }
+
+    /** @param publisher same-transaction domain notifications */
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configureEvents(
+            org.springframework.context.ApplicationEventPublisher publisher) {
+        events = publisher;
     }
 
     /**
@@ -123,6 +132,10 @@ public class OrderAssessmentService {
                     actor.staffId(), request.dueAt(), request.assignmentNote());
         }
         transition(order, request.decision().name());
+        if (events != null && request.decision() == DecisionCode.APPROVED) {
+            events.publishEvent(new ComplianceApprovalProvisioner.Approved(
+                    id, request.revisionId(), actor.userId()));
+        }
         return finish(id, actor, request.operationId(), "DECIDE", hash,
                 request, before);
     }

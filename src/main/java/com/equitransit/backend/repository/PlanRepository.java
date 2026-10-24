@@ -370,6 +370,9 @@ public class PlanRepository {
      * @return true if driver has an overlapping active assignment */
     public boolean driverOverlaps(long staff, OffsetDateTime start,
             OffsetDateTime end, int buffer, long excludeLeg) {
+        if (journeyBusy("DRIVER", staff, start, end.plusMinutes(buffer))) {
+            return true;
+        }
         return jdbc.queryForObject("SELECT COUNT(*) FROM dbo.TripAssignment a "
                 + "WITH (UPDLOCK,HOLDLOCK) JOIN dbo.TripLeg l "
                 + "ON l.LegID=a.LegID JOIN dbo.TransportPlan p "
@@ -718,6 +721,9 @@ public class PlanRepository {
         jdbc.queryForObject("SELECT HorseID FROM dbo.Horse WITH (UPDLOCK,"
                 + "HOLDLOCK) WHERE HorseID=:horse", Map.of("horse", horse),
                 Long.class);
+        if (journeyBusy("HORSE", horse, start, end)) {
+            return true;
+        }
         return jdbc.queryForObject("SELECT COUNT(*) FROM "
                 + "dbo.TransportOrderDetail d JOIN dbo.TransportOrder o "
                 + "ON o.OrderID=d.OrderID JOIN dbo.TransportPlan p "
@@ -762,6 +768,27 @@ public class PlanRepository {
         return jdbc.queryForList("SELECT ServiceCode,OptionCode,ArrangedBy "
                 + "FROM dbo.OrderServiceChoice WHERE RevisionID=:rev",
                 Map.of("rev", revision));
+    }
+
+    private boolean journeyBusy(String kind, long key, OffsetDateTime start,
+            OffsetDateTime end) {
+        Long exists = jdbc.queryForObject(
+                "SELECT OBJECT_ID('journey.Trip','U')", Map.of(), Long.class);
+        if (exists == null) {
+            return false;
+        }
+        boolean driver = "DRIVER".equals(kind);
+        String joins = driver ? "" : " JOIN journey.Manifest m"
+                + " ON m.TripID=t.TripID JOIN journey.BookingHorse h"
+                + " ON h.BookingHorseID=m.BookingHorseID";
+        String match = driver ? "t.DriverID=:key"
+                : "h.HorseID=:key AND m.Active=1";
+        return jdbc.queryForObject("SELECT COUNT(*) FROM journey.Trip t"
+                + joins + " WHERE " + match + " AND t.Status IN"
+                + " ('PENDING_APPROVAL','SCHEDULED','IN_TRANSIT','ARRIVED')"
+                + " AND t.StartsAt<:end AND t.EndsAt>:start",
+                Map.of("key", key, "start", utc(start), "end", utc(end)),
+                Integer.class) > 0;
     }
 
     private PlanSummaryView summary(ResultSet r, Long current)
