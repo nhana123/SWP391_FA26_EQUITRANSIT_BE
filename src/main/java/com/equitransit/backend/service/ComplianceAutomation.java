@@ -59,7 +59,23 @@ public class ComplianceAutomation {
         data.update("ruleLock", args);
         args.put("transits", json.write(transits));
         var existing = data.rows("rules", args);
-        if (existing.stream().noneMatch(r ->
+        boolean enhanced = data.localFilesReady()
+                && "PRE_EXPORT".equals(args.get("phase"))
+                && existing.stream().filter(r ->
+                        r.get("TransitCountryCode") == null).allMatch(r ->
+                        r.get("RuleCode").toString().startsWith("ET-DEF-"));
+        if (enhanced) {
+            for (var policy : data.rows("documentPolicies", args)) {
+                String type = policy.get("DocumentType").toString();
+                if (existing.stream().noneMatch(r -> type.equals(
+                        r.get("DocumentType")))) {
+                    var scoped = new HashMap<>(args);
+                    scoped.put("policyDisplay", policy.get("DisplayName"));
+                    provision(scoped, type, null);
+                }
+            }
+        }
+        if (!enhanced && existing.stream().noneMatch(r ->
                 r.get("TransitCountryCode") == null)) {
             var phase = CompliancePhase.valueOf(args.get("phase").toString());
             for (var type : defaults(phase)) {
@@ -135,13 +151,16 @@ public class ComplianceAutomation {
         data.update("oldRequirements", args);
         data.update("requirementInsert", args);
         data.update("requirementReactivate", args);
+        if (data.localFilesReady()) {
+            data.update("requirementValidity", args);
+        }
     }
 
     private void provision(Map<String, Object> scope, String type,
             String transit) {
         var args = new HashMap<>(scope);
         args.put("type", type);
-        args.put("display", display(type));
+        args.put("display", args.getOrDefault("policyDisplay", display(type)));
         var catalog = data.rows("catalog", args);
         if (catalog.isEmpty()) {
             data.update("catalogInsert", args);
@@ -149,17 +168,17 @@ public class ComplianceAutomation {
             require(Boolean.TRUE.equals(catalog.getFirst().get("IsActive")),
                     "DOCUMENT_TYPE_INACTIVE");
         }
-        int index = type.equals("EXPORT_HEALTH_CERTIFICATE") ? 1
-                : type.equals("EQUINE_PASSPORT_VACCINATION") ? 2 : 3;
         args.put("code", "ET-DEF-" + args.get("origin") + "-"
                 + args.get("destination") + "-" + args.get("phase") + "-"
-                + (transit == null ? "BASE" : transit) + "-" + index);
+                + (transit == null ? "BASE" : transit) + "-"
+                + Integer.toUnsignedString(type.hashCode(), 36));
         args.put("transit", transit);
         args.put("source", "https://equitransit.example/compliance/defaults");
         args.put("from", args.get("now"));
         args.put("until", null);
         args.put("authority", true);
-        args.put("instructions", display(type) + ". Default workflow checklist"
+        args.put("instructions", args.get("display")
+                + ". Default workflow checklist"
                 + "; assigned Specialist verifies the applicable regulations."
                 + (transit == null ? "" : " Transit country: " + transit));
         data.insert("ruleInsert", args);
@@ -185,6 +204,13 @@ public class ComplianceAutomation {
                     "Import Permit & Customs Entry Declaration";
             case "QUARANTINE_RELEASE_CERTIFICATE" ->
                     "Post-Arrival Quarantine Release Certificate";
+            case "FEI_PASSPORT" -> "Equine Passport";
+            case "COGGINS_EIA" -> "EIA Test (demo validity: 30 days)";
+            case "EQUINE_INFLUENZA" ->
+                    "Equine Influenza (demo validity: 180 days)";
+            case "EXPORT_PERMIT" -> "Export Veterinary Permit";
+            case "GLANDERS_CFT" -> "Glanders CFT (demo route requirement)";
+            case "EVA_TEST" -> "EVA Test (demo stallion requirement)";
             default -> "Transit Permit";
         };
     }

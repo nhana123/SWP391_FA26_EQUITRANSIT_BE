@@ -228,3 +228,38 @@ Lỗi nghiệp vụ `OrderException` từ `ApiExceptionHandler` trả object `{ 
 
 ---
 Migration 019 cần cho file F14, migration 020 cần cho hạn chứng từ chính xác. Migration 020 hiện giới hạn chạy trên `EquiTransit_Demo`; không chạy DDL lên DB thật trong các task này. Chi tiết kiểm chứng xem `docs/BE-01.md`, `docs/BE-02.md`, `docs/BE-03.md`.
+# Journey v2 additive flow (2026-10-24)
+
+New opt-in `/api/v2` supports multi-horse bookings, shared manifests,
+per-horse dossiers, declared transit permits, retail estimates, reconciled
+payments, driver checklist and settlement before trip closure.
+Contract: [docs/JOURNEY_V2_API.md](docs/JOURNEY_V2_API.md).
+Migration/compatibility: [docs/REFERENCE_FLOW_MIGRATION.md](docs/REFERENCE_FLOW_MIGRATION.md).
+Enable only on migrated Demo/Test using `app.journey.enabled=true`.
+Existing v1 APIs and screens remain available; FE must explicitly adopt v2.
+
+## Location and document workflow modules (2026-10-24)
+
+See [DATA_DRIVEN_DOCUMENT_API.md](docs/DATA_DRIVEN_DOCUMENT_API.md).
+New endpoints: `GET /api/lookups/countries`, `GET /api/lookups/locations`,
+`POST /api/files/upload` (multipart, 10 MiB), `GET /api/files/{fileKey}`.
+Existing upload-and-submit now accepts `fileKey` + document dates OR
+`existingDocumentVersionId`, preserving recordVersion/operationId.
+Default `GET .../compliance/documents` now returns a checklist/history envelope;
+use `.requirements` and `.versions`. The previous bare version list is retained
+at the same path with `?view=versions`. Required files display
+`PENDING_SUBMISSION` until submitted. New approvals provision all three phases.
+Migration024 was applied only to Demo after a verified backup. FE is unchanged.
+
+## Hybrid document templates (migration025)
+
+Contract: [DOCUMENT_FORM_TEMPLATES.md](docs/DOCUMENT_FORM_TEMPLATES.md).
+Public GET `/api/lookups/document-templates` and `/{typeCode}` provide
+DocumentTemplateView with DB-driven layout text, issuer, icon/color and optional
+PDF URL. MANAGER/SPECIALIST upload a fresh blank PDF via `/api/files/upload`,
+then PUT `/api/compliance/document-templates/{typeCode}/file` with
+`{"templateFileKey":"uuid"}`. Linked active-template PDFs are downloadable by
+authenticated users; private horse papers are not published through this flow.
+All six seeded layouts are unsigned reference samples. No official PDF is
+seeded automatically. FE uses layout fields for print and the optional URL for
+authenticated PDF download. FE source remains unchanged.

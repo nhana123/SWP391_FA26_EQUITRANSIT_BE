@@ -23,6 +23,10 @@ spring:
   jackson:
     deserialization:
       fail-on-unknown-properties: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
   mail:
     host: ${EQ_SMTP_HOST:localhost}
     port: ${EQ_SMTP_PORT:587}
@@ -38,6 +42,8 @@ server:
   address: ${EQ_BIND_ADDRESS:127.0.0.1}
   port: ${EQ_PORT:8080}
 app:
+  storage:
+    directory: ${EQ_STORAGE_DIRECTORY:storage/uploads/documents}
   jwt:
     secret: ${EQ_JWT_SECRET}
     issuer: equitransit

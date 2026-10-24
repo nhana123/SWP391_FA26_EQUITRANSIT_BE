@@ -3,6 +3,7 @@ out/
 .idea/
 *.iml
 .local/
+/storage/uploads/
 .env
 .env.*
 !.env.example
