@@ -27,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** Expected rejection commits any family revocation before returning 401. */
 @Service
-@SuppressWarnings("null")
 public class RefreshSessionService {
     /** Private transport to the controller; never serialized as a body. */
     public record Session(LoginResponse response, @JsonIgnore String raw) {
