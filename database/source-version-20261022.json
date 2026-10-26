@@ -1,0 +1,94 @@
+{
+  "Repository": "https://github.com/nhana123/SWP391_FA26_EQUITRANSIT_BE",
+  "Branch": "fix/finaldelivery",
+  "Commit": "d22dc3daa1c41058d5fba8e1376304e130d99f7d",
+  "DownloadedAt": "2026-10-22T13:13:45.4190211+07:00",
+  "DatabaseCreated": false,
+  "Blocker": "Windows integrated authentication: Failed to generate SSPI context for sandbox identity.",
+  "Files": [
+    {
+      "Path": "database\\verify-f12-f14-schema.sql",
+      "Sha256": "5FBFCEEB4C3442D3B0EECCA7BF17FC70F6647D3D27F165739CF932F3AEFA35B6"
+    },
+    {
+      "Path": "database\\bootstrap\\000_figma_schema.sql",
+      "Sha256": "F7558BCE1A48CA46ADDAA344118EE76F4E775AA014407A38CB350EFAF4F24658"
+    },
+    {
+      "Path": "database\\migrations\\001_authentication_token.sql",
+      "Sha256": "FFA0CBDF5E1155B73503002BB38007FE4E1AEC813EA48B20D974985478E60FBF"
+    },
+    {
+      "Path": "database\\migrations\\002_align_figma_without_organization.sql",
+      "Sha256": "C07834A0DA2DDC45D103043CBE7A9FE91845CD8C55D9AFB8539204006ED20758"
+    },
+    {
+      "Path": "database\\migrations\\003_order_assessment_assignments.sql",
+      "Sha256": "BFB2505E7C84F56544D39CCA3D42D9EAA561CD1B95A4F596622D5C3B275E42DA"
+    },
+    {
+      "Path": "database\\migrations\\004_service_assessment_sources.sql",
+      "Sha256": "E599BCA7FFE5C06AC4132F998080B991BFE8295435236F3BB66BE6D0686DE64C"
+    },
+    {
+      "Path": "database\\migrations\\005_versioned_quotations.sql",
+      "Sha256": "AD15EA23E59880DA86ECF3A717E52AEE9EF5EAC1E2D46F48B97F443F2036C7F2"
+    },
+    {
+      "Path": "database\\migrations\\006_service_tariff_management.sql",
+      "Sha256": "5CA923F2A51B7188DB9033AB6FD3166613E10D6FADB2C236BC6E76AE10846562"
+    },
+    {
+      "Path": "database\\migrations\\007_manual_bank_payments.sql",
+      "Sha256": "40158A52BF0F077FBB547DF1ADD70E36B4320B43D83BC54E5F5DFE3BCBFB62AE"
+    },
+    {
+      "Path": "database\\migrations\\008_dashboards_notifications_audit.sql",
+      "Sha256": "F6F7ECBA050D6C4B092A5D10C71022F31BB58B335940CC128647F38336CA63E9"
+    },
+    {
+      "Path": "database\\migrations\\009_compliance_legal_evidence.sql",
+      "Sha256": "EDD118874BB3B6959AC62AFBB5CB036939410D68B9AEAA30F04877306A5A03DE"
+    },
+    {
+      "Path": "database\\migrations\\010_resources_availability_fit.sql",
+      "Sha256": "888268E912C7B0CD5FA1B8AF20E33A22E22AAF726CE44DC1E9DF75C53C71A989"
+    },
+    {
+      "Path": "database\\migrations\\011_multimodal_operational_plan.sql",
+      "Sha256": "005A4D946F75529EF6FC88ABA7E5B0AF87218AD27B6898312695CF2156F60D9F"
+    },
+    {
+      "Path": "database\\migrations\\012_departure_gates_horse_receipt.sql",
+      "Sha256": "66214DE3CD66ABAE79868DE9408A1DB86DB38EAA41CAB4ED805D98EC277CDEC4"
+    },
+    {
+      "Path": "database\\migrations\\013_staff_provisioning.sql",
+      "Sha256": "F0D5D1F6CB3A65DF3C5B3BE3045AD0DD59045D66FF2253909C3914664DEAD063"
+    },
+    {
+      "Path": "database\\migrations\\014_leg_execution_welfare_tracking.sql",
+      "Sha256": "4E13E2F1487762B0DC7652B80246445FC50E6A5E12082721A12BDE14F951E5DE"
+    },
+    {
+      "Path": "database\\migrations\\015_incidents_controlled_operational_adjustments.sql",
+      "Sha256": "22EB299E6E7AC232C6CEDF13C97205E9955C8310D09133DD49ABBB4194A4B7CD"
+    },
+    {
+      "Path": "database\\migrations\\016_trip_handover_actual_costs.sql",
+      "Sha256": "F406E996F1BA9DCA15A42625A2E2BF8F76888D591B1325FCBA79711CA141B9DE"
+    },
+    {
+      "Path": "database\\migrations\\017_refresh_token_rotation.sql",
+      "Sha256": "B2B8CB53BD81D45AB2CCDCE5D26941CB028DD87A5C24A610856CBCA23FF5AB08"
+    },
+    {
+      "Path": "database\\migrations\\018_visual_journey_graph_nodes.sql",
+      "Sha256": "A05FDBEA3D71AA4CBC1F5E256623F6C13B3E631B77571BA8E07EBD1C19CF8F50"
+    },
+    {
+      "Path": "database\\migrations\\019_handover_file_storage.sql",
+      "Sha256": "1A93A330AF23126E0103613BCC7BD1E6372C2F4FD6B1C4251A2803693E182007"
+    }
+  ]
+}

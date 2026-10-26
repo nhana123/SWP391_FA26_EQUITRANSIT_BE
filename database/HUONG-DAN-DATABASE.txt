@@ -1,0 +1,49 @@
+Nguồn migration mới nhất đã tải ngày 22/10/2026
+Repository: https://github.com/nhana123/SWP391_FA26_EQUITRANSIT_BE
+Nhánh: fix/finaldelivery (chưa merge vào dev)
+Commit: d22dc3daa1c41058d5fba8e1376304e130d99f7d
+Migration cuối: 019_handover_file_storage.sql
+Nhánh dev hiện đến 018; main hiện đến 012.
+
+ĐÃ LƯU TẠI MÁY
+C:\Users\mayum\Desktop\Code Pull\BE\database\bootstrap\000_figma_schema.sql
+C:\Users\mayum\Desktop\Code Pull\BE\database\migrations\001...019
+C:\Users\mayum\Desktop\Code Pull\BE\database\source-version-20261022.json
+
+Đã đối chiếu SHA-256: 21 file SQL giống nguyên bản commit nguồn.
+Mã nguồn BE vẫn ở nhánh complete-be; chỉ đồng bộ bộ SQL theo yêu cầu.
+Bản cũ được giữ trong thư mục work/database-before-sync của chat.
+
+TRẠNG THÁI DATABASE
+Chưa tạo được database: phiên công cụ dùng Windows sandbox identity,
+SQL Server trả lỗi "Failed to generate SSPI context" trước khi thực thi SQL.
+Không có database-created proof được ghi khi thất bại.
+
+CÁCH TẠO DATABASE BẰNG WINDOWS ACCOUNT CỦA BẠN
+Double-click:
+C:\Users\mayum\Desktop\Code Pull\BE\CREATE-LATEST-DATABASE.cmd
+
+Hoặc mở PowerShell bình thường và chạy:
+& 'C:\Users\mayum\Desktop\Code Pull\BE\tools\create-latest-local-db.ps1'
+
+Mặc định kết nối localhost,1433 bằng Windows Authentication.
+Windows account cần có quyền tạo database và thực thi DDL trên SQL Server.
+Tên database: EquiTransit_FigmaMigrationTest_20261013_143729
+Đây là tên chung được migration 002 và migration thử nghiệm 018 cho phép.
+Script dừng nếu database này đã tồn tại, không tự sửa hoặc xóa dữ liệu cũ.
+Chạy baseline rồi toàn bộ 001-019; lỗi ở file nào thì dừng ở đó.
+Nếu lỗi sau khi tạo database, các migration đã commit vẫn tồn tại;
+không chạy lại tự động khi chưa xem lỗi và trạng thái database.
+
+Sau khi thành công script kiểm tra schema và ghi:
+BE\database\local-database-created.json
+File này có table count và đường dẫn MDF/LDF thực tế.
+MDF/LDF được SQL Server quản lý trong data directory của instance.
+Desktop/Code Pull/BE chứa SQL nguồn và script tạo, không tự di chuyển MDF/LDF.
+
+Khi cần chạy BE với database này, cấu hình datasource trỏ đúng databaseName.
+application-local.yml hiện vẫn trỏ EquiTransit; chưa thay vì database mới chưa tạo.
+
+BẢN ĐÓNG GÓI
+EquiTransit-latest-database.zip chứa bootstrap, migrations, verifier và runner.
+Giải nén, chạy CREATE-LATEST-DATABASE.cmd bằng Windows account có quyền SQL.

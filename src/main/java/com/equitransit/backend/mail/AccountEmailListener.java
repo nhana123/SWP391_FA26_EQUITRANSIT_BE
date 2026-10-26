@@ -10,6 +10,7 @@ package com.equitransit.backend.mail;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -33,15 +34,17 @@ public class AccountEmailListener {
     }
 
     /**
-     * Delivers committed account notifications.
+     * Delivers committed account notifications asynchronously.
      * @param event the committed message
      */
+    @Async("emailTaskExecutor")
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onEmail(EmailEvent event) {
         try {
             sender.send(event);
         } catch (RuntimeException error) {
-            LOGGER.error("Account email delivery failed; request a new link.");
+            LOGGER.error("Account email delivery failed: {}",
+                    error.getMessage());
         }
     }
 }

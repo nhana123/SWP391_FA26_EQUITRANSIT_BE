@@ -27,6 +27,7 @@ import org.springframework.stereotype.Repository;
 
 /** No writes occur outside the service's transaction and global admin lock. */
 @Repository
+@SuppressWarnings("null")
 public class StaffAdministrationRepository {
     private static final String FROM = """
             FROM dbo.StaffProfile s JOIN dbo.[User] u ON u.UserID=s.UserID
@@ -148,25 +149,30 @@ public class StaffAdministrationRepository {
     /** @param role optional filter @param status optional account filter
      * @return total matching profiles */
     public long count(StaffRole role, StaffStatus status) {
-        return jdbc.queryForObject("SELECT COUNT_BIG(*) " + FROM + filterSql(),
+        Long total = jdbc.queryForObject(
+                "SELECT COUNT_BIG(*) " + FROM + filterSql(),
                 filters(role, status), Long.class);
+
+        return total == null ? 0L : total;
     }
 
     /** @param p normalized profile @param except existing UserID, or zero
      * @return duplicate email or employee code exists */
     public boolean duplicate(StaffProfileInput p, long except) {
-        return jdbc.queryForObject("""
+        Integer count = jdbc.queryForObject("""
                 SELECT COUNT(*) FROM dbo.[User] u
                 LEFT JOIN dbo.StaffProfile s ON s.UserID=u.UserID
                 WHERE u.UserID<>:except AND
                     (LOWER(u.Email)=:email OR s.EmployeeCode=:employee)
-                """, profile(p).addValue("except", except), Integer.class) > 0;
+                """, profile(p).addValue("except", except), Integer.class);
+
+        return count != null && count > 0;
     }
 
     /** @param p normalized profile @param hash adaptive encoded password
      * @return inserted StaffID; account/profile commit or roll back together */
     public long create(StaffProfileInput p, String hash) {
-        return jdbc.queryForObject("""
+        Long id = jdbc.queryForObject("""
                 DECLARE @users TABLE (ID bigint);
                 INSERT dbo.[User](RoleID,Email,PasswordHash,Status)
                 OUTPUT INSERTED.UserID INTO @users
@@ -180,6 +186,8 @@ public class StaffAdministrationRepository {
                     'ACTIVE' FROM @users;
                 SELECT ID FROM @staff;
                 """, profile(p).addValue("hash", hash), Long.class);
+
+        return id == null ? 0L : id;
     }
 
     /** @param id target @param p replacement @param version expected CAS */
@@ -220,7 +228,7 @@ public class StaffAdministrationRepository {
 
     /** @param except Manager being demoted/disabled @return others active */
     public long otherManagers(long except) {
-        return jdbc.queryForObject("""
+        Long count = jdbc.queryForObject("""
                 SELECT COUNT_BIG(*) FROM dbo.[User] u WITH (UPDLOCK,HOLDLOCK)
                 JOIN dbo.StaffProfile s WITH (UPDLOCK,HOLDLOCK)
                     ON s.UserID=u.UserID
@@ -228,11 +236,13 @@ public class StaffAdministrationRepository {
                 WHERE r.RoleCode='MANAGER' AND u.Status='ACTIVE'
                     AND s.StaffStatus='ACTIVE' AND s.StaffID<>:id
                 """, Map.of("id", except), Long.class);
+
+        return count == null ? 0L : count;
     }
 
     /** @param id staff @param role requested role @return incompatible work */
     public long incompatible(long id, StaffRole role) {
-        return jdbc.queryForObject("""
+        Long count = jdbc.queryForObject("""
                 SELECT (SELECT COUNT_BIG(*) FROM dbo.OrderAssignment
                     WITH (UPDLOCK,HOLDLOCK)
                     WHERE StaffID=:id AND EndedAt IS NULL
@@ -244,18 +254,22 @@ public class StaffAdministrationRepository {
                     AND t.Status NOT IN ('INACTIVE','CANCELLED','COMPLETED')
                     AND l.LegStatus NOT IN ('COMPLETED','CANCELLED'))
                 """, Map.of("id", id, "role", role.name()), Long.class);
+
+        return count == null ? 0L : count;
     }
 
     /** @param id staff @return whether reassignment is required first */
     public boolean driving(long id) {
-        return jdbc.queryForObject("""
+        Integer count = jdbc.queryForObject("""
                 SELECT COUNT(*) FROM dbo.TripAssignment t
                     WITH (UPDLOCK,HOLDLOCK)
                 JOIN dbo.TripLeg l WITH (UPDLOCK,HOLDLOCK) ON l.LegID=t.LegID
                 WHERE t.StaffID=:id AND t.RoleInTrip='DRIVER'
                     AND l.LegStatus='IN_TRANSIT'
                     AND t.Status NOT IN ('INACTIVE','CANCELLED','COMPLETED')
-                """, Map.of("id", id), Integer.class) > 0;
+                """, Map.of("id", id), Integer.class);
+
+        return count != null && count > 0;
     }
 
     /** @param id disabled staff; preserve all historical rows */

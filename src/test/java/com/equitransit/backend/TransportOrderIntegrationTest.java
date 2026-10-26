@@ -76,6 +76,7 @@ import static org.springframework.test.web.servlet.result.
 @ActiveProfiles({"test", "horse-test"})
 @EnabledIfEnvironmentVariable(named = "EQ_ORDER_TEST_ENABLED", matches = "true")
 @Transactional
+@SuppressWarnings("null")
 public class TransportOrderIntegrationTest {
 
     private static final String API = "/api/transport-orders";

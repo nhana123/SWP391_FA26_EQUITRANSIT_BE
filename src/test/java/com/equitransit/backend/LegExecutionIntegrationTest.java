@@ -40,6 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 @EnabledIfEnvironmentVariable(named = "EQ_EXECUTION_TEST_ENABLED",
         matches = "true")
 @Transactional
+@SuppressWarnings("null")
 public class LegExecutionIntegrationTest {
     @Autowired
     private MockMvc mvc;
@@ -130,9 +131,12 @@ public class LegExecutionIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT OrderStatus FROM "
                 + "dbo.TransportOrder WHERE OrderID=?", String.class, order))
                 .isEqualTo("IN_TRANSIT");
-        assertThat(jdbc.queryForObject("SELECT PlannedArrival FROM dbo.TripLeg"
-                + " WHERE LegID=?", java.sql.Timestamp.class, road).toString())
-                .startsWith("2020-01-01 09:00:00");
+        var arrival = jdbc.queryForObject(
+                "SELECT PlannedArrival FROM dbo.TripLeg WHERE LegID=?",
+                java.sql.Timestamp.class, road);
+
+        assertThat(arrival).isNotNull();
+        assertThat(String.valueOf(arrival)).startsWith("2020-01-01 09:00:00");
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM "
                 + "dbo.LegMilestoneLog WHERE PlanID=?", Integer.class, plan))
                 .isEqualTo(3);

@@ -56,6 +56,7 @@ import com.equitransit.backend.service.order.OrderCommitmentPolicy;
 @Service
 @Validated
 @PreAuthorize("isAuthenticated()")
+@SuppressWarnings("null")
 public class QuotationService {
 
     private final AssessmentRepository cases;

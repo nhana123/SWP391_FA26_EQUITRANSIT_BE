@@ -21,6 +21,7 @@ import org.springframework.stereotype.Repository;
 
 /** Internal rows never cross the public DTO boundary. */
 @Repository
+@SuppressWarnings("null")
 public class PaymentRepository {
 
     private final NamedParameterJdbcTemplate jdbc;
@@ -111,13 +112,13 @@ public class PaymentRepository {
 
     /** Serializes cross-order allocation of the same bank transaction. */
     public void lockLedger() {
-        long result = jdbc.getJdbcTemplate().queryForObject("DECLARE @r "
-                    + "INT; EXEC @r=sys.sp_getapplock"
+        Long result = jdbc.getJdbcTemplate().queryForObject("DECLARE @r "
+                + "INT; EXEC @r=sys.sp_getapplock"
                 + " @Resource='EquiTransit:payment-ledger',"
                 + "@LockMode='Exclusive',@LockOwner='Transaction',"
                 + "@LockTimeout=5000; SELECT @r", Long.class);
 
-        if (result < 0) {
+        if (result == null || result < 0) {
             throw new OrderException(
                     HttpStatus.CONFLICT,
                     "PAYMENT_LEDGER_BUSY", "Retry the same operation later.");

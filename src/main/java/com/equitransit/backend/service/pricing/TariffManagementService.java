@@ -41,6 +41,7 @@ import org.springframework.validation.annotation.Validated;
 @Service
 @Validated
 @PreAuthorize("hasRole('MANAGER')")
+@SuppressWarnings("null")
 public class TariffManagementService {
 
     private final TariffRepository tariffs;

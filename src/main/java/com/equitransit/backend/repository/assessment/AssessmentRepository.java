@@ -29,6 +29,7 @@ import com.equitransit.backend.entity.compliance.ReviewState;
 
 /** SQL adapter; all mutations require the service's parent-order lock. */
 @Repository
+@SuppressWarnings("null")
 public class AssessmentRepository {
 
     private static final String SUMMARY = "o.OrderID,o.OrderNumber,"
@@ -130,9 +131,11 @@ public class AssessmentRepository {
      * @return visible total
      */
     public long queueCount(ReviewState state, Long staff, String role) {
-        return jdbc.queryForObject("SELECT COUNT_BIG(*)"
+        Long count = jdbc.queryForObject("SELECT COUNT_BIG(*)"
                 + " FROM dbo.TransportOrder o" + filter(staff),
                 queueArgs(state, staff, role), Long.class);
+
+        return count == null ? 0L : count;
     }
 
     /**
@@ -167,11 +170,13 @@ public class AssessmentRepository {
      * @return eligible total
      */
     public long staffCount(CaseRole role) {
-        return jdbc.queryForObject("SELECT COUNT_BIG(*)"
+        Long count = jdbc.queryForObject("SELECT COUNT_BIG(*)"
                 + " FROM dbo.StaffProfile s JOIN dbo.[User] u"
                 + " ON u.UserID=s.UserID JOIN dbo.[Role] r ON r.RoleID=u.RoleID"
                 + " WHERE u.Status='ACTIVE' AND r.RoleCode=:role",
                 new MapSqlParameterSource("role", role.name()), Long.class);
+
+        return count == null ? 0L : count;
     }
 
     /**

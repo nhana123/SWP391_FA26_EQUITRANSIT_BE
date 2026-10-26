@@ -61,6 +61,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles({"test", "horse-test"})
 @EnabledIfEnvironmentVariable(named = "EQ_PAYMENT_TEST_ENABLED",
         matches = "true")
+@SuppressWarnings("null")
 public class PaymentIntegrationTest {
 
     @Autowired

@@ -24,6 +24,7 @@ import com.equitransit.backend.entity.pricing.VeterinaryAssessmentResult;
 
 /** Read-only adapters behind typed facades; no fake producer READY results. */
 @Repository
+@SuppressWarnings("null")
 public class ServiceSourceRepository {
 
     private final NamedParameterJdbcTemplate jdbc;

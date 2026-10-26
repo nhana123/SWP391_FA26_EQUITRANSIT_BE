@@ -18,6 +18,7 @@ import org.springframework.stereotype.Repository;
 
 /** Internal rows stay behind typed, actor-scoped services. */
 @Repository
+@SuppressWarnings("null")
 public class ComplianceRepository {
 
     private final NamedParameterJdbcTemplate jdbc;
@@ -93,7 +94,9 @@ public class ComplianceRepository {
 
     /** @param key insert @param args bound values @return generated identity */
     public long insert(String key, Map<String, ?> args) {
-        return jdbc.queryForObject(statement(key), args, Long.class);
+        Long id = jdbc.queryForObject(statement(key), args, Long.class);
+
+        return id == null ? 0L : id;
     }
 
     private String statement(String key) {

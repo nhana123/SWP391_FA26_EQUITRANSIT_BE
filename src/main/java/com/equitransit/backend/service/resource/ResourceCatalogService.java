@@ -125,8 +125,9 @@ public class ResourceCatalogService {
                 : mapper.valueToTree(previous).path("recordVersion").asText();
 
         if (id == 0 ? command.recordVersion() != null
-                : command.recordVersion() == null || !observed.equalsIgnoreCase(
-                        command.recordVersion())) {
+                : command.recordVersion() == null || observed == null
+                        || !observed.equalsIgnoreCase(
+                                command.recordVersion())) {
             throw conflict("RESOURCE_VERSION_CONFLICT",
                     "Reload and compare the current resource version.");
         }

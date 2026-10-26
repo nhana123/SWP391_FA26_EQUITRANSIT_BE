@@ -60,6 +60,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @AutoConfigureMockMvc(print = MockMvcPrint.NONE)
 @ActiveProfiles({"test", "horse-test"})
 @EnabledIfEnvironmentVariable(named = "EQ_QUOTE_TEST_ENABLED", matches = "true")
+@SuppressWarnings("null")
 public class QuotationIntegrationTest {
 
     private final List<Long> fixtureUsers = new ArrayList<>();
@@ -791,8 +792,10 @@ public class QuotationIntegrationTest {
                 }
             }
             assertThat(row).isNotNull();
-            for (String field : List.of("quantity", "unitRate", "amount")) {
-                assertThat(row.get(field)).isEqualTo(line.get(field));
+            if (row != null) {
+                for (String field : List.of("quantity", "unitRate", "amount")) {
+                    assertThat(row.get(field)).isEqualTo(line.get(field));
+                }
             }
         }
     }
@@ -919,9 +922,11 @@ public class QuotationIntegrationTest {
             }
         }
         assertThat(grooming).isNotNull();
-        assertThat(grooming.get("quantity").asText()).isEqualTo("3");
-        assertThat(grooming.get("unitRate").asText()).startsWith("1.25");
-        assertThat(grooming.get("amount").asText()).isEqualTo("3.75");
+        if (grooming != null) {
+            assertThat(grooming.get("quantity").asText()).isEqualTo("3");
+            assertThat(grooming.get("unitRate").asText()).startsWith("1.25");
+            assertThat(grooming.get("amount").asText()).isEqualTo("3.75");
+        }
         assertThat(result.get("payable").asBoolean()).isFalse();
         assertThat(result.get("totalEstimate").isNull()).isTrue();
         assertThat(get(base(), owner, 200)).isEqualTo(before);

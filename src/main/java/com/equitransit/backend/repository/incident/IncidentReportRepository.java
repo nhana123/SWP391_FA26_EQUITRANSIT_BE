@@ -24,6 +24,7 @@ import org.springframework.stereotype.Repository;
 
 /** JDBC repository for unexpected incidents and welfare emergency reports. */
 @Repository
+@SuppressWarnings("null")
 public class IncidentReportRepository {
 
     private final NamedParameterJdbcTemplate jdbc;

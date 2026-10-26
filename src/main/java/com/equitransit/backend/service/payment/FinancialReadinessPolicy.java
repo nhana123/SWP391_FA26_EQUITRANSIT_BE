@@ -17,6 +17,7 @@ import java.util.List;
 
 
 /** Owner-approved as-of, single-stage and pending-refund financial rules. */
+@SuppressWarnings("null")
 public final class FinancialReadinessPolicy {
 
     private FinancialReadinessPolicy() {

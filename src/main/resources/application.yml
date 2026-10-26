@@ -2,22 +2,27 @@ spring:
   application:
     name: equitransit-backend
   datasource:
-    url: ${EQ_DB_URL:jdbc:sqlserver://DESKTOP-9VRARFD:1433;databaseName=EquiTransit;encrypt=true;trustServerCertificate=false}
+    url: ${EQ_DB_URL:jdbc:sqlserver://127.0.0.1:1433;databaseName=EquiTransit;encrypt=true;trustServerCertificate=true;integratedSecurity=true}
     username: ${EQ_DB_USERNAME:}
     password: ${EQ_DB_PASSWORD:}
     hikari:
+      minimum-idle: 1
+      maximum-pool-size: 5
+      connection-timeout: 10000
       connection-init-sql: >-
         SET ANSI_NULLS ON; SET QUOTED_IDENTIFIER ON; SET ANSI_PADDING ON;
         SET ANSI_WARNINGS ON; SET CONCAT_NULL_YIELDS_NULL ON;
         SET ARITHABORT ON; SET NUMERIC_ROUNDABORT OFF;
   jpa:
     open-in-view: false
+    database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:
       ddl-auto: validate
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.SQLServerDialect
         jdbc:
           time_zone: UTC
   jackson:
@@ -39,11 +44,11 @@ server:
   port: ${EQ_PORT:8080}
 app:
   jwt:
-    secret: ${EQ_JWT_SECRET}
+    secret: ${EQ_JWT_SECRET:dGVzdC1vbmx5LWtleS1mb3ItZXF1aXRyYW5zaXQtYXV0aC10ZXN0cw==}
     issuer: equitransit
     ttl-seconds: 900
   mail:
-    mode: smtp
+    mode: ${EQ_MAIL_MODE:file}
     from: ${EQ_MAIL_FROM:no-reply@example.invalid}
     outbox: .local/outbox
   frontend-url: ${EQ_FRONTEND_URL:http://localhost:5173}

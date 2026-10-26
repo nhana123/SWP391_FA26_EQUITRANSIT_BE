@@ -1,6 +1,34 @@
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
   datasource:
-    url: jdbc:sqlserver://localhost:1433;databaseName=EquiTransit;encrypt=true;trustServerCertificate=true;integratedSecurity=true
+    url: ${EQ_DB_URL:jdbc:sqlserver://127.0.0.1:1433;databaseName=EquiTransit_FigmaMigrationTest_20261013_143729;encrypt=true;trustServerCertificate=true;integratedSecurity=true}
+    hikari:
+      minimum-idle: 1
+      maximum-pool-size: 5
+      connection-timeout: 10000
+  jpa:
+    database-platform: org.hibernate.dialect.SQLServerDialect
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: huytgse160995@fpt.edu.vn
+    password: "tsud gkai bsbe thoo"
+    properties:
+      "[mail.smtp.auth]": true
+      "[mail.smtp.starttls.enable]": true
+      "[mail.smtp.connectiontimeout]": 5000
+      "[mail.smtp.timeout]": 5000
+      "[mail.smtp.writetimeout]": 5000
+
 app:
   mail:
-    mode: file
+    mode: smtp
+    from: huytgse160995@fpt.edu.vn
+  jwt:
+    secret: ${EQ_JWT_SECRET:dGVzdC1vbmx5LWtleS1mb3ItZXF1aXRyYW5zaXQtYXV0aC10ZXN0cw==}
+be2:
+  compliance:
+    api-enabled: true

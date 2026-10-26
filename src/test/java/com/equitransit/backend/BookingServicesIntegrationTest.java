@@ -89,6 +89,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @EnabledIfEnvironmentVariable(named = "EQ_SERVICES_TEST_ENABLED", matches =
                 "true")
 @Transactional
+@SuppressWarnings("null")
 public class BookingServicesIntegrationTest {
 
     private static final String MANAGER = "/api/manager/transport-orders";

@@ -62,6 +62,7 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles({"test", "horse-test"})
 @EnabledIfEnvironmentVariable(
         named = "EQ_DEPARTURE_TEST_ENABLED", matches = "true")
+@SuppressWarnings("null")
 public class DepartureGateIntegrationTest {
 
     private static final String MICROCHIP = "981020000123456";

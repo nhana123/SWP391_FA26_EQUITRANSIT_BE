@@ -10,6 +10,7 @@ package com.equitransit.backend.security;
 
 import java.util.List;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -24,6 +25,7 @@ import com.equitransit.backend.repository.auth.UserAccountRepository;
 
 /** Rechecks account status, role and credentials on protected requests. */
 @Component
+@SuppressWarnings("null")
 public class LiveJwtConverter
         implements Converter<Jwt, AbstractAuthenticationToken> {
 
@@ -44,7 +46,7 @@ public class LiveJwtConverter
      */
     @Override
     @Transactional(readOnly = true)
-    public AbstractAuthenticationToken convert(Jwt jwt) {
+    public AbstractAuthenticationToken convert(@NonNull Jwt jwt) {
         Long id;
         UserAccount user;
 

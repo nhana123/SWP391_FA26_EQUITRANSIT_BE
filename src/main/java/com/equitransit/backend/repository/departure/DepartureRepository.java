@@ -31,6 +31,7 @@ import org.springframework.stereotype.Repository;
 
 /** Parameterized JDBC repository for F11 gate verification & horse receipt. */
 @Repository
+@SuppressWarnings("null")
 public class DepartureRepository {
 
     private final NamedParameterJdbcTemplate jdbc;
@@ -201,7 +202,8 @@ public class DepartureRepository {
      * @return true if staff is an active DRIVER assigned on any leg of plan
      */
     public boolean assignedDriverOnPlan(long plan, long staff) {
-        return jdbc.queryForObject("SELECT COUNT(*) FROM dbo.TripAssignment a "
+        Integer count = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM dbo.TripAssignment a "
                 + "JOIN dbo.TripLeg l ON l.LegID=a.LegID "
                 + "JOIN dbo.StaffProfile s ON s.StaffID=a.StaffID "
                 + "JOIN dbo.[User] u ON u.UserID=s.UserID "
@@ -210,7 +212,9 @@ public class DepartureRepository {
                 + "AND a.RoleInTrip='DRIVER' "
                 + "AND a.Status IN ('CONFIRMED','ACTIVE') "
                 + "AND u.Status='ACTIVE' AND r.RoleCode='DRIVER'",
-                Map.of("plan", plan, "staff", staff), Integer.class) > 0;
+                Map.of("plan", plan, "staff", staff), Integer.class);
+
+        return count != null && count > 0;
     }
 
     /**
@@ -220,7 +224,8 @@ public class DepartureRepository {
      * @return true if staff is an active DRIVER assigned on the road leg
      */
     public boolean assignedDriverOnLeg(long plan, long leg, long staff) {
-        return jdbc.queryForObject("SELECT COUNT(*) FROM dbo.TripAssignment a "
+        Integer count = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM dbo.TripAssignment a "
                 + "JOIN dbo.TripLeg l ON l.LegID=a.LegID "
                 + "JOIN dbo.StaffProfile s ON s.StaffID=a.StaffID "
                 + "JOIN dbo.[User] u ON u.UserID=s.UserID "
@@ -231,7 +236,9 @@ public class DepartureRepository {
                 + "AND a.Status IN ('CONFIRMED','ACTIVE') "
                 + "AND u.Status='ACTIVE' AND r.RoleCode='DRIVER'",
                 Map.of("plan", plan, "leg", leg, "staff", staff),
-                Integer.class) > 0;
+                Integer.class);
+
+        return count != null && count > 0;
     }
 
     /**
@@ -239,7 +246,8 @@ public class DepartureRepository {
      * @return true if every active DRIVER assignment on leg has active user
      */
     public boolean legDriversActive(long leg) {
-        return jdbc.queryForObject("SELECT COUNT(*) FROM dbo.TripAssignment a "
+        Integer count = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM dbo.TripAssignment a "
                 + "LEFT JOIN dbo.StaffProfile s ON s.StaffID=a.StaffID "
                 + "LEFT JOIN dbo.[User] u ON u.UserID=s.UserID "
                 + "LEFT JOIN dbo.[Role] r ON r.RoleID=u.RoleID "
@@ -247,7 +255,9 @@ public class DepartureRepository {
                 + "AND a.Status NOT IN ('CANCELLED','CANCELED','INACTIVE') "
                 + "AND (s.StaffID IS NULL OR u.Status<>'ACTIVE' "
                 + "OR r.RoleCode<>'DRIVER')",
-                Map.of("leg", leg), Integer.class) == 0;
+                Map.of("leg", leg), Integer.class);
+
+        return count != null && count == 0;
     }
 
     /**
@@ -255,13 +265,13 @@ public class DepartureRepository {
      * @return true if PRE_EXPORT clearance or authority procedure has a hold
      */
     public boolean complianceHoldActive(long revision) {
-        int clearanceHold = jdbc.queryForObject("SELECT COUNT(*) FROM (SELECT "
-                + "TOP (1) Status FROM dbo.ComplianceClearance "
-                + "WHERE RevisionID=:rev AND PhaseCode='PRE_EXPORT' "
-                + "ORDER BY ClearanceID DESC) c "
+        Integer clearanceHold = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM (SELECT TOP (1) Status FROM "
+                + "dbo.ComplianceClearance WHERE RevisionID=:rev "
+                + "AND PhaseCode='PRE_EXPORT' ORDER BY ClearanceID DESC) c "
                 + "WHERE c.Status IN ('HOLD','BLOCKED','REJECTED')",
                 Map.of("rev", revision), Integer.class);
-        int procedureHold = jdbc.queryForObject("SELECT COUNT(*) FROM "
+        Integer procedureHold = jdbc.queryForObject("SELECT COUNT(*) FROM "
                 + "dbo.AuthorityProcedure p WHERE p.RevisionID=:rev "
                 + "AND p.PhaseCode='PRE_EXPORT' AND NOT EXISTS (SELECT 1 FROM "
                 + "dbo.AuthorityProcedure n WHERE n.RevisionID=p.RevisionID "
@@ -271,7 +281,8 @@ public class DepartureRepository {
                 + "AND LTRIM(RTRIM(p.HoldReason))<>''))",
                 Map.of("rev", revision), Integer.class);
 
-        return clearanceHold > 0 || procedureHold > 0;
+        return (clearanceHold != null && clearanceHold > 0)
+                || (procedureHold != null && procedureHold > 0);
     }
 
     /**
@@ -361,13 +372,15 @@ public class DepartureRepository {
                 .addValue("key", req.evidenceFileKey())
                 .addValue("loc", req.locationDescription().trim());
 
-        return jdbc.queryForObject("INSERT dbo.HorseReceipt (PlanID,LegID,"
+        Long id = jdbc.queryForObject("INSERT dbo.HorseReceipt (PlanID,LegID,"
                 + "ReceivedBy,ObservedMicrochip,ObservedPassportNumber,"
                 + "IdentityCheckResult,ConditionNotes,ReceiptStatus,"
                 + "ReceivedAt,EvidenceFileKey,LocationDescription) "
                 + "OUTPUT INSERTED.ReceiptID VALUES (:plan,:leg,:staff,:chip,"
                 + ":pass,:idRes,:notes,:status,:at,:key,:loc)",
                 args, Long.class);
+
+        return id == null ? 0L : id;
     }
 
     /**

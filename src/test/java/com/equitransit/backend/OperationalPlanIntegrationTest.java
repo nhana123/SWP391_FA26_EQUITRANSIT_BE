@@ -61,6 +61,7 @@ import static org.springframework.test.web.servlet.result.
 @AutoConfigureMockMvc(print = MockMvcPrint.NONE)
 @ActiveProfiles({"test", "horse-test"})
 @EnabledIfEnvironmentVariable(named = "EQ_PLAN_TEST_ENABLED", matches = "true")
+@SuppressWarnings("null")
 public class OperationalPlanIntegrationTest {
 
     private final Map<String, Actor> actors = new HashMap<>();

@@ -79,7 +79,7 @@ public class ChargeCalculator {
             if (quantity == null) {
                 blockers.add("QUANTITY_PENDING");
             }
-            if (blockers.isEmpty()) {
+            if (tariff != null && quantity != null && blockers.isEmpty()) {
                 amount = quantity.multiply(tariff.rate())
                         .setScale(2, RoundingMode.HALF_UP);
                 status = "ESTIMATED";

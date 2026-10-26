@@ -23,6 +23,7 @@ import com.equitransit.backend.entity.horse.HorseSex;
 
 /** Owner-scoped parameterized SQL with atomic rowversion updates. */
 @Repository
+@SuppressWarnings("null")
 public class HorseRepository {
 
     private static final String TABLE = "dbo.Horse";

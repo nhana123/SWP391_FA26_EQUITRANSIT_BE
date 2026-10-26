@@ -57,6 +57,7 @@ import static org.mockito.Mockito.when;
  * Unit & business scenario test suite for Trip Handover operations.
  */
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 public class TripHandoverCompletionTest {
 
     private static final long ORDER_ID = 101L;

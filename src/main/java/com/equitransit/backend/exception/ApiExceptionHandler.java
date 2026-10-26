@@ -31,6 +31,7 @@ import com.equitransit.backend.exception.horse.HorseException;
 
 /** Returns consistent errors without exposing secrets or SQL details. */
 @RestControllerAdvice
+@SuppressWarnings("null")
 public class ApiExceptionHandler {
 
     private static final Logger LOGGER =

@@ -23,6 +23,7 @@ import org.springframework.stereotype.Repository;
 
 /** Parameterized JDBC repository for execution context across legs & orders. */
 @Repository("operationalLegExecutionRepository")
+@SuppressWarnings("null")
 public class LegExecutionRepository {
 
     private final NamedParameterJdbcTemplate jdbc;

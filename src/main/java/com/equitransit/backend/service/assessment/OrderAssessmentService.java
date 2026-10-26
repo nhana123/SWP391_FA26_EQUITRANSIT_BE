@@ -286,8 +286,10 @@ public class OrderAssessmentService {
         team.forEach(this::validateStaff);
     }
 
-    private void validateStaff(long staff, String role) {
-        if (!cases.activeStaff(staff, role)) {
+    private void validateStaff(Long staff, String role) {
+        long id = staff == null ? 0L : staff;
+
+        if (!cases.activeStaff(id, role)) {
             throw policy.conflict("ASSIGNMENT_STAFF_INVALID",
                     "The selected staff member is not active in that role.");
         }

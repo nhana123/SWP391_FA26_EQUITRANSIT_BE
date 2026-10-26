@@ -7,55 +7,26 @@
  */
 package com.equitransit.backend.entity.handover;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
 /**
- * Entity mapping an internal actual supplier expenditure on a transport plan.
+ * Domain entity mapping an internal actual supplier expenditure on a plan.
  */
-@Entity
-@Table(name = "ActualCost", schema = "dbo")
 public class ActualCost {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "CostID")
     private Long costId;
-
-    @Column(name = "PlanID", nullable = false)
     private long planId;
-
-    @Column(name = "LegID")
     private Long legId;
-
-    @Column(name = "CostCode", nullable = false, length = 50)
     private String costCode;
-
-    @Column(name = "Amount", nullable = false, precision = 18, scale = 2)
     private BigDecimal amount;
-
-    @Column(name = "Currency", nullable = false, length = 3)
     private String currency;
-
-    @Column(name = "IncurredAt", nullable = false)
     private OffsetDateTime incurredAt;
-
-    @Column(name = "Description", length = 1000)
     private String description;
-
-    @Column(name = "RecordedBy")
     private Long recordedBy;
-
-    @Column(name = "EvidenceFileKey", length = 1024)
     private String evidenceFileKey;
 
-    /** Default constructor for JPA. */
+    /** Default constructor. */
     public ActualCost() { }
 
     /** @return primary key */

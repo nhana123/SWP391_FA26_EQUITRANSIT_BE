@@ -36,6 +36,7 @@ import com.equitransit.backend.repository.pricing.ServiceSourceRepository;
  * Only owned-parent services consume this facade; it is not an HTTP endpoint.
  */
 @Service
+@SuppressWarnings("null")
 public class ServiceAssessmentFacade {
 
     private static final Set<String> BUNDLE_CODES = Set.of("AIR_STALL",
@@ -111,14 +112,18 @@ public class ServiceAssessmentFacade {
                     && rate.rate().stripTrailingZeros().scale() <= 2
                     && product.mode() != PricingMode.INCLUDED;
 
+            if (usable && rate != null) {
+                return new ServiceRateResponse(
+                        product, product.section(), rate.unit(),
+                        rate.rate().setScale(2,
+                                java.math.RoundingMode.HALF_UP)
+                                .toPlainString(),
+                        "USD", product.mode(), rate.tariffId(),
+                        rate.version());
+            }
             return new ServiceRateResponse(
-                    product, product.section(), usable ? rate.unit()
-                            : product.unit(), usable
-                            ? rate.rate().setScale(2,
-                                    java.math.RoundingMode.HALF_UP)
-                                    .toPlainString() : null,
-                    "USD", product.mode(), usable ? rate.tariffId() : null,
-                    usable ? rate.version() : null);
+                    product, product.section(), product.unit(), null,
+                    "USD", product.mode(), null, null);
         }).toList();
     }
 

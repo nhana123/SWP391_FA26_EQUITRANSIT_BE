@@ -71,6 +71,7 @@ public class TransportOrderController {
     @ApiResponse(responseCode = "201", description = "Saved draft",
             content = @Content(schema =
                     @Schema(implementation = OrderResponse.class)))
+    @SuppressWarnings("null")
     public ResponseEntity<OrderResponse> create(
             @RequestBody @Valid OrderDraftRequest request) {
         OrderResponse created = orders.create(request);

@@ -7,81 +7,34 @@
  */
 package com.equitransit.backend.entity.handover;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 
 /**
- * Entity mapping the physical custody transfer log on a multimodal trip leg.
+ * Domain entity mapping the physical custody transfer log on a trip leg.
  */
-@Entity
-@Table(name = "TripHandover", schema = "dbo")
 public class TripHandover {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "HandoverID")
     private Long handoverId;
-
-    @Column(name = "LegID", nullable = false)
     private long legId;
-
-    @Column(name = "RecordedBy", nullable = false)
     private long recordedBy;
-
-    @Column(name = "HandoverType", nullable = false, length = 50)
     private String handoverType;
-
-    @Column(name = "HandoverTime", nullable = false)
     private OffsetDateTime handoverTime;
-
-    @Column(name = "ReceivedByName", nullable = false, length = 300)
     private String receivedByName;
-
-    @Column(name = "ReceiverAuthority", length = 50)
     private String receiverAuthority;
-
-    @Column(name = "ReceiverSignatureFileKey", length = 1024)
     private String receiverSignatureFileKey;
-
-    @Column(name = "HorseConditionStatus", nullable = false, length = 50)
     private String horseConditionStatus;
-
-    @Column(name = "Outcome", nullable = false, length = 50)
     private String outcome;
-
-    @Column(name = "ExceptionNotes", length = 2000)
     private String exceptionNotes;
-
-    @Column(name = "PhotoFileKey", length = 1024)
     private String photoFileKey;
-
-    @Column(name = "CustomerConfirmedAt")
     private OffsetDateTime customerConfirmedAt;
-
-    @Column(name = "LocationDescription", length = 500)
     private String locationDescription;
-
-    @Column(name = "CustomerDecision", length = 20)
     private String customerDecision;
-
-    @Column(name = "CustomerFeedback", length = 2000)
     private String customerFeedback;
-
-    @Column(name = "CustomerRespondedAt")
     private OffsetDateTime customerRespondedAt;
-
-    @Column(name = "RespondedByCustomerID")
     private Long respondedByCustomerId;
-
-    @Column(name = "EvidenceFilesJSON")
     private String evidenceFilesJson;
 
-    /** Default constructor for JPA. */
+    /** Default constructor. */
     public TripHandover() { }
 
     /** @return primary key */

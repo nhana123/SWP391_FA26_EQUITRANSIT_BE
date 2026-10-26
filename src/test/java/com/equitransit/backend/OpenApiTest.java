@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@SuppressWarnings("null")
 public class OpenApiTest {
 
     @Autowired

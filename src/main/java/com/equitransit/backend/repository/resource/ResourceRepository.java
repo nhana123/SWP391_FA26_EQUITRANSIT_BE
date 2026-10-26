@@ -40,6 +40,7 @@ import org.springframework.stereotype.Repository;
 
 /** SQL identifiers are enum-selected; all caller values are bound. */
 @Repository
+@SuppressWarnings("null")
 public class ResourceRepository {
 
     private final NamedParameterJdbcTemplate jdbc;
@@ -97,8 +98,10 @@ public class ResourceRepository {
 
     /** @param kind fixed catalogue @return row count */
     public long count(ResourceKind kind) {
-        return jdbc.getJdbcTemplate().queryForObject(
+        Long result = jdbc.getJdbcTemplate().queryForObject(
                 "SELECT COUNT_BIG(*) FROM dbo." + table(kind), Long.class);
+
+        return result == null ? 0L : result;
     }
 
     /** @param kind catalogue @param page zero-based @param size bounded
@@ -201,9 +204,11 @@ public class ResourceRepository {
                     + ":buffer,:notes";
         }
         if (key == 0) {
-            return jdbc.queryForObject("INSERT dbo." + table(kind) + " ("
-                    + columns + ") OUTPUT INSERTED." + id(kind) + " VALUES ("
-                    + bindings + ")", args, Long.class);
+            Long generated = jdbc.queryForObject("INSERT dbo." + table(kind)
+                    + " (" + columns + ") OUTPUT INSERTED." + id(kind)
+                    + " VALUES (" + bindings + ")", args, Long.class);
+
+            return generated == null ? 0L : generated;
         }
         var names = columns.split(",");
         var params = bindings.split(",");
@@ -220,10 +225,13 @@ public class ResourceRepository {
 
     /** @param code family @return next immutable policy version */
     public int nextVersion(String code) {
-        return jdbc.queryForObject("SELECT COALESCE(MAX(VersionNo),0)+1 FROM "
+        Integer version = jdbc.queryForObject(
+                "SELECT COALESCE(MAX(VersionNo),0)+1 FROM "
                 + "dbo.StallFitPolicy WITH (UPDLOCK,HOLDLOCK) "
                 + "WHERE PolicyCode=:code", Map.of("code", code),
                 Integer.class);
+
+        return version == null ? 1 : version;
     }
 
     /** @param id approved version @param code family to supersede */

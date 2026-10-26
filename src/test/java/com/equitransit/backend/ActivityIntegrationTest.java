@@ -60,6 +60,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles({"test", "horse-test"})
 @EnabledIfEnvironmentVariable(named = "EQ_ACTIVITY_TEST_ENABLED",
         matches = "true")
+@SuppressWarnings("null")
 public class ActivityIntegrationTest {
 
     @org.springframework.test.context.bean.override.mockito.MockitoSpyBean

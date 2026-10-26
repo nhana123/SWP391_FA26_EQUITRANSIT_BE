@@ -32,6 +32,7 @@ import org.springframework.stereotype.Repository;
 
 /** All writes follow the parent TransportOrder lock owned by the service. */
 @Repository
+@SuppressWarnings("null")
 public class QuoteRepository {
 
     private final NamedParameterJdbcTemplate jdbc;
@@ -111,12 +112,15 @@ public class QuoteRepository {
      * @return matching header count
      */
     public long count(long order, boolean customer) {
-        return jdbc.queryForObject("SELECT COUNT_BIG(*) FROM dbo.Quote q"
+        Long total = jdbc.queryForObject(
+                "SELECT COUNT_BIG(*) FROM dbo.Quote q"
                 + " JOIN dbo.OrderRevision r ON r.RevisionID=q.RevisionID"
                 + " WHERE r.OrderID=:order" + (customer
                         ? " AND q.IssuedAt IS NOT NULL AND q.QuoteStatus IN"
                                 + " ('ISSUED','ACCEPTED','REJECTED','EXPIRED')"
                         : ""), args(order), Long.class);
+
+        return total == null ? 0L : total;
     }
 
     /** @return whether the additive F06 schema is deployed in this catalog */
@@ -322,7 +326,7 @@ public class QuoteRepository {
                         "schemaVersion", 1, "services",
                         request.includedCharges())));
 
-        return jdbc.queryForObject("INSERT dbo.SupplierOffer (RevisionID,"
+        Long id = jdbc.queryForObject("INSERT dbo.SupplierOffer (RevisionID,"
                 + "ProviderName,OfferReference,ServiceCode,UnitCode,Quantity,"
                 + "UnitPrice,RetailUnitPrice,Currency,IncludesStall,"
                 + "IncludedCharges,ValidUntil,Status,EvidenceFileKey,"
@@ -331,6 +335,8 @@ public class QuoteRepository {
                 + ":quantity,:cost,:retail,'USD',:stall,:includes,:expiry,"
                 + "'RECEIVED',:evidence,:staff,:recordedAt)", args,
                 Long.class);
+
+        return id == null ? 0L : id;
     }
 
     /**

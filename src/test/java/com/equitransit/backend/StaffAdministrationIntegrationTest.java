@@ -60,6 +60,7 @@ import static org.springframework.test.web.servlet.request.
 @ActiveProfiles({"test", "horse-test"})
 @EnabledIfEnvironmentVariable(named = "EQ_STAFF_TEST_ENABLED", matches = "true")
 @Transactional
+@SuppressWarnings("null")
 public class StaffAdministrationIntegrationTest {
     private static final String BASE = "/api/manager/staff";
     private final List<Long> committedUsers = new ArrayList<>();

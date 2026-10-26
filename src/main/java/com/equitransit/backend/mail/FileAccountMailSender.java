@@ -7,7 +7,6 @@
  */
 package com.equitransit.backend.mail;
 
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -17,7 +16,6 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-
 
 /** Writes development emails to an ignored local outbox. */
 @Component
@@ -49,6 +47,10 @@ public class FileAccountMailSender implements AccountMailSender {
             file = outbox.resolve(UUID.randomUUID() + ".txt");
             content = "To: " + event.getRecipient() + "\nSubject: "
                     + event.getSubject() + "\n\n" + event.getBody();
+            if (event.getHtmlBody() != null) {
+                content += "\n\n--- HTML VERSION ---\n"
+                        + event.getHtmlBody();
+            }
             Files.writeString(file, content, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE_NEW);
         } catch (IOException error) {

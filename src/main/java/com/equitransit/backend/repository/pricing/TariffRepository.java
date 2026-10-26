@@ -31,6 +31,7 @@ import org.springframework.stereotype.Repository;
  * Serialized tariff mutations and immutable audit receipts, in one transaction.
  */
 @Repository
+@SuppressWarnings("null")
 public class TariffRepository {
 
     private static final String COLUMNS = "TariffID,ServiceCode,OptionCode,"
@@ -58,11 +59,14 @@ public class TariffRepository {
 
     /** @return application lock result; negative means timeout/failure */
     public int lock() {
-        return jdbc.queryForObject("DECLARE @result INT; EXEC @result="
+        Integer result = jdbc.queryForObject(
+                "DECLARE @result INT; EXEC @result="
                 + "sys.sp_getapplock @Resource='EquiTransit:service-tariffs',"
                 + "@LockMode='Exclusive',@LockOwner='Transaction',"
                 + "@LockTimeout=5000; SELECT @result",
                 new MapSqlParameterSource(), Integer.class);
+
+        return result == null ? -1 : result;
     }
 
     /**
@@ -80,8 +84,11 @@ public class TariffRepository {
 
     /** @return total tariff version count */
     public long count() {
-        return jdbc.queryForObject("SELECT COUNT_BIG(*) FROM dbo.ServiceTariff",
+        Long total = jdbc.queryForObject(
+                "SELECT COUNT_BIG(*) FROM dbo.ServiceTariff",
                 new MapSqlParameterSource(), Long.class);
+
+        return total == null ? 0L : total;
     }
 
     /**
@@ -116,14 +123,17 @@ public class TariffRepository {
      */
     public boolean overlaps(ServiceProduct product, Long previous,
             OffsetDateTime now) {
-        return jdbc.queryForObject("SELECT COUNT(*) FROM dbo.ServiceTariff"
+        Integer count = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM dbo.ServiceTariff"
                 + " WHERE ServiceCode=:code AND OptionCode=:option"
                 + " AND Currency='USD' AND Status='ACTIVE'"
                 + " AND (EffectiveTo IS NULL OR EffectiveTo>:now)"
                 + " AND TariffID<>:previous", args(product)
                         .addValue("now", utc(now))
                         .addValue("previous", previous == null ? -1 : previous),
-                Integer.class) > 0;
+                Integer.class);
+
+        return count != null && count > 0;
     }
 
     /**
@@ -158,13 +168,15 @@ public class TariffRepository {
                 .addValue("until", request.validUntil() == null ? null
                         : utc(request.validUntil()));
 
-        return jdbc.queryForObject("INSERT dbo.ServiceTariff (ServiceCode,"
+        Long id = jdbc.queryForObject("INSERT dbo.ServiceTariff (ServiceCode,"
                 + "OptionCode,CostGroup,UnitCode,UnitPrice,Currency,VersionNo,"
                 + "EffectiveFrom,EffectiveTo,Status,SourceReference,"
                 + "PublishedBy,"
                 + "PublishedAt) OUTPUT INSERTED.TariffID VALUES (:code,:option,"
                 + ":group,:unit,:rate,'USD',:version,:from,:until,'ACTIVE',"
                 + ":source,:staff,SYSUTCDATETIME())", args, Long.class);
+
+        return id == null ? 0L : id;
     }
 
     /**

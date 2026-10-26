@@ -52,4 +52,13 @@ public final class TokenTools {
             throw new IllegalStateException("SHA-256 is unavailable.", error);
         }
     }
+
+    /**
+     * Generates a random 6-digit one-time password (OTP).
+     * @return 6-digit numeric string
+     */
+    public static String randomOtp() {
+        int number = 100000 + RANDOM.nextInt(900000);
+        return String.valueOf(number);
+    }
 }

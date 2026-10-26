@@ -1,0 +1,54 @@
+{
+  "properties": [
+    {
+      "name": "app.jwt.secret",
+      "type": "java.lang.String",
+      "description": "JWT signing secret"
+    },
+    {
+      "name": "app.jwt.issuer",
+      "type": "java.lang.String",
+      "description": "JWT issuer"
+    },
+    {
+      "name": "app.jwt.ttl-seconds",
+      "type": "java.lang.Long",
+      "description": "JWT TTL in seconds"
+    },
+    {
+      "name": "app.mail.mode",
+      "type": "java.lang.String",
+      "description": "Mail delivery mode (file or smtp)"
+    },
+    {
+      "name": "app.mail.from",
+      "type": "java.lang.String",
+      "description": "Mail sender address"
+    },
+    {
+      "name": "app.mail.outbox",
+      "type": "java.lang.String",
+      "description": "Local outbox directory"
+    },
+    {
+      "name": "app.frontend-url",
+      "type": "java.lang.String",
+      "description": "Frontend URL for links"
+    },
+    {
+      "name": "app.cors-origin",
+      "type": "java.lang.String",
+      "description": "Allowed CORS origin"
+    },
+    {
+      "name": "app.auth-rate-limit",
+      "type": "java.lang.Integer",
+      "description": "Rate limit for authentication"
+    },
+    {
+      "name": "be2.compliance.api-enabled",
+      "type": "java.lang.Boolean",
+      "description": "Compliance API enabled"
+    }
+  ]
+}

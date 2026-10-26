@@ -82,6 +82,7 @@ import static org.springframework.test.web.servlet.result.
 @EnabledIfEnvironmentVariable(named = "EQ_ASSESSMENT_TEST_ENABLED",
         matches = "true")
 @Transactional
+@SuppressWarnings("null")
 public class OrderAssessmentIntegrationTest {
 
     private static final String MANAGER = "/api/manager/transport-orders";

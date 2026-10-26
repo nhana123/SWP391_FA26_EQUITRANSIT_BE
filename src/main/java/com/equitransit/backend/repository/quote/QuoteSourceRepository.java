@@ -22,6 +22,7 @@ import org.springframework.stereotype.Repository;
 
 /** Bounded source batches with finite query timeout; no per-line queries. */
 @Repository
+@SuppressWarnings("null")
 public class QuoteSourceRepository {
 
     private final NamedParameterJdbcTemplate jdbc;

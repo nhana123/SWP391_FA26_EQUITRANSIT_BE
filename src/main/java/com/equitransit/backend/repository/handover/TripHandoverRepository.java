@@ -25,6 +25,7 @@ import org.springframework.stereotype.Repository;
  * Data access operations for TripHandover table and order delivery gates.
  */
 @Repository
+@SuppressWarnings("null")
 public class TripHandoverRepository {
 
     private final NamedParameterJdbcTemplate jdbc;

@@ -54,6 +54,7 @@ import static org.springframework.test.web.servlet.result.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@SuppressWarnings("null")
 public class DomainSecurityTest {
 
     @Autowired

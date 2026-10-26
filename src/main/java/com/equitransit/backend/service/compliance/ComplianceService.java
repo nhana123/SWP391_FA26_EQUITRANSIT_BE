@@ -504,18 +504,22 @@ public class ComplianceService {
                         && specialists.contains(number(row, "SpecialistID"));
             }
         }
-        var q = valid ? quarantine.getFirst() : null;
-        var v = valid ? veterinary.getFirst() : null;
+        if (!valid) {
+            return new ComplianceAssessmentView(null, null, null, null,
+                    null, null, null);
+        }
+        var q = quarantine.getFirst();
+        var v = veterinary.getFirst();
 
-        return new ComplianceAssessmentView(valid
-                ? QuarantineApplicability.valueOf(q.get("Applicability")
-                        .toString()) : null,
-                valid ? (Integer) q.get("RequiredDays") : null,
-                valid ? (Integer) v.get("VisitCount") : null,
-                valid ? (Integer) v.get("TestCount") : null,
-                valid ? (Integer) v.get("DoseCount") : null,
-                valid ? (Integer) v.get("CertificateCount") : null,
-                valid ? at(q, "ValidUntil") : null);
+        return new ComplianceAssessmentView(
+                QuarantineApplicability.valueOf(q.get("Applicability")
+                        .toString()),
+                (Integer) q.get("RequiredDays"),
+                (Integer) v.get("VisitCount"),
+                (Integer) v.get("TestCount"),
+                (Integer) v.get("DoseCount"),
+                (Integer) v.get("CertificateCount"),
+                at(q, "ValidUntil"));
     }
 
     /**

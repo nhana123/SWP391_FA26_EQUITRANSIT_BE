@@ -31,6 +31,7 @@ import com.equitransit.backend.repository.pricing.ServiceSourceRepository;
  * Catalogue identifiers are contract keys, not hard-coded commercial prices.
  */
 @Component
+@SuppressWarnings("null")
 public class ServiceChargeBuilder {
 
     private static final List<String> CODES = List.of("ROAD_TRANSPORT",

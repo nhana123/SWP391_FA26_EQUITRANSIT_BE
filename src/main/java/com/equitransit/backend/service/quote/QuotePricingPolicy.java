@@ -39,6 +39,7 @@ import com.equitransit.backend.service.pricing.ServicePreferencePolicy;
 
 /** Pricing consumes F05 and evidenced commercial gaps, not fake readiness. */
 @Service
+@SuppressWarnings("null")
 public class QuotePricingPolicy {
 
     private static final Set<String> FREE = Set.of("INCLUDED",

@@ -24,6 +24,7 @@ import org.springframework.stereotype.Repository;
 
 /** JDBC repository for controlled operational adjustments and consent. */
 @Repository
+@SuppressWarnings("null")
 public class OperationalAdjustmentRepository {
 
     private final NamedParameterJdbcTemplate jdbc;

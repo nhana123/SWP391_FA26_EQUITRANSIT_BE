@@ -10,6 +10,7 @@ package com.equitransit.backend.config;
 
 import java.io.IOException;
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import javax.crypto.SecretKey;
@@ -57,12 +58,45 @@ public class SecurityConfig {
     }
 
     /**
-     * Creates an adaptive one-way password encoder.
-     * @return the versioned password encoder
+     * Plain-text password encoder for SWP391 development without hashing.
+     * Stores and compares plain-text passwords while keeping backwards
+     * compatibility with existing bcrypt hashes.
+     * @return the password encoder
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        return new PasswordEncoder() {
+            private final PasswordEncoder delegating =
+                    PasswordEncoderFactories
+                            .createDelegatingPasswordEncoder();
+
+            @Override
+            public String encode(CharSequence rawPassword) {
+                return rawPassword == null ? "" : rawPassword.toString();
+            }
+
+            @Override
+            public boolean matches(
+                    CharSequence rawPassword,
+                    String encodedPassword) {
+                if (encodedPassword == null || rawPassword == null) {
+                    return false;
+                }
+                String raw = rawPassword.toString();
+                if (encodedPassword.equals(raw)) {
+                    return true;
+                }
+                if (encodedPassword.startsWith("{noop}")
+                        && encodedPassword.substring(6).equals(raw)) {
+                    return true;
+                }
+                try {
+                    return delegating.matches(rawPassword, encodedPassword);
+                } catch (Exception ignored) {
+                    return false;
+                }
+            }
+        };
     }
 
     /**
@@ -117,11 +151,27 @@ public class SecurityConfig {
         CorsConfiguration cors = new CorsConfiguration();
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();
+        List<String> origins = new ArrayList<>();
 
-        cors.setAllowedOrigins(List.of(origin));
+        if (origin != null && !origin.isBlank()) {
+            for (String item : origin.split(",")) {
+                String trimmed = item.trim();
+
+                if (!trimmed.isEmpty()) {
+                    origins.add(trimmed);
+                }
+            }
+        }
+        if (!origins.contains("http://localhost:5173")) {
+            origins.add("http://localhost:5173");
+        }
+        if (!origins.contains("http://127.0.0.1:5173")) {
+            origins.add("http://127.0.0.1:5173");
+        }
+        cors.setAllowedOrigins(origins);
         cors.setAllowedMethods(List.of("GET", "POST", "PUT", "OPTIONS"));
         cors.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-        cors.setAllowCredentials(false);
+        cors.setAllowCredentials(true);
         source.registerCorsConfiguration("/api/**", cors);
         return source;
     }

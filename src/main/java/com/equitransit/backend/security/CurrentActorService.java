@@ -28,6 +28,7 @@ import com.equitransit.backend.repository.auth.UserAccountRepository;
 
 /** Resolves domain identities without accepting client-supplied identifiers. */
 @Service
+@SuppressWarnings("null")
 public class CurrentActorService {
 
     private static final Set<String> STAFF_ROLES = Set.of(

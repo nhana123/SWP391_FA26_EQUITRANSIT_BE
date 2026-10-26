@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 /** Parameterized F12 storage; callers hold the TransportOrder parent lock. */
 @Repository
+@SuppressWarnings("null")
 public class LegExecutionOperationRepository {
     private final NamedParameterJdbcTemplate jdbc;
 
@@ -67,7 +68,9 @@ public class LegExecutionOperationRepository {
 
     /** @param key internal statement @param args bound values @return key */
     public long number(String key, Map<String, ?> args) {
-        return jdbc.queryForObject(sql(key), args, Long.class);
+        Long id = jdbc.queryForObject(sql(key), args, Long.class);
+
+        return id == null ? 0L : id;
     }
 
     /** @param time timezone-aware instant @return SQL datetime2 UTC */

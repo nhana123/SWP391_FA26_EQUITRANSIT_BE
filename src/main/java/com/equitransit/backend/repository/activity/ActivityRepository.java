@@ -19,6 +19,7 @@ import org.springframework.stereotype.Repository;
 
 /** Set-based scoped reads and insert-only audit/deduplicated projection. */
 @Repository
+@SuppressWarnings("null")
 public class ActivityRepository {
 
     private static final String SCOPE = "(:role='MANAGER' OR"

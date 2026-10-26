@@ -47,6 +47,7 @@ import static org.mockito.Mockito.when;
  * Unit & scenario test suite for Actual Cost and Profitability analysis.
  */
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 public class ActualCostAndProfitabilityTest {
 
     private static final long ORDER_ID = 101L;

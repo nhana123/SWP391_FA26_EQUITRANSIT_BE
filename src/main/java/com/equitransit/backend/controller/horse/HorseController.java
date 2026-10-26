@@ -99,6 +99,7 @@ public class HorseController {
     @Operation(summary = "Create my horse",
             description = "Only name is required. Missing measurements "
                     + "remain unknown. No ownership fields are accepted.")
+    @SuppressWarnings("null")
     public ResponseEntity<HorseResponse> create(
             @RequestBody @Valid HorseProfileRequest request) {
         HorseResponse created = horses.create(request);

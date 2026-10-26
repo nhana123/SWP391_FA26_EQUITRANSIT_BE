@@ -64,6 +64,7 @@ import com.equitransit.backend.service.horse.HorseService;
 @Service
 @Validated
 @PreAuthorize("@domainAccessPolicy.isCustomer()")
+@SuppressWarnings("null")
 public class BookingServicesService {
 
     private final OrderRepository orders;

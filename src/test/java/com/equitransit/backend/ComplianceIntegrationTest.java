@@ -59,6 +59,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles({"test", "horse-test"})
 @EnabledIfEnvironmentVariable(named = "EQ_COMPLIANCE_TEST_ENABLED",
         matches = "true")
+@SuppressWarnings("null")
 public class ComplianceIntegrationTest {
 
     private final List<Long> fixtureUsers = new ArrayList<>();
@@ -621,7 +622,10 @@ public class ComplianceIntegrationTest {
                                 CompliancePhase.PRE_EXPORT,
                         OffsetDateTime.now(ZoneOffset.UTC)));
 
-        assertThat(gate.blockers()).contains("REVISION_MISMATCH");
+        assertThat(gate).isNotNull();
+        if (gate != null) {
+            assertThat(gate.blockers()).contains("REVISION_MISMATCH");
+        }
     }
 
     /** @throws Exception if a new route inherits old legal readiness */

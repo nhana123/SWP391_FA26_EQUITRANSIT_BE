@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 
 
 /** Checks request limits without sleeping or sending email. */
+@SuppressWarnings("null")
 public class AuthRateLimitTest {
 
     /**

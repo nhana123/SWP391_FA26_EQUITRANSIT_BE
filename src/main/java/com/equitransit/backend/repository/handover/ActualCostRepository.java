@@ -26,6 +26,7 @@ import org.springframework.stereotype.Repository;
  * Data access operations for internal actual supplier costs on transport plans.
  */
 @Repository
+@SuppressWarnings("null")
 public class ActualCostRepository {
 
     private final NamedParameterJdbcTemplate jdbc;

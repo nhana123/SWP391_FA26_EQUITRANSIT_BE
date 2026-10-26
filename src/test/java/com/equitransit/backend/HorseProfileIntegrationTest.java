@@ -71,6 +71,7 @@ import static org.springframework.test.web.servlet.result.
 @EnabledIfEnvironmentVariable(named = "EQ_HORSE_TEST_ENABLED",
         matches = "true")
 @Transactional
+@SuppressWarnings("null")
 public class HorseProfileIntegrationTest {
 
     private final List<Long> fixtureUsers = new ArrayList<>();

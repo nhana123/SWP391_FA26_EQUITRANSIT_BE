@@ -161,9 +161,11 @@ public class ComplianceReadinessFacade {
                         && specialists.contains(
                         number(requirement, "ReviewedBy"))) {
                     satisfied = true;
-                    expires = earlier(expires, expiry.toLocalDate()
-                            .plusDays(1).atStartOfDay()
-                            .atOffset(ZoneOffset.UTC));
+                    if (expiry != null) {
+                        expires = earlier(expires, expiry.toLocalDate()
+                                .plusDays(1).atStartOfDay()
+                                .atOffset(ZoneOffset.UTC));
+                    }
                 }
             }
             if (!satisfied) {

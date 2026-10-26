@@ -7,10 +7,6 @@
  */
 package com.equitransit.backend.mail;
 
-
-
-
-
 /** Contains an email dispatched after commit. */
 public class EmailEvent {
     private String recipient;
@@ -18,6 +14,8 @@ public class EmailEvent {
     private String subject;
 
     private String body;
+
+    private String htmlBody;
 
     /**
      * Returns recipient.
@@ -67,5 +65,19 @@ public class EmailEvent {
         this.body = body;
     }
 
+    /**
+     * Returns htmlBody.
+     * @return the htmlBody
+     */
+    public String getHtmlBody() {
+        return htmlBody;
+    }
 
+    /**
+     * Sets htmlBody.
+     * @param htmlBody the value to store
+     */
+    public void setHtmlBody(String htmlBody) {
+        this.htmlBody = htmlBody;
+    }
 }

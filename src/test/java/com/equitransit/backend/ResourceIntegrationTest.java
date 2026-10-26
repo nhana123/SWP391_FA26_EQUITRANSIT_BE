@@ -81,6 +81,7 @@ import static org.springframework.test.web.servlet.result.
 @EnabledIfEnvironmentVariable(named = "EQ_RESOURCE_TEST_ENABLED",
         matches = "true")
 @Transactional
+@SuppressWarnings("null")
 public class ResourceIntegrationTest {
 
     private static final String BASE = "/api/manager/resources/";
@@ -367,7 +368,10 @@ public class ResourceIntegrationTest {
                     .requireAvailable(ResourceKind.VEHICLE, id, request,
                             version));
 
-            assertThat(result.status().name()).isEqualTo("AVAILABLE");
+            assertThat(result).isNotNull();
+            if (result != null) {
+                assertThat(result.status().name()).isEqualTo("AVAILABLE");
+            }
             assertThatThrownBy(() -> transaction.execute(state -> availability
                     .requireAvailable(ResourceKind.VEHICLE, id, request,
                             "0000000000000000")))

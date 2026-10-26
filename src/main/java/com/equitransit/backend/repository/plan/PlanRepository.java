@@ -53,6 +53,7 @@ import org.springframework.stereotype.Repository;
 
 /** Parameterized SQL adapter; all writes follow the parent order lock. */
 @Repository
+@SuppressWarnings("null")
 public class PlanRepository {
 
     private final NamedParameterJdbcTemplate jdbc;
@@ -108,10 +109,13 @@ public class PlanRepository {
 
     /** @param revision revision ID @return next version number */
     public int nextVersion(long revision) {
-        return jdbc.queryForObject("SELECT COALESCE(MAX(VersionNo),0)+1 FROM "
+        Integer ver = jdbc.queryForObject(
+                "SELECT COALESCE(MAX(VersionNo),0)+1 FROM "
                 + "dbo.TransportPlan WITH (UPDLOCK,HOLDLOCK) "
                 + "WHERE RevisionID=:rev", Map.of("rev", revision),
                 Integer.class);
+
+        return ver == null ? 1 : ver;
     }
 
     /** @param order parent @param revision revision @param staff creator
@@ -124,13 +128,15 @@ public class PlanRepository {
                 .addValue("ver", version).addValue("start", utc(start))
                 .addValue("end", utc(end));
 
-        return jdbc.queryForObject("SET NOCOUNT ON; DECLARE @ids TABLE "
+        Long id = jdbc.queryForObject("SET NOCOUNT ON; DECLARE @ids TABLE "
                 + "(ID BIGINT); INSERT dbo.TransportPlan (OrderID,RevisionID,"
                 + "CreatedBy,VersionNo,PlannedStartTime,PlannedEndTime,"
                 + "FinancialGateStatus,OperationalGateStatus,DocGateStatus,"
                 + "PlanStatus) OUTPUT INSERTED.PlanID INTO @ids VALUES "
                 + "(:order,:rev,:staff,:ver,:start,:end,'PENDING','PENDING',"
                 + "'PENDING','DRAFT'); SELECT ID FROM @ids", args, Long.class);
+
+        return id == null ? 0L : id;
     }
 
     /** @param plan plan ID @param leg leg input @param staff distance confirmer
@@ -158,7 +164,7 @@ public class PlanRepository {
                 .addValue("by", sourced ? staff : null)
                 .addValue("at", sourced ? utc(now) : null);
 
-        return jdbc.queryForObject("SET NOCOUNT ON; DECLARE @ids TABLE "
+        Long id = jdbc.queryForObject("SET NOCOUNT ON; DECLARE @ids TABLE "
                 + "(ID BIGINT); INSERT dbo.TripLeg (PlanID,SequenceNo,"
                 + "TransportMode,StartPoint,EndPoint,DistanceKm,"
                 + "PlannedDeparture,PlannedArrival,LegStatus,StartTimezone,"
@@ -169,6 +175,8 @@ public class PlanRepository {
                 + "(:plan,:seq,:mode,:start,:end,:km,:dep,:arr,'PLANNED',:stz,"
                 + ":etz,:sup,:flt,:conn,:rest,:care,:src,:by,:at); "
                 + "SELECT ID FROM @ids", args, Long.class);
+
+        return id == null ? 0L : id;
     }
 
     /** @param order parent @param plan current plan ID */
@@ -218,8 +226,11 @@ public class PlanRepository {
 
     /** @param order parent @return count of plans */
     public long countPlans(long order) {
-        return jdbc.queryForObject("SELECT COUNT_BIG(*) FROM dbo.TransportPlan "
+        Long count = jdbc.queryForObject(
+                "SELECT COUNT_BIG(*) FROM dbo.TransportPlan "
                 + "WHERE OrderID=:order", Map.of("order", order), Long.class);
+
+        return count == null ? 0L : count;
     }
 
     /** @param plan plan ID @return ordered legs with nested assignments */
@@ -323,7 +334,8 @@ public class PlanRepository {
      * @return true if driver has an overlapping active assignment */
     public boolean driverOverlaps(long staff, OffsetDateTime start,
             OffsetDateTime end, int buffer, long excludeLeg) {
-        return jdbc.queryForObject("SELECT COUNT(*) FROM dbo.TripAssignment a "
+        Integer count = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM dbo.TripAssignment a "
                 + "WITH (UPDLOCK,HOLDLOCK) JOIN dbo.TripLeg l "
                 + "ON l.LegID=a.LegID JOIN dbo.TransportPlan p "
                 + "ON p.PlanID=l.PlanID WHERE a.StaffID=:staff "
@@ -338,7 +350,9 @@ public class PlanRepository {
                 + "a.BufferMinutes THEN :buf ELSE a.BufferMinutes END,:end)))",
                 Map.of("staff", staff, "exclude", excludeLeg,
                         "start", utc(start), "end", utc(end), "buf", buffer),
-                Integer.class) > 0;
+                Integer.class);
+
+        return count != null && count > 0;
     }
 
     /** @param leg leg ID @param req stall request @param slots slot quantity
@@ -356,7 +370,7 @@ public class PlanRepository {
                 + "('CANCELLED','CANCELED','INACTIVE')", Map.of("leg", leg));
         var lockArgs = Map.of("leg", leg, "stall", req.stallId(),
                 "share", sharing, "from", utc(start), "to", utc(end));
-        int incompatible = jdbc.queryForObject("SELECT COUNT(*) FROM "
+        Integer incompatible = jdbc.queryForObject("SELECT COUNT(*) FROM "
                 + "dbo.StallAssignment a WITH (UPDLOCK,HOLDLOCK) "
                 + "JOIN dbo.TripLeg l ON l.LegID=a.LegID "
                 + "JOIN dbo.TransportPlan p ON p.PlanID=l.PlanID "
@@ -376,7 +390,7 @@ public class PlanRepository {
                 + "l.PlannedDeparture<>tl.PlannedDeparture OR "
                 + "l.PlannedArrival<>tl.PlannedArrival OR "
                 + "p.OrderID=tp.OrderID)", lockArgs, Integer.class);
-        if (incompatible > 0) {
+        if (incompatible != null && incompatible > 0) {
             throw new OrderException(HttpStatus.CONFLICT,
                     "RESOURCE_SCHEDULE_OVERLAP",
                     "Stall has an incompatible or private schedule overlap.");
@@ -671,7 +685,7 @@ public class PlanRepository {
         jdbc.queryForObject("SELECT HorseID FROM dbo.Horse WITH (UPDLOCK,"
                 + "HOLDLOCK) WHERE HorseID=:horse", Map.of("horse", horse),
                 Long.class);
-        return jdbc.queryForObject("SELECT COUNT(*) FROM "
+        Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM "
                 + "dbo.TransportOrderDetail d JOIN dbo.TransportOrder o "
                 + "ON o.OrderID=d.OrderID JOIN dbo.TransportPlan p "
                 + "ON p.PlanID=o.CurrentPlanID AND p.OrderID=o.OrderID "
@@ -682,7 +696,9 @@ public class PlanRepository {
                 + "AND (p.PlannedStartTime IS NULL OR p.PlannedEndTime IS NULL "
                 + "OR (:start<p.PlannedEndTime AND p.PlannedStartTime<:end))",
                 Map.of("horse", horse, "order", order, "start", utc(start),
-                        "end", utc(end)), Integer.class) > 0;
+                        "end", utc(end)), Integer.class);
+
+        return count != null && count > 0;
     }
 
     /** @param order parent @param plan plan ID @param quote accepted quote ID

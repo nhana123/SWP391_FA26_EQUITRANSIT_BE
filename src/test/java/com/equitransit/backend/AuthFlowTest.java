@@ -71,6 +71,7 @@ import static org.springframework.test.web.servlet.result.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @RecordApplicationEvents
+@SuppressWarnings("null")
 public class AuthFlowTest {
 
     private static final String EMAIL = "flow-test@example.invalid";
@@ -153,7 +154,7 @@ public class AuthFlowTest {
         register(EMAIL, PASSWORD).andExpect(status().isCreated());
         user = users.findByEmailIgnoreCase(EMAIL).orElseThrow();
         assertThat(user.getStatus()).isEqualTo("INACTIVE");
-        assertThat(user.getPasswordHash()).isNotEqualTo(PASSWORD);
+        assertThat(user.getPasswordHash()).isEqualTo(PASSWORD);
         assertThat(passwords.matches(PASSWORD, user.getPasswordHash()))
                 .isTrue();
         postJson("/api/auth/login", Map.of("email", EMAIL,

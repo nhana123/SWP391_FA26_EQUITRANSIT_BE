@@ -30,6 +30,7 @@ import com.equitransit.backend.json.order.OrderJsonCodec;
 
 /** Bound parameters and an order-row lock serialize all revision mutations. */
 @Repository
+@SuppressWarnings("null")
 public class OrderRepository {
 
     private static final String COLUMNS = "OrderID, CustomerID, OrderNumber,"
