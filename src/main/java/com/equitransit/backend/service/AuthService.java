@@ -217,7 +217,8 @@ public class AuthService {
     }
 
     private AuthenticationToken lockValidToken(String raw, String purpose) {
-        String hash = TokenTools.hash(raw);
+        String normalized = raw.trim().replace(" ", "");
+        String hash = TokenTools.hash(normalized);
         Long userId = tokens.findOwnerByHash(hash)
                 .orElseThrow(this::invalidToken);
         UserAccount user = users.findLockedById(userId)
@@ -234,12 +235,13 @@ public class AuthService {
     }
 
     private void issueOneTimeToken(UserAccount user, String purpose) {
-        String raw = TokenTools.randomToken();
+        boolean verification = VERIFY_EMAIL.equals(purpose);
+        String raw = generateOtp();
         LocalDateTime created = now();
         AuthenticationToken token = new AuthenticationToken();
         EmailEvent event = new EmailEvent();
-        boolean verification = VERIFY_EMAIL.equals(purpose);
         String route = verification ? "/verify-email" : "/reset-password";
+        String link = frontend + route + "?token=" + raw;
 
         tokens.invalidate(user.getUserId(), purpose);
         token.setUser(user);
@@ -252,9 +254,107 @@ public class AuthService {
         event.setRecipient(user.getEmail());
         event.setSubject(verification ? "Verify your EquiTransit account"
                 : "Reset your EquiTransit password");
-        event.setBody("Open this link in the frontend: " + frontend + route
-                + "?token=" + raw + "\nThis link can be used only once.");
+        event.setBody(buildEmailBody(link, raw, verification));
+        event.setHtmlBody(buildEmailHtml(link, raw, verification));
         events.publishEvent(event);
+    }
+
+    private String buildEmailBody(
+            String link, String raw, boolean verification) {
+        String title = verification
+                ? "EquiTransit Account Verification"
+                : "EquiTransit Password Reset";
+        String intro = verification
+                ? "Thank you for registering. Please verify your email using "
+                        + "one of the two methods below to complete activation:"
+                : "We received a password reset request. Please proceed using "
+                        + "one of the two methods below:";
+        String m1 = verification
+                ? "METHOD 1 - CONFIRM VIA LINK:\n"
+                        + "Click the link below to verify your account:\n"
+                : "METHOD 1 - RESET VIA LINK:\n"
+                        + "Click the link below to reset your password:\n";
+        String m2 = verification
+                ? "METHOD 2 - ENTER OTP CODE ON THE WEBSITE:\n"
+                        + "Enter this 6-digit code on the registration page:\n"
+                : "METHOD 2 - ENTER OTP CODE ON THE WEBSITE:\n"
+                        + "Enter this 6-digit code on the reset page:\n";
+
+        return title + "\n\nHello,\n\n" + intro + "\n\n"
+                + m1 + link + "\n\n--- OR ---\n\n"
+                + m2 + formatOtp(raw) + "\n\n"
+                + "Note: This one-time code expires soon. "
+                + "Never share this code with anyone.\n\n"
+                + "(c) 2026 EquiTransit. All rights reserved.";
+    }
+
+    private String buildEmailHtml(
+            String link, String raw, boolean verification) {
+        String title = verification
+                ? "Account Verification"
+                : "Password Reset Request";
+        String intro = verification
+                ? "Thank you for registering. Please verify your email using "
+                        + "one of the two methods below to complete activation:"
+                : "We received a password reset request. Please proceed using "
+                        + "one of the two methods below:";
+        String btnText = verification
+                ? "CONFIRM ACCOUNT NOW"
+                : "RESET PASSWORD NOW";
+        String otpLabel = verification
+                ? "Enter this 6-digit verification code on your screen"
+                : "Enter this 6-digit verification code on the reset page";
+
+        return "<div style=\"font-family:-apple-system,BlinkMacSystemFont,"
+                + "'Segoe UI',Roboto,Helvetica,Arial,sans-serif;"
+                + "max-width:480px;margin:0 auto;padding:28px 24px;"
+                + "border:1px solid #dce5de;border-radius:12px;"
+                + "background:#ffffff;text-align:center;\">"
+                + "<h2 style=\"color:#1e4a30;letter-spacing:1px;"
+                + "margin:0 0 6px;\">EQUITRANSIT</h2>"
+                + "<h3 style=\"color:#2c4737;margin:0 0 16px;\">"
+                + title + "</h3>"
+                + "<p style=\"color:#496656;font-size:14px;line-height:1.6;"
+                + "text-align:left;margin:0 0 20px;\">Hello,<br><br>"
+                + intro + "</p>"
+                + "<div style=\"margin:20px 0;\">"
+                + "<a href=\"" + link + "\" style=\"background-color:#1e4a30;"
+                + "color:#ffffff;text-decoration:none;font-weight:bold;"
+                + "font-size:14px;padding:12px 28px;border-radius:8px;"
+                + "display:inline-block;\">" + btnText + "</a></div>"
+                + "<div style=\"color:#88998e;font-size:12px;font-weight:bold;"
+                + "margin:20px 0;\">─── OR ───</div>"
+                + "<p style=\"font-size:13.5px;color:#496656;margin:0 0 8px;\">"
+                + otpLabel + ":</p>"
+                + "<div style=\"display:inline-block;background:#f4f8f5;"
+                + "border:1.5px dashed #1e4a30;border-radius:8px;"
+                + "padding:10px 24px;font-size:28px;font-weight:bold;"
+                + "letter-spacing:6px;color:#1e4a30;font-family:monospace;\">"
+                + formatOtp(raw) + "</div>"
+                + "<p style=\"font-size:12px;color:#64756d;margin:24px 0 0;"
+                + "border-top:1px solid #eaefe9;padding-top:14px;"
+                + "line-height:1.5;\">"
+                + "Note: This one-time code expires soon. Never share it with "
+                + "anyone.<br>&copy; 2026 EquiTransit. All rights reserved.</p>"
+                + "</div>";
+    }
+
+    private String formatOtp(String raw) {
+        if (raw != null && raw.length() == 6) {
+            return raw.substring(0, 3) + " " + raw.substring(3);
+        }
+        return raw;
+    }
+
+    private String generateOtp() {
+        for (int i = 0; i < 5; i++) {
+            String candidate = TokenTools.randomOtp();
+            String hash = TokenTools.hash(candidate);
+            if (tokens.findByTokenHash(hash).isEmpty()) {
+                return candidate;
+            }
+        }
+        return TokenTools.randomOtp();
     }
 
     /**

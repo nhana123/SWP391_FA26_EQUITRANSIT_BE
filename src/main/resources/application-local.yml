@@ -1,8 +1,20 @@
 spring:
   datasource:
-    url: jdbc:sqlserver://localhost:1433;databaseName=EquiTransit;encrypt=true;trustServerCertificate=true;integratedSecurity=true
+    url: ${EQ_DB_URL:jdbc:sqlserver://127.0.0.1:1433;databaseName=EquiTransit;encrypt=true;trustServerCertificate=true;integratedSecurity=true}
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: huytgse160995@fpt.edu.vn
+    password: "tsud gkai bsbe thoo"
+    properties:
+      "[mail.smtp.auth]": true
+      "[mail.smtp.starttls.enable]": true
+      "[mail.smtp.connectiontimeout]": 5000
+      "[mail.smtp.timeout]": 5000
+      "[mail.smtp.writetimeout]": 5000
 app:
   jwt:
     refresh-cookie-secure: ${EQ_REFRESH_COOKIE_SECURE:false}
   mail:
-    mode: file
+    mode: smtp
+    from: huytgse160995@fpt.edu.vn

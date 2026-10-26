@@ -19,6 +19,8 @@ public class EmailEvent {
 
     private String body;
 
+    private String htmlBody;
+
     /**
      * Returns recipient.
      * @return the recipient
@@ -67,5 +69,19 @@ public class EmailEvent {
         this.body = body;
     }
 
+    /**
+     * Returns htmlBody.
+     * @return the htmlBody
+     */
+    public String getHtmlBody() {
+        return htmlBody;
+    }
 
+    /**
+     * Sets htmlBody.
+     * @param htmlBody the value to store
+     */
+    public void setHtmlBody(String htmlBody) {
+        this.htmlBody = htmlBody;
+    }
 }
