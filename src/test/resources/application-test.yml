@@ -6,8 +6,12 @@ spring:
     hikari:
       connection-init-sql: ${EQ_TEST_CONNECTION_INIT_SQL:}
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: ${EQ_TEST_DDL:create-drop}
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
   mail:
     host: localhost
 app:

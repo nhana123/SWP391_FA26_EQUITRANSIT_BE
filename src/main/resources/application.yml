@@ -15,14 +15,12 @@ spring:
         SET ARITHABORT ON; SET NUMERIC_ROUNDABORT OFF;
   jpa:
     open-in-view: false
-    database-platform: org.hibernate.dialect.SQLServerDialect
     hibernate:
       ddl-auto: validate
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.SQLServerDialect
         jdbc:
           time_zone: UTC
   jackson:
