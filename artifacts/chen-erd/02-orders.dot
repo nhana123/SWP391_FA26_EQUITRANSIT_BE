@@ -1,0 +1,193 @@
+digraph G {
+graph [rankdir=LR, bgcolor="white", nodesep=0.24, ranksep=1.05, splines=polyline, overlap=false, outputorder=edgesfirst, pad=0.3];
+node [fontname="Arial", fontsize=15, margin="0.14,0.10", style=filled];
+edge [fontname="Arial", fontsize=12, color="#728095", penwidth=1.2, dir=none, labeldistance=1.8, labelangle=28];
+subgraph "cluster_TransportOrder" { style=invis; margin=16;
+"E_TransportOrder" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="TRANSPORT ORDER",width=2.05,height=0.64];
+"A_TransportOrder_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>OrderID</U>>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_TransportOrder_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<OrderNumber>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_TransportOrder_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<OrderStatus>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_TransportOrder_3" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<CreatedAt>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_3" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_TransportOrder_0";"A_TransportOrder_1";"E_TransportOrder";"A_TransportOrder_2";"A_TransportOrder_3";}
+"A_TransportOrder_0" -> "A_TransportOrder_1" [style=invis,weight=70];
+"A_TransportOrder_1" -> "E_TransportOrder" [style=invis,weight=70];
+"E_TransportOrder" -> "A_TransportOrder_2" [style=invis,weight=70];
+"A_TransportOrder_2" -> "A_TransportOrder_3" [style=invis,weight=70];
+}
+subgraph "cluster_TransportOrderDetail" { style=invis; margin=16;
+"E_TransportOrderDetail" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="TRANSPORT ORDER\nDETAIL",width=2.05,height=0.64];
+"A_TransportOrderDetail_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>DetailID</U>>,width=1.7,height=0.47];
+"E_TransportOrderDetail" -> "A_TransportOrderDetail_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_TransportOrderDetail_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<SnapshotWeightKg>,width=1.7,height=0.47];
+"E_TransportOrderDetail" -> "A_TransportOrderDetail_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_TransportOrderDetail_0";"E_TransportOrderDetail";"A_TransportOrderDetail_1";}
+"A_TransportOrderDetail_0" -> "E_TransportOrderDetail" [style=invis,weight=70];
+"E_TransportOrderDetail" -> "A_TransportOrderDetail_1" [style=invis,weight=70];
+}
+subgraph "cluster_OrderRevision" { style=invis; margin=16;
+"E_OrderRevision" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="ORDER REVISION",width=2.05,height=0.64];
+"A_OrderRevision_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>RevisionID</U>>,width=1.7,height=0.47];
+"E_OrderRevision" -> "A_OrderRevision_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_OrderRevision_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<RevisionNo>,width=1.7,height=0.47];
+"E_OrderRevision" -> "A_OrderRevision_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_OrderRevision_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<SubmittedAt>,width=1.7,height=0.47];
+"E_OrderRevision" -> "A_OrderRevision_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_OrderRevision_0";"A_OrderRevision_1";"E_OrderRevision";"A_OrderRevision_2";}
+"A_OrderRevision_0" -> "A_OrderRevision_1" [style=invis,weight=70];
+"A_OrderRevision_1" -> "E_OrderRevision" [style=invis,weight=70];
+"E_OrderRevision" -> "A_OrderRevision_2" [style=invis,weight=70];
+}
+subgraph "cluster_OrderAssignment" { style=invis; margin=16;
+"E_OrderAssignment" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="ORDER ASSIGNMENT",width=2.05,height=0.64];
+"A_OrderAssignment_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>AssignmentID</U>>,width=1.7,height=0.47];
+"E_OrderAssignment" -> "A_OrderAssignment_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_OrderAssignment_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<AssignmentRole>,width=1.7,height=0.47];
+"E_OrderAssignment" -> "A_OrderAssignment_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_OrderAssignment_0";"E_OrderAssignment";"A_OrderAssignment_1";}
+"A_OrderAssignment_0" -> "E_OrderAssignment" [style=invis,weight=70];
+"E_OrderAssignment" -> "A_OrderAssignment_1" [style=invis,weight=70];
+}
+subgraph "cluster_OrderDecision" { style=invis; margin=16;
+"E_OrderDecision" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="ORDER DECISION",width=2.05,height=0.64];
+"A_OrderDecision_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>DecisionID</U>>,width=1.7,height=0.47];
+"E_OrderDecision" -> "A_OrderDecision_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_OrderDecision_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Decision>,width=1.7,height=0.47];
+"E_OrderDecision" -> "A_OrderDecision_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_OrderDecision_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Reason>,width=1.7,height=0.47];
+"E_OrderDecision" -> "A_OrderDecision_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_OrderDecision_0";"A_OrderDecision_1";"E_OrderDecision";"A_OrderDecision_2";}
+"A_OrderDecision_0" -> "A_OrderDecision_1" [style=invis,weight=70];
+"A_OrderDecision_1" -> "E_OrderDecision" [style=invis,weight=70];
+"E_OrderDecision" -> "A_OrderDecision_2" [style=invis,weight=70];
+}
+subgraph "cluster_OrderChangeRequest" { style=invis; margin=16;
+"E_OrderChangeRequest" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="ORDER CHANGE REQUEST",width=2.05,height=0.64];
+"A_OrderChangeRequest_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>ChangeRequestID</U>>,width=1.7,height=0.47];
+"E_OrderChangeRequest" -> "A_OrderChangeRequest_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_OrderChangeRequest_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ChangeType>,width=1.7,height=0.47];
+"E_OrderChangeRequest" -> "A_OrderChangeRequest_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_OrderChangeRequest_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Reason>,width=1.7,height=0.47];
+"E_OrderChangeRequest" -> "A_OrderChangeRequest_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_OrderChangeRequest_0";"A_OrderChangeRequest_1";"E_OrderChangeRequest";"A_OrderChangeRequest_2";}
+"A_OrderChangeRequest_0" -> "A_OrderChangeRequest_1" [style=invis,weight=70];
+"A_OrderChangeRequest_1" -> "E_OrderChangeRequest" [style=invis,weight=70];
+"E_OrderChangeRequest" -> "A_OrderChangeRequest_2" [style=invis,weight=70];
+}
+subgraph "cluster_StaffProfile" { style=invis; margin=16;
+"E_StaffProfile" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="STAFF PROFILE",width=2.05,height=0.64];
+"A_StaffProfile_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>StaffID</U>>,width=1.7,height=0.47];
+"E_StaffProfile" -> "A_StaffProfile_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StaffProfile_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<FullName>,width=1.7,height=0.47];
+"E_StaffProfile" -> "A_StaffProfile_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StaffProfile_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<StaffStatus>,width=1.7,height=0.47];
+"E_StaffProfile" -> "A_StaffProfile_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_StaffProfile_0";"A_StaffProfile_1";"E_StaffProfile";"A_StaffProfile_2";}
+"A_StaffProfile_0" -> "A_StaffProfile_1" [style=invis,weight=70];
+"A_StaffProfile_1" -> "E_StaffProfile" [style=invis,weight=70];
+"E_StaffProfile" -> "A_StaffProfile_2" [style=invis,weight=70];
+}
+subgraph "cluster_User" { style=invis; margin=16;
+"E_User" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="USER",width=2.05,height=0.64];
+"A_User_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>UserID</U>>,width=1.7,height=0.47];
+"E_User" -> "A_User_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_User_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Email>,width=1.7,height=0.47];
+"E_User" -> "A_User_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_User_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Status>,width=1.7,height=0.47];
+"E_User" -> "A_User_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_User_0";"A_User_1";"E_User";"A_User_2";}
+"A_User_0" -> "A_User_1" [style=invis,weight=70];
+"A_User_1" -> "E_User" [style=invis,weight=70];
+"E_User" -> "A_User_2" [style=invis,weight=70];
+}
+subgraph "cluster_TransportPlan" { style=invis; margin=16;
+"E_TransportPlan" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="TRANSPORT PLAN",width=2.05,height=0.64];
+"A_TransportPlan_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>PlanID</U>>,width=1.7,height=0.47];
+"E_TransportPlan" -> "A_TransportPlan_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_TransportPlan_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<VersionNo>,width=1.7,height=0.47];
+"E_TransportPlan" -> "A_TransportPlan_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_TransportPlan_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<PlanStatus>,width=1.7,height=0.47];
+"E_TransportPlan" -> "A_TransportPlan_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_TransportPlan_0";"A_TransportPlan_1";"E_TransportPlan";"A_TransportPlan_2";}
+"A_TransportPlan_0" -> "A_TransportPlan_1" [style=invis,weight=70];
+"A_TransportPlan_1" -> "E_TransportPlan" [style=invis,weight=70];
+"E_TransportPlan" -> "A_TransportPlan_2" [style=invis,weight=70];
+}
+subgraph "cluster_Customer" { style=invis; margin=16;
+"E_Customer" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="CUSTOMER",width=2.05,height=0.64];
+"A_Customer_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>CustomerID</U>>,width=1.7,height=0.47];
+"E_Customer" -> "A_Customer_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Customer_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<FullName>,width=1.7,height=0.47];
+"E_Customer" -> "A_Customer_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Customer_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Phone>,width=1.7,height=0.47];
+"E_Customer" -> "A_Customer_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_Customer_0";"A_Customer_1";"E_Customer";"A_Customer_2";}
+"A_Customer_0" -> "A_Customer_1" [style=invis,weight=70];
+"A_Customer_1" -> "E_Customer" [style=invis,weight=70];
+"E_Customer" -> "A_Customer_2" [style=invis,weight=70];
+}
+subgraph "cluster_Horse" { style=invis; margin=16;
+"E_Horse" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="HORSE",width=2.05,height=0.64];
+"A_Horse_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>HorseID</U>>,width=1.7,height=0.47];
+"E_Horse" -> "A_Horse_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Horse_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<MicrochipID>,width=1.7,height=0.47];
+"E_Horse" -> "A_Horse_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Horse_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<PassportNumber>,width=1.7,height=0.47];
+"E_Horse" -> "A_Horse_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Horse_3" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Name>,width=1.7,height=0.47];
+"E_Horse" -> "A_Horse_3" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_Horse_0";"A_Horse_1";"E_Horse";"A_Horse_2";"A_Horse_3";}
+"A_Horse_0" -> "A_Horse_1" [style=invis,weight=70];
+"A_Horse_1" -> "E_Horse" [style=invis,weight=70];
+"E_Horse" -> "A_Horse_2" [style=invis,weight=70];
+"A_Horse_2" -> "A_Horse_3" [style=invis,weight=70];
+}
+"R69" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="RECEIVES",width=1.12,height=0.67];
+"E_StaffProfile" -> "R69" [taillabel="1",weight=2];
+"R69" -> "E_OrderAssignment" [headlabel="N",color="#728095",weight=2];
+"R70" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="HAS CASE TEAM",width=1.12,height=0.67];
+"E_TransportOrder" -> "R70" [taillabel="1",weight=2];
+"R70" -> "E_OrderAssignment" [headlabel="N",color="#728095:#728095",weight=2];
+"R71" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="RECEIVES",width=1.12,height=0.67];
+"E_StaffProfile" -> "R71" [taillabel="1",weight=2];
+"R71" -> "E_OrderAssignment" [headlabel="N",color="#728095:#728095",weight=2];
+"R72" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nBase Revision",width=1.12,height=0.67];
+"E_OrderRevision" -> "R72" [taillabel="1",weight=2];
+"R72" -> "E_OrderChangeRequest" [headlabel="N",color="#728095",weight=2];
+"R73" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="HAS PLAN",width=1.12,height=0.67];
+"E_TransportOrder" -> "R73" [taillabel="1",weight=2];
+"R73" -> "E_OrderChangeRequest" [headlabel="N",color="#728095:#728095",weight=2];
+"R74" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nRequested By",width=1.12,height=0.67];
+"E_User" -> "R74" [taillabel="1",weight=2];
+"R74" -> "E_OrderChangeRequest" [headlabel="N",color="#728095:#728095",weight=2];
+"R75" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nResponded By",width=1.12,height=0.67];
+"E_StaffProfile" -> "R75" [taillabel="1",weight=2];
+"R75" -> "E_OrderChangeRequest" [headlabel="N",color="#728095",weight=2];
+"R76" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nManager",width=1.12,height=0.67];
+"E_StaffProfile" -> "R76" [taillabel="1",weight=2];
+"R76" -> "E_OrderDecision" [headlabel="N",color="#728095:#728095",weight=2];
+"R77" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BASED ON",width=1.12,height=0.67];
+"E_OrderRevision" -> "R77" [taillabel="1",weight=2];
+"R77" -> "E_OrderDecision" [headlabel="1",color="#728095:#728095",weight=2];
+"R78" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="HAS REVISION",width=1.12,height=0.67];
+"E_TransportOrder" -> "R78" [taillabel="1",weight=2];
+"R78" -> "E_OrderRevision" [headlabel="N",color="#728095:#728095",weight=2];
+"R132" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="IS CURRENT PLAN",width=1.12,height=0.67];
+"E_TransportPlan" -> "R132" [taillabel="1",weight=2];
+"R132" -> "E_TransportOrder" [headlabel="1",color="#728095",weight=2];
+"R133" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="IS CURRENT REVISION",width=1.12,height=0.67];
+"E_OrderRevision" -> "R133" [taillabel="1",weight=2];
+"R133" -> "E_TransportOrder" [headlabel="1",color="#728095",weight=2];
+"R134" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="PLACES",width=1.12,height=0.67];
+"E_Customer" -> "R134" [taillabel="1",weight=2];
+"R134" -> "E_TransportOrder" [headlabel="N",color="#728095:#728095",weight=2];
+"R135" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="APPEARS IN",width=1.12,height=0.67];
+"E_Horse" -> "R135" [taillabel="1",weight=2];
+"R135" -> "E_TransportOrderDetail" [headlabel="N",color="#728095:#728095",weight=2];
+"R136" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="HAS DETAIL",width=1.12,height=0.67];
+"E_TransportOrder" -> "R136" [taillabel="1",weight=2];
+"R136" -> "E_TransportOrderDetail" [headlabel="1",color="#728095:#728095",weight=2];
+}

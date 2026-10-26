@@ -57,6 +57,7 @@ public class OrderAssessmentService {
     private final OrderJsonCodec json;
     private final ObjectMapper mapper;
     private org.springframework.context.ApplicationEventPublisher events;
+    private BookingFlowService booking;
 
 
     /**
@@ -80,6 +81,12 @@ public class OrderAssessmentService {
         this.commitments = commitments;
         this.json = json;
         this.mapper = mapper;
+    }
+
+    /** @param booking initial fixed-road approval boundary */
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configureBooking(BookingFlowService booking) {
+        this.booking = booking;
     }
 
     /** @param publisher same-transaction domain notifications */
@@ -116,7 +123,13 @@ public class OrderAssessmentService {
         }
         policy.version(order, request.recordVersion());
         policy.decision(order, request);
-        requireUncommitted(id);
+        boolean initialRoad = booking != null && order.revisionId() != null
+                && "SUBMITTED".equals(order.status())
+                && request.decision() == DecisionCode.APPROVED
+                && booking.automaticRoad(id, order.revisionId());
+        if (!initialRoad) {
+            requireUncommitted(id);
+        }
         policy.requireFuture(request.dueAt());
         before = active(id);
         if (request.decision() == DecisionCode.APPROVED) {
@@ -132,6 +145,13 @@ public class OrderAssessmentService {
                     actor.staffId(), request.dueAt(), request.assignmentNote());
         }
         transition(order, request.decision().name());
+        if (booking != null
+                && request.decision() == DecisionCode.APPROVED) {
+            booking.approved(id, request.revisionId());
+        }
+        if (initialRoad && booking.internal(id).isDepositSatisfied()) {
+            transition(parent(id), "IN_PREPARATION");
+        }
         if (events != null && request.decision() == DecisionCode.APPROVED) {
             events.publishEvent(new ComplianceApprovalProvisioner.Approved(
                     id, request.revisionId(), actor.userId()));

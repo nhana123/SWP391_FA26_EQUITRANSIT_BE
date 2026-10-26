@@ -12,10 +12,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class LocationCatalogService {
     private final LocationCatalogRepository data;
+    private final SubdivisionCatalog subdivisions;
 
-    /** @param data catalog port */
-    public LocationCatalogService(LocationCatalogRepository data) {
+    /** @param data catalog port @param subdivisions packaged region data */
+    public LocationCatalogService(LocationCatalogRepository data,
+            SubdivisionCatalog subdivisions) {
         this.data = data;
+        this.subdivisions = subdivisions;
     }
 
     /** @return supported selector countries */
@@ -25,6 +28,14 @@ public class LocationCatalogService {
 
     /** @param country ISO code @param type kind @return matching options */
     public List<Location> locations(String country, String type) {
-        return data.locations(country, type);
+        var rows = data.locations(country, type);
+        return "CITY".equals(type) ? subdivisions.merge(country, rows) : rows;
+    }
+
+    /** @param country ISO country @param primaryOnly primary filter
+     * @return active company hubs */
+    public List<Location> hubs(String country, boolean primaryOnly) {
+        return primaryOnly ? data.findPrimaryHubByCountry(country)
+                .stream().toList() : data.hubs(country);
     }
 }

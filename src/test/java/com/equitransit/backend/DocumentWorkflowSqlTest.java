@@ -57,6 +57,14 @@ public class DocumentWorkflowSqlTest {
     public void lookupApprovalUploadReuseAndClear() throws Exception {
         assertThat(jdbc.queryForObject("SELECT DB_NAME()", String.class))
                 .isIn("EquiTransit_Demo", "EquiTransit_Test");
+        jdbc.update("INSERT dbo.LocationCatalog(CountryCode,CountryName,"
+                + "LocationType,LocationName,IsActive,IsPrimaryHub) SELECT "
+                + "c.CountryCode,MAX(c.CountryName),'HUB',"
+                + "'Document workflow fixture '+c.CountryCode,1,1 FROM "
+                + "dbo.LocationCatalog c WHERE c.IsActive=1 AND NOT EXISTS("
+                + "SELECT 1 FROM dbo.LocationCatalog h WHERE "
+                + "h.CountryCode=c.CountryCode AND h.LocationType='HUB' "
+                + "AND h.IsActive=1) GROUP BY c.CountryCode");
         String owner = customer();
         String other = customer();
         String manager = staff("MANAGER");

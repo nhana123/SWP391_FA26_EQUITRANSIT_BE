@@ -1,0 +1,234 @@
+digraph G {
+graph [rankdir=LR, bgcolor="white", nodesep=0.24, ranksep=1.05, splines=polyline, overlap=false, outputorder=edgesfirst, pad=0.3];
+node [fontname="Arial", fontsize=15, margin="0.14,0.10", style=filled];
+edge [fontname="Arial", fontsize=12, color="#728095", penwidth=1.2, dir=none, labeldistance=1.8, labelangle=28];
+subgraph "cluster_OrderServiceChoice" { style=invis; margin=16;
+"E_OrderServiceChoice" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="ORDER SERVICE CHOICE",width=2.05,height=0.64];
+"A_OrderServiceChoice_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>ChoiceID</U>>,width=1.7,height=0.47];
+"E_OrderServiceChoice" -> "A_OrderServiceChoice_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_OrderServiceChoice_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ServiceCode>,width=1.7,height=0.47];
+"E_OrderServiceChoice" -> "A_OrderServiceChoice_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_OrderServiceChoice_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<OptionCode>,width=1.7,height=0.47];
+"E_OrderServiceChoice" -> "A_OrderServiceChoice_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_OrderServiceChoice_0";"A_OrderServiceChoice_1";"E_OrderServiceChoice";"A_OrderServiceChoice_2";}
+"A_OrderServiceChoice_0" -> "A_OrderServiceChoice_1" [style=invis,weight=70];
+"A_OrderServiceChoice_1" -> "E_OrderServiceChoice" [style=invis,weight=70];
+"E_OrderServiceChoice" -> "A_OrderServiceChoice_2" [style=invis,weight=70];
+}
+subgraph "cluster_StallChoice" { style=invis; margin=16;
+"E_StallChoice" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="STALL CHOICE",width=2.05,height=0.64];
+"A_StallChoice_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>StallChoiceID</U>>,width=1.7,height=0.47];
+"E_StallChoice" -> "A_StallChoice_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StallChoice_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<SlotQuantity>,width=1.7,height=0.47];
+"E_StallChoice" -> "A_StallChoice_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StallChoice_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<SharingCode>,width=1.7,height=0.47];
+"E_StallChoice" -> "A_StallChoice_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_StallChoice_0";"A_StallChoice_1";"E_StallChoice";"A_StallChoice_2";}
+"A_StallChoice_0" -> "A_StallChoice_1" [style=invis,weight=70];
+"A_StallChoice_1" -> "E_StallChoice" [style=invis,weight=70];
+"E_StallChoice" -> "A_StallChoice_2" [style=invis,weight=70];
+}
+subgraph "cluster_QuarantineChoice" { style=invis; margin=16;
+"E_QuarantineChoice" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="QUARANTINE CHOICE",width=2.05,height=0.64];
+"A_QuarantineChoice_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>QuarantineChoiceID</U>>,width=1.7,height=0.47];
+"E_QuarantineChoice" -> "A_QuarantineChoice_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_QuarantineChoice_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<PackageCode>,width=1.7,height=0.47];
+"E_QuarantineChoice" -> "A_QuarantineChoice_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_QuarantineChoice_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<RequiredDays>,width=1.7,height=0.47];
+"E_QuarantineChoice" -> "A_QuarantineChoice_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_QuarantineChoice_0";"A_QuarantineChoice_1";"E_QuarantineChoice";"A_QuarantineChoice_2";}
+"A_QuarantineChoice_0" -> "A_QuarantineChoice_1" [style=invis,weight=70];
+"A_QuarantineChoice_1" -> "E_QuarantineChoice" [style=invis,weight=70];
+"E_QuarantineChoice" -> "A_QuarantineChoice_2" [style=invis,weight=70];
+}
+subgraph "cluster_InsuranceChoice" { style=invis; margin=16;
+"E_InsuranceChoice" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="INSURANCE CHOICE",width=2.05,height=0.64];
+"A_InsuranceChoice_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>InsuranceChoiceID</U>>,width=1.7,height=0.47];
+"E_InsuranceChoice" -> "A_InsuranceChoice_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_InsuranceChoice_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<CoverageCode>,width=1.7,height=0.47];
+"E_InsuranceChoice" -> "A_InsuranceChoice_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_InsuranceChoice_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<DeclaredValue>,width=1.7,height=0.47];
+"E_InsuranceChoice" -> "A_InsuranceChoice_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_InsuranceChoice_0";"A_InsuranceChoice_1";"E_InsuranceChoice";"A_InsuranceChoice_2";}
+"A_InsuranceChoice_0" -> "A_InsuranceChoice_1" [style=invis,weight=70];
+"A_InsuranceChoice_1" -> "E_InsuranceChoice" [style=invis,weight=70];
+"E_InsuranceChoice" -> "A_InsuranceChoice_2" [style=invis,weight=70];
+}
+subgraph "cluster_Quote" { style=invis; margin=16;
+"E_Quote" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="QUOTE",width=2.05,height=0.64];
+"A_Quote_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>QuoteID</U>>,width=1.7,height=0.47];
+"E_Quote" -> "A_Quote_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Quote_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<TotalQuotedAmount>,width=1.7,height=0.47];
+"E_Quote" -> "A_Quote_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Quote_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<QuoteStatus>,width=1.7,height=0.47];
+"E_Quote" -> "A_Quote_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Quote_3" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ValidUntil>,width=1.7,height=0.47];
+"E_Quote" -> "A_Quote_3" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_Quote_0";"A_Quote_1";"E_Quote";"A_Quote_2";"A_Quote_3";}
+"A_Quote_0" -> "A_Quote_1" [style=invis,weight=70];
+"A_Quote_1" -> "E_Quote" [style=invis,weight=70];
+"E_Quote" -> "A_Quote_2" [style=invis,weight=70];
+"A_Quote_2" -> "A_Quote_3" [style=invis,weight=70];
+}
+subgraph "cluster_QuoteItem" { style=invis; margin=16;
+"E_QuoteItem" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="QUOTE ITEM",width=2.05,height=0.64];
+"A_QuoteItem_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>ItemID</U>>,width=1.7,height=0.47];
+"E_QuoteItem" -> "A_QuoteItem_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_QuoteItem_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ServiceCode>,width=1.7,height=0.47];
+"E_QuoteItem" -> "A_QuoteItem_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_QuoteItem_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<CostCategory>,width=1.7,height=0.47];
+"E_QuoteItem" -> "A_QuoteItem_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_QuoteItem_0";"A_QuoteItem_1";"E_QuoteItem";"A_QuoteItem_2";}
+"A_QuoteItem_0" -> "A_QuoteItem_1" [style=invis,weight=70];
+"A_QuoteItem_1" -> "E_QuoteItem" [style=invis,weight=70];
+"E_QuoteItem" -> "A_QuoteItem_2" [style=invis,weight=70];
+}
+subgraph "cluster_QuotePaymentSchedule" { style=invis; margin=16;
+"E_QuotePaymentSchedule" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="QUOTE PAYMENT\nSCHEDULE",width=2.05,height=0.64];
+"A_QuotePaymentSchedule_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>ScheduleID</U>>,width=1.7,height=0.47];
+"E_QuotePaymentSchedule" -> "A_QuotePaymentSchedule_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_QuotePaymentSchedule_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<PaymentStage>,width=1.7,height=0.47];
+"E_QuotePaymentSchedule" -> "A_QuotePaymentSchedule_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_QuotePaymentSchedule_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<AmountDue>,width=1.7,height=0.47];
+"E_QuotePaymentSchedule" -> "A_QuotePaymentSchedule_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_QuotePaymentSchedule_3" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<DueAt>,width=1.7,height=0.47];
+"E_QuotePaymentSchedule" -> "A_QuotePaymentSchedule_3" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_QuotePaymentSchedule_0";"A_QuotePaymentSchedule_1";"E_QuotePaymentSchedule";"A_QuotePaymentSchedule_2";"A_QuotePaymentSchedule_3";}
+"A_QuotePaymentSchedule_0" -> "A_QuotePaymentSchedule_1" [style=invis,weight=70];
+"A_QuotePaymentSchedule_1" -> "E_QuotePaymentSchedule" [style=invis,weight=70];
+"E_QuotePaymentSchedule" -> "A_QuotePaymentSchedule_2" [style=invis,weight=70];
+"A_QuotePaymentSchedule_2" -> "A_QuotePaymentSchedule_3" [style=invis,weight=70];
+}
+subgraph "cluster_SupplierOffer" { style=invis; margin=16;
+"E_SupplierOffer" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="SUPPLIER OFFER",width=2.05,height=0.64];
+"A_SupplierOffer_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>OfferID</U>>,width=1.7,height=0.47];
+"E_SupplierOffer" -> "A_SupplierOffer_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_SupplierOffer_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ProviderName>,width=1.7,height=0.47];
+"E_SupplierOffer" -> "A_SupplierOffer_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_SupplierOffer_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<OfferReference>,width=1.7,height=0.47];
+"E_SupplierOffer" -> "A_SupplierOffer_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_SupplierOffer_0";"A_SupplierOffer_1";"E_SupplierOffer";"A_SupplierOffer_2";}
+"A_SupplierOffer_0" -> "A_SupplierOffer_1" [style=invis,weight=70];
+"A_SupplierOffer_1" -> "E_SupplierOffer" [style=invis,weight=70];
+"E_SupplierOffer" -> "A_SupplierOffer_2" [style=invis,weight=70];
+}
+subgraph "cluster_ServiceTariff" { style=invis; margin=16;
+"E_ServiceTariff" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="SERVICE TARIFF",width=2.05,height=0.64];
+"A_ServiceTariff_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>TariffID</U>>,width=1.7,height=0.47];
+"E_ServiceTariff" -> "A_ServiceTariff_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ServiceTariff_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ServiceCode>,width=1.7,height=0.47];
+"E_ServiceTariff" -> "A_ServiceTariff_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ServiceTariff_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<OptionCode>,width=1.7,height=0.47];
+"E_ServiceTariff" -> "A_ServiceTariff_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_ServiceTariff_0";"A_ServiceTariff_1";"E_ServiceTariff";"A_ServiceTariff_2";}
+"A_ServiceTariff_0" -> "A_ServiceTariff_1" [style=invis,weight=70];
+"A_ServiceTariff_1" -> "E_ServiceTariff" [style=invis,weight=70];
+"E_ServiceTariff" -> "A_ServiceTariff_2" [style=invis,weight=70];
+}
+subgraph "cluster_OrderRevision" { style=invis; margin=16;
+"E_OrderRevision" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="ORDER REVISION",width=2.05,height=0.64];
+"A_OrderRevision_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>RevisionID</U>>,width=1.7,height=0.47];
+"E_OrderRevision" -> "A_OrderRevision_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_OrderRevision_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<RevisionNo>,width=1.7,height=0.47];
+"E_OrderRevision" -> "A_OrderRevision_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_OrderRevision_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<SubmittedAt>,width=1.7,height=0.47];
+"E_OrderRevision" -> "A_OrderRevision_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_OrderRevision_0";"A_OrderRevision_1";"E_OrderRevision";"A_OrderRevision_2";}
+"A_OrderRevision_0" -> "A_OrderRevision_1" [style=invis,weight=70];
+"A_OrderRevision_1" -> "E_OrderRevision" [style=invis,weight=70];
+"E_OrderRevision" -> "A_OrderRevision_2" [style=invis,weight=70];
+}
+subgraph "cluster_StaffProfile" { style=invis; margin=16;
+"E_StaffProfile" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="STAFF PROFILE",width=2.05,height=0.64];
+"A_StaffProfile_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>StaffID</U>>,width=1.7,height=0.47];
+"E_StaffProfile" -> "A_StaffProfile_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StaffProfile_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<FullName>,width=1.7,height=0.47];
+"E_StaffProfile" -> "A_StaffProfile_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StaffProfile_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<StaffStatus>,width=1.7,height=0.47];
+"E_StaffProfile" -> "A_StaffProfile_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_StaffProfile_0";"A_StaffProfile_1";"E_StaffProfile";"A_StaffProfile_2";}
+"A_StaffProfile_0" -> "A_StaffProfile_1" [style=invis,weight=70];
+"A_StaffProfile_1" -> "E_StaffProfile" [style=invis,weight=70];
+"E_StaffProfile" -> "A_StaffProfile_2" [style=invis,weight=70];
+}
+subgraph "cluster_Customer" { style=invis; margin=16;
+"E_Customer" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="CUSTOMER",width=2.05,height=0.64];
+"A_Customer_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>CustomerID</U>>,width=1.7,height=0.47];
+"E_Customer" -> "A_Customer_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Customer_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<FullName>,width=1.7,height=0.47];
+"E_Customer" -> "A_Customer_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Customer_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Phone>,width=1.7,height=0.47];
+"E_Customer" -> "A_Customer_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_Customer_0";"A_Customer_1";"E_Customer";"A_Customer_2";}
+"A_Customer_0" -> "A_Customer_1" [style=invis,weight=70];
+"A_Customer_1" -> "E_Customer" [style=invis,weight=70];
+"E_Customer" -> "A_Customer_2" [style=invis,weight=70];
+}
+subgraph "cluster_Supplier" { style=invis; margin=16;
+"E_Supplier" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="SUPPLIER",width=2.05,height=0.64];
+"A_Supplier_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>SupplierID</U>>,width=1.7,height=0.47];
+"E_Supplier" -> "A_Supplier_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Supplier_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Name>,width=1.7,height=0.47];
+"E_Supplier" -> "A_Supplier_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Supplier_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ContactName>,width=1.7,height=0.47];
+"E_Supplier" -> "A_Supplier_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_Supplier_0";"A_Supplier_1";"E_Supplier";"A_Supplier_2";}
+"A_Supplier_0" -> "A_Supplier_1" [style=invis,weight=70];
+"A_Supplier_1" -> "E_Supplier" [style=invis,weight=70];
+"E_Supplier" -> "A_Supplier_2" [style=invis,weight=70];
+}
+"R52" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nChoice",width=1.12,height=0.67];
+"E_OrderServiceChoice" -> "R52" [taillabel="1",weight=2];
+"R52" -> "E_InsuranceChoice" [headlabel="1",color="#728095:#728095",weight=2];
+"R79" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BASED ON",width=1.12,height=0.67];
+"E_OrderRevision" -> "R79" [taillabel="1",weight=2];
+"R79" -> "E_OrderServiceChoice" [headlabel="N",color="#728095:#728095",weight=2];
+"R95" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nChoice",width=1.12,height=0.67];
+"E_OrderServiceChoice" -> "R95" [taillabel="1",weight=2];
+"R95" -> "E_QuarantineChoice" [headlabel="1",color="#728095:#728095",weight=2];
+"R96" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nConfirmed By",width=1.12,height=0.67];
+"E_StaffProfile" -> "R96" [taillabel="1",weight=2];
+"R96" -> "E_QuarantineChoice" [headlabel="N",color="#728095",weight=2];
+"R100" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nAccepted By\nCustomer",width=1.12,height=0.67];
+"E_Customer" -> "R100" [taillabel="1",weight=2];
+"R100" -> "E_Quote" [headlabel="N",color="#728095",weight=2];
+"R101" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="ISSUES",width=1.12,height=0.67];
+"E_StaffProfile" -> "R101" [taillabel="1",weight=2];
+"R101" -> "E_Quote" [headlabel="N",color="#728095",weight=2];
+"R102" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="PREPARES",width=1.12,height=0.67];
+"E_StaffProfile" -> "R102" [taillabel="1",weight=2];
+"R102" -> "E_Quote" [headlabel="N",color="#728095",weight=2];
+"R103" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="APPROVES",width=1.12,height=0.67];
+"E_StaffProfile" -> "R103" [taillabel="1",weight=2];
+"R103" -> "E_Quote" [headlabel="N",color="#728095",weight=2];
+"R104" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="HAS QUOTE",width=1.12,height=0.67];
+"E_OrderRevision" -> "R104" [taillabel="1",weight=2];
+"R104" -> "E_Quote" [headlabel="N",color="#728095:#728095",weight=2];
+"R105" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nOffer",width=1.12,height=0.67];
+"E_SupplierOffer" -> "R105" [taillabel="1",weight=2];
+"R105" -> "E_QuoteItem" [headlabel="N",color="#728095",weight=2];
+"R106" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nQuote",width=1.12,height=0.67];
+"E_Quote" -> "R106" [taillabel="1",weight=2];
+"R106" -> "E_QuoteItem" [headlabel="N",color="#728095:#728095",weight=2];
+"R107" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nTariff",width=1.12,height=0.67];
+"E_ServiceTariff" -> "R107" [taillabel="1",weight=2];
+"R107" -> "E_QuoteItem" [headlabel="N",color="#728095",weight=2];
+"R108" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="HAS INSTALLMENT",width=1.12,height=0.67];
+"E_Quote" -> "R108" [taillabel="1",weight=2];
+"R108" -> "E_QuotePaymentSchedule" [headlabel="N",color="#728095:#728095",weight=2];
+"R119" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nPublished By",width=1.12,height=0.67];
+"E_StaffProfile" -> "R119" [taillabel="1",weight=2];
+"R119" -> "E_ServiceTariff" [headlabel="N",color="#728095",weight=2];
+"R124" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nChoice",width=1.12,height=0.67];
+"E_OrderServiceChoice" -> "R124" [taillabel="1",weight=2];
+"R124" -> "E_StallChoice" [headlabel="1",color="#728095:#728095",weight=2];
+"R129" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nSupplier",width=1.12,height=0.67];
+"E_Supplier" -> "R129" [taillabel="1",weight=2];
+"R129" -> "E_SupplierOffer" [headlabel="N",color="#728095",weight=2];
+"R130" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="RECORDS",width=1.12,height=0.67];
+"E_StaffProfile" -> "R130" [taillabel="1",weight=2];
+"R130" -> "E_SupplierOffer" [headlabel="N",color="#728095",weight=2];
+"R131" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BASED ON",width=1.12,height=0.67];
+"E_OrderRevision" -> "R131" [taillabel="1",weight=2];
+"R131" -> "E_SupplierOffer" [headlabel="N",color="#728095:#728095",weight=2];
+}

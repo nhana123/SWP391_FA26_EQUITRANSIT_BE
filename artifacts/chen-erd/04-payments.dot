@@ -1,0 +1,212 @@
+digraph G {
+graph [rankdir=LR, bgcolor="white", nodesep=0.24, ranksep=1.05, splines=polyline, overlap=false, outputorder=edgesfirst, pad=0.3];
+node [fontname="Arial", fontsize=15, margin="0.14,0.10", style=filled];
+edge [fontname="Arial", fontsize=12, color="#728095", penwidth=1.2, dir=none, labeldistance=1.8, labelangle=28];
+subgraph "cluster_PaymentRequest" { style=invis; margin=16;
+"E_PaymentRequest" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="PAYMENT REQUEST",width=2.05,height=0.64];
+"A_PaymentRequest_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>PaymentRequestID</U>>,width=1.7,height=0.47];
+"E_PaymentRequest" -> "A_PaymentRequest_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_PaymentRequest_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<PaymentNumber>,width=1.7,height=0.47];
+"E_PaymentRequest" -> "A_PaymentRequest_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_PaymentRequest_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<PaymentStage>,width=1.7,height=0.47];
+"E_PaymentRequest" -> "A_PaymentRequest_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_PaymentRequest_0";"A_PaymentRequest_1";"E_PaymentRequest";"A_PaymentRequest_2";}
+"A_PaymentRequest_0" -> "A_PaymentRequest_1" [style=invis,weight=70];
+"A_PaymentRequest_1" -> "E_PaymentRequest" [style=invis,weight=70];
+"E_PaymentRequest" -> "A_PaymentRequest_2" [style=invis,weight=70];
+}
+subgraph "cluster_PaymentReport" { style=invis; margin=16;
+"E_PaymentReport" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="PAYMENT REPORT",width=2.05,height=0.64];
+"A_PaymentReport_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>ReportID</U>>,width=1.7,height=0.47];
+"E_PaymentReport" -> "A_PaymentReport_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_PaymentReport_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ReportedAmount>,width=1.7,height=0.47];
+"E_PaymentReport" -> "A_PaymentReport_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_PaymentReport_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<BankReference>,width=1.7,height=0.47];
+"E_PaymentReport" -> "A_PaymentReport_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_PaymentReport_0";"A_PaymentReport_1";"E_PaymentReport";"A_PaymentReport_2";}
+"A_PaymentReport_0" -> "A_PaymentReport_1" [style=invis,weight=70];
+"A_PaymentReport_1" -> "E_PaymentReport" [style=invis,weight=70];
+"E_PaymentReport" -> "A_PaymentReport_2" [style=invis,weight=70];
+}
+subgraph "cluster_PaymentProof" { style=invis; margin=16;
+"E_PaymentProof" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="PAYMENT PROOF",width=2.05,height=0.64];
+"A_PaymentProof_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>FileKey</U>>,width=1.7,height=0.47];
+"E_PaymentProof" -> "A_PaymentProof_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_PaymentProof_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<MediaType>,width=1.7,height=0.47];
+"E_PaymentProof" -> "A_PaymentProof_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_PaymentProof_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ContentBytes>,width=1.7,height=0.47];
+"E_PaymentProof" -> "A_PaymentProof_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_PaymentProof_0";"A_PaymentProof_1";"E_PaymentProof";"A_PaymentProof_2";}
+"A_PaymentProof_0" -> "A_PaymentProof_1" [style=invis,weight=70];
+"A_PaymentProof_1" -> "E_PaymentProof" [style=invis,weight=70];
+"E_PaymentProof" -> "A_PaymentProof_2" [style=invis,weight=70];
+}
+subgraph "cluster_PaymentTransaction" { style=invis; margin=16;
+"E_PaymentTransaction" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="PAYMENT TRANSACTION",width=2.05,height=0.64];
+"A_PaymentTransaction_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>TransactionID</U>>,width=1.7,height=0.47];
+"E_PaymentTransaction" -> "A_PaymentTransaction_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_PaymentTransaction_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<RecipientAccount>,width=1.7,height=0.47];
+"E_PaymentTransaction" -> "A_PaymentTransaction_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_PaymentTransaction_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<BankTransactionReference>,width=1.7,height=0.47];
+"E_PaymentTransaction" -> "A_PaymentTransaction_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_PaymentTransaction_0";"A_PaymentTransaction_1";"E_PaymentTransaction";"A_PaymentTransaction_2";}
+"A_PaymentTransaction_0" -> "A_PaymentTransaction_1" [style=invis,weight=70];
+"A_PaymentTransaction_1" -> "E_PaymentTransaction" [style=invis,weight=70];
+"E_PaymentTransaction" -> "A_PaymentTransaction_2" [style=invis,weight=70];
+}
+subgraph "cluster_PaymentAllocation" { style=invis; margin=16;
+"E_PaymentAllocation" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="PAYMENT ALLOCATION",width=2.05,height=0.64];
+"A_PaymentAllocation_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>AllocationID</U>>,width=1.7,height=0.47];
+"E_PaymentAllocation" -> "A_PaymentAllocation_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_PaymentAllocation_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<AllocatedAmount>,width=1.7,height=0.47];
+"E_PaymentAllocation" -> "A_PaymentAllocation_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_PaymentAllocation_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<AllocatedAt>,width=1.7,height=0.47];
+"E_PaymentAllocation" -> "A_PaymentAllocation_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_PaymentAllocation_0";"A_PaymentAllocation_1";"E_PaymentAllocation";"A_PaymentAllocation_2";}
+"A_PaymentAllocation_0" -> "A_PaymentAllocation_1" [style=invis,weight=70];
+"A_PaymentAllocation_1" -> "E_PaymentAllocation" [style=invis,weight=70];
+"E_PaymentAllocation" -> "A_PaymentAllocation_2" [style=invis,weight=70];
+}
+subgraph "cluster_Refund" { style=invis; margin=16;
+"E_Refund" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="REFUND",width=2.05,height=0.64];
+"A_Refund_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>RefundID</U>>,width=1.7,height=0.47];
+"E_Refund" -> "A_Refund_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Refund_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Amount>,width=1.7,height=0.47];
+"E_Refund" -> "A_Refund_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Refund_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Reason>,width=1.7,height=0.47];
+"E_Refund" -> "A_Refund_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_Refund_0";"A_Refund_1";"E_Refund";"A_Refund_2";}
+"A_Refund_0" -> "A_Refund_1" [style=invis,weight=70];
+"A_Refund_1" -> "E_Refund" [style=invis,weight=70];
+"E_Refund" -> "A_Refund_2" [style=invis,weight=70];
+}
+subgraph "cluster_PaymentOperation" { style=invis; margin=16;
+"E_PaymentOperation" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="PAYMENT OPERATION",width=2.05,height=0.64];
+"A_PaymentOperation_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>OrderID</U>>,width=1.7,height=0.47];
+"E_PaymentOperation" -> "A_PaymentOperation_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_PaymentOperation_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<RequestHash>,width=1.7,height=0.47];
+"E_PaymentOperation" -> "A_PaymentOperation_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_PaymentOperation_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ReceiptJSON>,width=1.7,height=0.47];
+"E_PaymentOperation" -> "A_PaymentOperation_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_PaymentOperation_0";"A_PaymentOperation_1";"E_PaymentOperation";"A_PaymentOperation_2";}
+"A_PaymentOperation_0" -> "A_PaymentOperation_1" [style=invis,weight=70];
+"A_PaymentOperation_1" -> "E_PaymentOperation" [style=invis,weight=70];
+"E_PaymentOperation" -> "A_PaymentOperation_2" [style=invis,weight=70];
+}
+subgraph "cluster_TransportOrder" { style=invis; margin=16;
+"E_TransportOrder" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="TRANSPORT ORDER",width=2.05,height=0.64];
+"A_TransportOrder_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>OrderID</U>>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_TransportOrder_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<OrderNumber>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_TransportOrder_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<OrderStatus>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_TransportOrder_3" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<CreatedAt>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_3" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_TransportOrder_0";"A_TransportOrder_1";"E_TransportOrder";"A_TransportOrder_2";"A_TransportOrder_3";}
+"A_TransportOrder_0" -> "A_TransportOrder_1" [style=invis,weight=70];
+"A_TransportOrder_1" -> "E_TransportOrder" [style=invis,weight=70];
+"E_TransportOrder" -> "A_TransportOrder_2" [style=invis,weight=70];
+"A_TransportOrder_2" -> "A_TransportOrder_3" [style=invis,weight=70];
+}
+subgraph "cluster_User" { style=invis; margin=16;
+"E_User" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="USER",width=2.05,height=0.64];
+"A_User_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>UserID</U>>,width=1.7,height=0.47];
+"E_User" -> "A_User_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_User_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Email>,width=1.7,height=0.47];
+"E_User" -> "A_User_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_User_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Status>,width=1.7,height=0.47];
+"E_User" -> "A_User_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_User_0";"A_User_1";"E_User";"A_User_2";}
+"A_User_0" -> "A_User_1" [style=invis,weight=70];
+"A_User_1" -> "E_User" [style=invis,weight=70];
+"E_User" -> "A_User_2" [style=invis,weight=70];
+}
+subgraph "cluster_QuotePaymentSchedule" { style=invis; margin=16;
+"E_QuotePaymentSchedule" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="QUOTE PAYMENT\nSCHEDULE",width=2.05,height=0.64];
+"A_QuotePaymentSchedule_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>ScheduleID</U>>,width=1.7,height=0.47];
+"E_QuotePaymentSchedule" -> "A_QuotePaymentSchedule_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_QuotePaymentSchedule_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<PaymentStage>,width=1.7,height=0.47];
+"E_QuotePaymentSchedule" -> "A_QuotePaymentSchedule_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_QuotePaymentSchedule_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<AmountDue>,width=1.7,height=0.47];
+"E_QuotePaymentSchedule" -> "A_QuotePaymentSchedule_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_QuotePaymentSchedule_3" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<DueAt>,width=1.7,height=0.47];
+"E_QuotePaymentSchedule" -> "A_QuotePaymentSchedule_3" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_QuotePaymentSchedule_0";"A_QuotePaymentSchedule_1";"E_QuotePaymentSchedule";"A_QuotePaymentSchedule_2";"A_QuotePaymentSchedule_3";}
+"A_QuotePaymentSchedule_0" -> "A_QuotePaymentSchedule_1" [style=invis,weight=70];
+"A_QuotePaymentSchedule_1" -> "E_QuotePaymentSchedule" [style=invis,weight=70];
+"E_QuotePaymentSchedule" -> "A_QuotePaymentSchedule_2" [style=invis,weight=70];
+"A_QuotePaymentSchedule_2" -> "A_QuotePaymentSchedule_3" [style=invis,weight=70];
+}
+subgraph "cluster_Quote" { style=invis; margin=16;
+"E_Quote" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="QUOTE",width=2.05,height=0.64];
+"A_Quote_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>QuoteID</U>>,width=1.7,height=0.47];
+"E_Quote" -> "A_Quote_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Quote_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<TotalQuotedAmount>,width=1.7,height=0.47];
+"E_Quote" -> "A_Quote_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Quote_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<QuoteStatus>,width=1.7,height=0.47];
+"E_Quote" -> "A_Quote_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Quote_3" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ValidUntil>,width=1.7,height=0.47];
+"E_Quote" -> "A_Quote_3" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_Quote_0";"A_Quote_1";"E_Quote";"A_Quote_2";"A_Quote_3";}
+"A_Quote_0" -> "A_Quote_1" [style=invis,weight=70];
+"A_Quote_1" -> "E_Quote" [style=invis,weight=70];
+"E_Quote" -> "A_Quote_2" [style=invis,weight=70];
+"A_Quote_2" -> "A_Quote_3" [style=invis,weight=70];
+}
+subgraph "cluster_StaffProfile" { style=invis; margin=16;
+"E_StaffProfile" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="STAFF PROFILE",width=2.05,height=0.64];
+"A_StaffProfile_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>StaffID</U>>,width=1.7,height=0.47];
+"E_StaffProfile" -> "A_StaffProfile_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StaffProfile_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<FullName>,width=1.7,height=0.47];
+"E_StaffProfile" -> "A_StaffProfile_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StaffProfile_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<StaffStatus>,width=1.7,height=0.47];
+"E_StaffProfile" -> "A_StaffProfile_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_StaffProfile_0";"A_StaffProfile_1";"E_StaffProfile";"A_StaffProfile_2";}
+"A_StaffProfile_0" -> "A_StaffProfile_1" [style=invis,weight=70];
+"A_StaffProfile_1" -> "E_StaffProfile" [style=invis,weight=70];
+"E_StaffProfile" -> "A_StaffProfile_2" [style=invis,weight=70];
+}
+"R80" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nPayment Request",width=1.12,height=0.67];
+"E_PaymentRequest" -> "R80" [taillabel="1",weight=2];
+"R80" -> "E_PaymentAllocation" [headlabel="N",color="#728095:#728095",weight=2];
+"R81" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nTransaction",width=1.12,height=0.67];
+"E_PaymentTransaction" -> "R81" [taillabel="1",weight=2];
+"R81" -> "E_PaymentAllocation" [headlabel="N",color="#728095:#728095",weight=2];
+"R82" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="HAS PLAN",width=1.12,height=0.67];
+"E_TransportOrder" -> "R82" [taillabel="1",weight=2];
+"R82" -> "E_PaymentOperation" [headlabel="N",color="#728095:#728095",weight=2];
+"R83" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BELONGS TO USER",width=1.12,height=0.67];
+"E_User" -> "R83" [taillabel="1",weight=2];
+"R83" -> "E_PaymentOperation" [headlabel="N",color="#728095:#728095",weight=2];
+"R84" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="HAS PLAN",width=1.12,height=0.67];
+"E_TransportOrder" -> "R84" [taillabel="1",weight=2];
+"R84" -> "E_PaymentProof" [headlabel="N",color="#728095:#728095",weight=2];
+"R85" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BELONGS TO USER",width=1.12,height=0.67];
+"E_User" -> "R85" [taillabel="1",weight=2];
+"R85" -> "E_PaymentProof" [headlabel="N",color="#728095:#728095",weight=2];
+"R86" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nPayment Request",width=1.12,height=0.67];
+"E_PaymentRequest" -> "R86" [taillabel="1",weight=2];
+"R86" -> "E_PaymentReport" [headlabel="N",color="#728095:#728095",weight=2];
+"R87" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nSchedule",width=1.12,height=0.67];
+"E_QuotePaymentSchedule" -> "R87" [taillabel="1",weight=2];
+"R87" -> "E_PaymentRequest" [headlabel="N",color="#728095",weight=2];
+"R88" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nQuote",width=1.12,height=0.67];
+"E_Quote" -> "R88" [taillabel="1",weight=2];
+"R88" -> "E_PaymentRequest" [headlabel="N",color="#728095:#728095",weight=2];
+"R89" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nReversed By",width=1.12,height=0.67];
+"E_StaffProfile" -> "R89" [taillabel="1",weight=2];
+"R89" -> "E_PaymentTransaction" [headlabel="N",color="#728095",weight=2];
+"R90" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nReconciled By",width=1.12,height=0.67];
+"E_StaffProfile" -> "R90" [taillabel="1",weight=2];
+"R90" -> "E_PaymentTransaction" [headlabel="N",color="#728095",weight=2];
+"R111" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="APPROVES",width=1.12,height=0.67];
+"E_StaffProfile" -> "R111" [taillabel="1",weight=2];
+"R111" -> "E_Refund" [headlabel="N",color="#728095",weight=2];
+"R112" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nRequested By",width=1.12,height=0.67];
+"E_User" -> "R112" [taillabel="1",weight=2];
+"R112" -> "E_Refund" [headlabel="N",color="#728095",weight=2];
+"R113" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nAllocation",width=1.12,height=0.67];
+"E_PaymentAllocation" -> "R113" [taillabel="1",weight=2];
+"R113" -> "E_Refund" [headlabel="N",color="#728095:#728095",weight=2];
+}

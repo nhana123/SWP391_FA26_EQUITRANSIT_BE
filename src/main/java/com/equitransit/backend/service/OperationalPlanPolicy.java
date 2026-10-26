@@ -37,6 +37,19 @@ public final class OperationalPlanPolicy {
 
     private OperationalPlanPolicy() { }
 
+    /** @param satisfied fully reconciled current-revision deposit
+     * @param road true for road assignment, false for air equipment/flight */
+    public static void requireDeposit(boolean satisfied, boolean road) {
+        if (!satisfied) {
+            throw new OrderException(HttpStatus.CONFLICT, road
+                    ? "DEPOSIT_REQUIRED_BEFORE_ROAD_ASSIGNMENT"
+                    : "DEPOSIT_REQUIRED_BEFORE_AIR_ASSIGNMENT",
+                    "Đơn vận chuyển chưa hoàn tất thanh toán tiền cọc "
+                            + "(Deposit). Vui lòng chờ khách hàng đặt cọc "
+                            + "trước khi điều phối tài xế và phương tiện.");
+        }
+    }
+
     /** @param status plan state @return whether mutations are permitted */
     public static boolean editable(PlanState status) {
         return status == PlanState.DRAFT || status == PlanState.PROPOSED

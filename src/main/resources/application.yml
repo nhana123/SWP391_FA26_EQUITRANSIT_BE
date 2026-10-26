@@ -42,6 +42,9 @@ server:
   address: ${EQ_BIND_ADDRESS:127.0.0.1}
   port: ${EQ_PORT:8080}
 app:
+  geocoding:
+    search-url: ${EQ_NOMINATIM_SEARCH_URL:https://nominatim.openstreetmap.org/search}
+    user-agent: ${EQ_NOMINATIM_USER_AGENT:EquiTransit-Address/1.0}
   storage:
     directory: ${EQ_STORAGE_DIRECTORY:storage/uploads/documents}
   jwt:

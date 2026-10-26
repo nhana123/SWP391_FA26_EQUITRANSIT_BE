@@ -1,0 +1,364 @@
+digraph G {
+graph [rankdir=LR, bgcolor="white", nodesep=0.24, ranksep=1.05, splines=polyline, overlap=false, outputorder=edgesfirst, pad=0.3];
+node [fontname="Arial", fontsize=15, margin="0.14,0.10", style=filled];
+edge [fontname="Arial", fontsize=12, color="#728095", penwidth=1.2, dir=none, labeldistance=1.8, labelangle=28];
+subgraph "cluster_DocumentTypeCatalog" { style=invis; margin=16;
+"E_DocumentTypeCatalog" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="DOCUMENT TYPE CATALOG",width=2.05,height=0.64];
+"A_DocumentTypeCatalog_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>TypeCode</U>>,width=1.7,height=0.47];
+"E_DocumentTypeCatalog" -> "A_DocumentTypeCatalog_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_DocumentTypeCatalog_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<DisplayName>,width=1.7,height=0.47];
+"E_DocumentTypeCatalog" -> "A_DocumentTypeCatalog_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_DocumentTypeCatalog_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Description>,width=1.7,height=0.47];
+"E_DocumentTypeCatalog" -> "A_DocumentTypeCatalog_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_DocumentTypeCatalog_0";"A_DocumentTypeCatalog_1";"E_DocumentTypeCatalog";"A_DocumentTypeCatalog_2";}
+"A_DocumentTypeCatalog_0" -> "A_DocumentTypeCatalog_1" [style=invis,weight=70];
+"A_DocumentTypeCatalog_1" -> "E_DocumentTypeCatalog" [style=invis,weight=70];
+"E_DocumentTypeCatalog" -> "A_DocumentTypeCatalog_2" [style=invis,weight=70];
+}
+subgraph "cluster_ComplianceRuleVersion" { style=invis; margin=16;
+"E_ComplianceRuleVersion" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="COMPLIANCE RULE\nVERSION",width=2.05,height=0.64];
+"A_ComplianceRuleVersion_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>RuleID</U>>,width=1.7,height=0.47];
+"E_ComplianceRuleVersion" -> "A_ComplianceRuleVersion_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ComplianceRuleVersion_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<RuleCode>,width=1.7,height=0.47];
+"E_ComplianceRuleVersion" -> "A_ComplianceRuleVersion_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ComplianceRuleVersion_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<VersionNo>,width=1.7,height=0.47];
+"E_ComplianceRuleVersion" -> "A_ComplianceRuleVersion_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_ComplianceRuleVersion_0";"A_ComplianceRuleVersion_1";"E_ComplianceRuleVersion";"A_ComplianceRuleVersion_2";}
+"A_ComplianceRuleVersion_0" -> "A_ComplianceRuleVersion_1" [style=invis,weight=70];
+"A_ComplianceRuleVersion_1" -> "E_ComplianceRuleVersion" [style=invis,weight=70];
+"E_ComplianceRuleVersion" -> "A_ComplianceRuleVersion_2" [style=invis,weight=70];
+}
+subgraph "cluster_ComplianceChecklist" { style=invis; margin=16;
+"E_ComplianceChecklist" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="COMPLIANCE CHECKLIST",width=2.05,height=0.64];
+"A_ComplianceChecklist_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>RevisionID</U>>,width=1.7,height=0.47];
+"E_ComplianceChecklist" -> "A_ComplianceChecklist_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ComplianceChecklist_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<TransitCountriesJSON>,width=1.7,height=0.47];
+"E_ComplianceChecklist" -> "A_ComplianceChecklist_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ComplianceChecklist_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<RuleIDsJSON>,width=1.7,height=0.47];
+"E_ComplianceChecklist" -> "A_ComplianceChecklist_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_ComplianceChecklist_0";"A_ComplianceChecklist_1";"E_ComplianceChecklist";"A_ComplianceChecklist_2";}
+"A_ComplianceChecklist_0" -> "A_ComplianceChecklist_1" [style=invis,weight=70];
+"A_ComplianceChecklist_1" -> "E_ComplianceChecklist" [style=invis,weight=70];
+"E_ComplianceChecklist" -> "A_ComplianceChecklist_2" [style=invis,weight=70];
+}
+subgraph "cluster_ComplianceChecklistHistory" { style=invis; margin=16;
+"E_ComplianceChecklistHistory" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="COMPLIANCE CHECKLIST\nHISTORY",width=2.05,height=0.64];
+"A_ComplianceChecklistHistory_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>AssessmentID</U>>,width=1.7,height=0.47];
+"E_ComplianceChecklistHistory" -> "A_ComplianceChecklistHistory_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ComplianceChecklistHistory_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<PhaseCode>,width=1.7,height=0.47];
+"E_ComplianceChecklistHistory" -> "A_ComplianceChecklistHistory_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ComplianceChecklistHistory_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<SnapshotJSON>,width=1.7,height=0.47];
+"E_ComplianceChecklistHistory" -> "A_ComplianceChecklistHistory_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_ComplianceChecklistHistory_0";"A_ComplianceChecklistHistory_1";"E_ComplianceChecklistHistory";"A_ComplianceChecklistHistory_2";}
+"A_ComplianceChecklistHistory_0" -> "A_ComplianceChecklistHistory_1" [style=invis,weight=70];
+"A_ComplianceChecklistHistory_1" -> "E_ComplianceChecklistHistory" [style=invis,weight=70];
+"E_ComplianceChecklistHistory" -> "A_ComplianceChecklistHistory_2" [style=invis,weight=70];
+}
+subgraph "cluster_DocumentRequirement" { style=invis; margin=16;
+"E_DocumentRequirement" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="DOCUMENT REQUIREMENT",width=2.05,height=0.64];
+"A_DocumentRequirement_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>RequirementID</U>>,width=1.7,height=0.47];
+"E_DocumentRequirement" -> "A_DocumentRequirement_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_DocumentRequirement_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<PhaseCode>,width=1.7,height=0.47];
+"E_DocumentRequirement" -> "A_DocumentRequirement_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_DocumentRequirement_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<IsMandatory>,width=1.7,height=0.47];
+"E_DocumentRequirement" -> "A_DocumentRequirement_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_DocumentRequirement_0";"A_DocumentRequirement_1";"E_DocumentRequirement";"A_DocumentRequirement_2";}
+"A_DocumentRequirement_0" -> "A_DocumentRequirement_1" [style=invis,weight=70];
+"A_DocumentRequirement_1" -> "E_DocumentRequirement" [style=invis,weight=70];
+"E_DocumentRequirement" -> "A_DocumentRequirement_2" [style=invis,weight=70];
+}
+subgraph "cluster_HorseDocument" { style=invis; margin=16;
+"E_HorseDocument" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="HORSE DOCUMENT",width=2.05,height=0.64];
+"A_HorseDocument_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>DocumentID</U>>,width=1.7,height=0.47];
+"E_HorseDocument" -> "A_HorseDocument_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_HorseDocument_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<CreatedAt>,width=1.7,height=0.47];
+"E_HorseDocument" -> "A_HorseDocument_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_HorseDocument_0";"E_HorseDocument";"A_HorseDocument_1";}
+"A_HorseDocument_0" -> "E_HorseDocument" [style=invis,weight=70];
+"E_HorseDocument" -> "A_HorseDocument_1" [style=invis,weight=70];
+}
+subgraph "cluster_DocumentVersion" { style=invis; margin=16;
+"E_DocumentVersion" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="DOCUMENT VERSION",width=2.05,height=0.64];
+"A_DocumentVersion_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>DocumentVersionID</U>>,width=1.7,height=0.47];
+"E_DocumentVersion" -> "A_DocumentVersion_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_DocumentVersion_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<VersionNo>,width=1.7,height=0.47];
+"E_DocumentVersion" -> "A_DocumentVersion_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_DocumentVersion_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<DocumentNumber>,width=1.7,height=0.47];
+"E_DocumentVersion" -> "A_DocumentVersion_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_DocumentVersion_0";"A_DocumentVersion_1";"E_DocumentVersion";"A_DocumentVersion_2";}
+"A_DocumentVersion_0" -> "A_DocumentVersion_1" [style=invis,weight=70];
+"A_DocumentVersion_1" -> "E_DocumentVersion" [style=invis,weight=70];
+"E_DocumentVersion" -> "A_DocumentVersion_2" [style=invis,weight=70];
+}
+subgraph "cluster_DocumentSubmission" { style=invis; margin=16;
+"E_DocumentSubmission" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="DOCUMENT SUBMISSION",width=2.05,height=0.64];
+"A_DocumentSubmission_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>SubmissionID</U>>,width=1.7,height=0.47];
+"E_DocumentSubmission" -> "A_DocumentSubmission_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_DocumentSubmission_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Status>,width=1.7,height=0.47];
+"E_DocumentSubmission" -> "A_DocumentSubmission_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_DocumentSubmission_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<SubmittedAt>,width=1.7,height=0.47];
+"E_DocumentSubmission" -> "A_DocumentSubmission_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_DocumentSubmission_0";"A_DocumentSubmission_1";"E_DocumentSubmission";"A_DocumentSubmission_2";}
+"A_DocumentSubmission_0" -> "A_DocumentSubmission_1" [style=invis,weight=70];
+"A_DocumentSubmission_1" -> "E_DocumentSubmission" [style=invis,weight=70];
+"E_DocumentSubmission" -> "A_DocumentSubmission_2" [style=invis,weight=70];
+}
+subgraph "cluster_DocumentReview" { style=invis; margin=16;
+"E_DocumentReview" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="DOCUMENT REVIEW",width=2.05,height=0.64];
+"A_DocumentReview_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>ReviewID</U>>,width=1.7,height=0.47];
+"E_DocumentReview" -> "A_DocumentReview_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_DocumentReview_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Decision>,width=1.7,height=0.47];
+"E_DocumentReview" -> "A_DocumentReview_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_DocumentReview_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Feedback>,width=1.7,height=0.47];
+"E_DocumentReview" -> "A_DocumentReview_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_DocumentReview_0";"A_DocumentReview_1";"E_DocumentReview";"A_DocumentReview_2";}
+"A_DocumentReview_0" -> "A_DocumentReview_1" [style=invis,weight=70];
+"A_DocumentReview_1" -> "E_DocumentReview" [style=invis,weight=70];
+"E_DocumentReview" -> "A_DocumentReview_2" [style=invis,weight=70];
+}
+subgraph "cluster_AuthorityProcedure" { style=invis; margin=16;
+"E_AuthorityProcedure" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="AUTHORITY PROCEDURE",width=2.05,height=0.64];
+"A_AuthorityProcedure_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>ProcedureID</U>>,width=1.7,height=0.47];
+"E_AuthorityProcedure" -> "A_AuthorityProcedure_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_AuthorityProcedure_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ProcedureCode>,width=1.7,height=0.47];
+"E_AuthorityProcedure" -> "A_AuthorityProcedure_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_AuthorityProcedure_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<AuthorityName>,width=1.7,height=0.47];
+"E_AuthorityProcedure" -> "A_AuthorityProcedure_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_AuthorityProcedure_0";"A_AuthorityProcedure_1";"E_AuthorityProcedure";"A_AuthorityProcedure_2";}
+"A_AuthorityProcedure_0" -> "A_AuthorityProcedure_1" [style=invis,weight=70];
+"A_AuthorityProcedure_1" -> "E_AuthorityProcedure" [style=invis,weight=70];
+"E_AuthorityProcedure" -> "A_AuthorityProcedure_2" [style=invis,weight=70];
+}
+subgraph "cluster_ComplianceClearance" { style=invis; margin=16;
+"E_ComplianceClearance" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="COMPLIANCE CLEARANCE",width=2.05,height=0.64];
+"A_ComplianceClearance_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>ClearanceID</U>>,width=1.7,height=0.47];
+"E_ComplianceClearance" -> "A_ComplianceClearance_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ComplianceClearance_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<PhaseCode>,width=1.7,height=0.47];
+"E_ComplianceClearance" -> "A_ComplianceClearance_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ComplianceClearance_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Status>,width=1.7,height=0.47];
+"E_ComplianceClearance" -> "A_ComplianceClearance_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_ComplianceClearance_0";"A_ComplianceClearance_1";"E_ComplianceClearance";"A_ComplianceClearance_2";}
+"A_ComplianceClearance_0" -> "A_ComplianceClearance_1" [style=invis,weight=70];
+"A_ComplianceClearance_1" -> "E_ComplianceClearance" [style=invis,weight=70];
+"E_ComplianceClearance" -> "A_ComplianceClearance_2" [style=invis,weight=70];
+}
+subgraph "cluster_ComplianceFile" { style=invis; margin=16;
+"E_ComplianceFile" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="COMPLIANCE FILE",width=2.05,height=0.64];
+"A_ComplianceFile_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>FileID</U>>,width=1.7,height=0.47];
+"E_ComplianceFile" -> "A_ComplianceFile_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ComplianceFile_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<FileKey>,width=1.7,height=0.47];
+"E_ComplianceFile" -> "A_ComplianceFile_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ComplianceFile_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ContentType>,width=1.7,height=0.47];
+"E_ComplianceFile" -> "A_ComplianceFile_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_ComplianceFile_0";"A_ComplianceFile_1";"E_ComplianceFile";"A_ComplianceFile_2";}
+"A_ComplianceFile_0" -> "A_ComplianceFile_1" [style=invis,weight=70];
+"A_ComplianceFile_1" -> "E_ComplianceFile" [style=invis,weight=70];
+"E_ComplianceFile" -> "A_ComplianceFile_2" [style=invis,weight=70];
+}
+subgraph "cluster_ComplianceOperation" { style=invis; margin=16;
+"E_ComplianceOperation" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="COMPLIANCE OPERATION",width=2.05,height=0.64];
+"A_ComplianceOperation_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>OrderID</U>>,width=1.7,height=0.47];
+"E_ComplianceOperation" -> "A_ComplianceOperation_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ComplianceOperation_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<RequestHash>,width=1.7,height=0.47];
+"E_ComplianceOperation" -> "A_ComplianceOperation_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ComplianceOperation_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ReceiptJSON>,width=1.7,height=0.47];
+"E_ComplianceOperation" -> "A_ComplianceOperation_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_ComplianceOperation_0";"A_ComplianceOperation_1";"E_ComplianceOperation";"A_ComplianceOperation_2";}
+"A_ComplianceOperation_0" -> "A_ComplianceOperation_1" [style=invis,weight=70];
+"A_ComplianceOperation_1" -> "E_ComplianceOperation" [style=invis,weight=70];
+"E_ComplianceOperation" -> "A_ComplianceOperation_2" [style=invis,weight=70];
+}
+subgraph "cluster_RevisionQuarantineAssessment" { style=invis; margin=16;
+"E_RevisionQuarantineAssessment" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="REVISION QUARANTINE\nASSESSMENT",width=2.05,height=0.64];
+"A_RevisionQuarantineAssessment_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>AssessmentID</U>>,width=1.7,height=0.47];
+"E_RevisionQuarantineAssessment" -> "A_RevisionQuarantineAssessment_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_RevisionQuarantineAssessment_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Applicability>,width=1.7,height=0.47];
+"E_RevisionQuarantineAssessment" -> "A_RevisionQuarantineAssessment_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_RevisionQuarantineAssessment_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<RequiredDays>,width=1.7,height=0.47];
+"E_RevisionQuarantineAssessment" -> "A_RevisionQuarantineAssessment_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_RevisionQuarantineAssessment_0";"A_RevisionQuarantineAssessment_1";"E_RevisionQuarantineAssessment";"A_RevisionQuarantineAssessment_2";}
+"A_RevisionQuarantineAssessment_0" -> "A_RevisionQuarantineAssessment_1" [style=invis,weight=70];
+"A_RevisionQuarantineAssessment_1" -> "E_RevisionQuarantineAssessment" [style=invis,weight=70];
+"E_RevisionQuarantineAssessment" -> "A_RevisionQuarantineAssessment_2" [style=invis,weight=70];
+}
+subgraph "cluster_RevisionVeterinaryAssessment" { style=invis; margin=16;
+"E_RevisionVeterinaryAssessment" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="REVISION VETERINARY\nASSESSMENT",width=2.05,height=0.64];
+"A_RevisionVeterinaryAssessment_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>AssessmentID</U>>,width=1.7,height=0.47];
+"E_RevisionVeterinaryAssessment" -> "A_RevisionVeterinaryAssessment_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_RevisionVeterinaryAssessment_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<VisitCount>,width=1.7,height=0.47];
+"E_RevisionVeterinaryAssessment" -> "A_RevisionVeterinaryAssessment_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_RevisionVeterinaryAssessment_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<TestCount>,width=1.7,height=0.47];
+"E_RevisionVeterinaryAssessment" -> "A_RevisionVeterinaryAssessment_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_RevisionVeterinaryAssessment_0";"A_RevisionVeterinaryAssessment_1";"E_RevisionVeterinaryAssessment";"A_RevisionVeterinaryAssessment_2";}
+"A_RevisionVeterinaryAssessment_0" -> "A_RevisionVeterinaryAssessment_1" [style=invis,weight=70];
+"A_RevisionVeterinaryAssessment_1" -> "E_RevisionVeterinaryAssessment" [style=invis,weight=70];
+"E_RevisionVeterinaryAssessment" -> "A_RevisionVeterinaryAssessment_2" [style=invis,weight=70];
+}
+subgraph "cluster_OrderRevision" { style=invis; margin=16;
+"E_OrderRevision" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="ORDER REVISION",width=2.05,height=0.64];
+"A_OrderRevision_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>RevisionID</U>>,width=1.7,height=0.47];
+"E_OrderRevision" -> "A_OrderRevision_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_OrderRevision_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<RevisionNo>,width=1.7,height=0.47];
+"E_OrderRevision" -> "A_OrderRevision_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_OrderRevision_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<SubmittedAt>,width=1.7,height=0.47];
+"E_OrderRevision" -> "A_OrderRevision_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_OrderRevision_0";"A_OrderRevision_1";"E_OrderRevision";"A_OrderRevision_2";}
+"A_OrderRevision_0" -> "A_OrderRevision_1" [style=invis,weight=70];
+"A_OrderRevision_1" -> "E_OrderRevision" [style=invis,weight=70];
+"E_OrderRevision" -> "A_OrderRevision_2" [style=invis,weight=70];
+}
+subgraph "cluster_StaffProfile" { style=invis; margin=16;
+"E_StaffProfile" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="STAFF PROFILE",width=2.05,height=0.64];
+"A_StaffProfile_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>StaffID</U>>,width=1.7,height=0.47];
+"E_StaffProfile" -> "A_StaffProfile_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StaffProfile_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<FullName>,width=1.7,height=0.47];
+"E_StaffProfile" -> "A_StaffProfile_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StaffProfile_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<StaffStatus>,width=1.7,height=0.47];
+"E_StaffProfile" -> "A_StaffProfile_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_StaffProfile_0";"A_StaffProfile_1";"E_StaffProfile";"A_StaffProfile_2";}
+"A_StaffProfile_0" -> "A_StaffProfile_1" [style=invis,weight=70];
+"A_StaffProfile_1" -> "E_StaffProfile" [style=invis,weight=70];
+"E_StaffProfile" -> "A_StaffProfile_2" [style=invis,weight=70];
+}
+subgraph "cluster_TransportOrder" { style=invis; margin=16;
+"E_TransportOrder" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="TRANSPORT ORDER",width=2.05,height=0.64];
+"A_TransportOrder_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>OrderID</U>>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_TransportOrder_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<OrderNumber>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_TransportOrder_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<OrderStatus>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_TransportOrder_3" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<CreatedAt>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_3" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_TransportOrder_0";"A_TransportOrder_1";"E_TransportOrder";"A_TransportOrder_2";"A_TransportOrder_3";}
+"A_TransportOrder_0" -> "A_TransportOrder_1" [style=invis,weight=70];
+"A_TransportOrder_1" -> "E_TransportOrder" [style=invis,weight=70];
+"E_TransportOrder" -> "A_TransportOrder_2" [style=invis,weight=70];
+"A_TransportOrder_2" -> "A_TransportOrder_3" [style=invis,weight=70];
+}
+subgraph "cluster_User" { style=invis; margin=16;
+"E_User" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="USER",width=2.05,height=0.64];
+"A_User_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>UserID</U>>,width=1.7,height=0.47];
+"E_User" -> "A_User_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_User_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Email>,width=1.7,height=0.47];
+"E_User" -> "A_User_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_User_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Status>,width=1.7,height=0.47];
+"E_User" -> "A_User_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_User_0";"A_User_1";"E_User";"A_User_2";}
+"A_User_0" -> "A_User_1" [style=invis,weight=70];
+"A_User_1" -> "E_User" [style=invis,weight=70];
+"E_User" -> "A_User_2" [style=invis,weight=70];
+}
+subgraph "cluster_Horse" { style=invis; margin=16;
+"E_Horse" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="HORSE",width=2.05,height=0.64];
+"A_Horse_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>HorseID</U>>,width=1.7,height=0.47];
+"E_Horse" -> "A_Horse_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Horse_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<MicrochipID>,width=1.7,height=0.47];
+"E_Horse" -> "A_Horse_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Horse_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<PassportNumber>,width=1.7,height=0.47];
+"E_Horse" -> "A_Horse_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Horse_3" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Name>,width=1.7,height=0.47];
+"E_Horse" -> "A_Horse_3" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_Horse_0";"A_Horse_1";"E_Horse";"A_Horse_2";"A_Horse_3";}
+"A_Horse_0" -> "A_Horse_1" [style=invis,weight=70];
+"A_Horse_1" -> "E_Horse" [style=invis,weight=70];
+"E_Horse" -> "A_Horse_2" [style=invis,weight=70];
+"A_Horse_2" -> "A_Horse_3" [style=invis,weight=70];
+}
+"R6" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BASED ON",width=1.12,height=0.67];
+"E_OrderRevision" -> "R6" [taillabel="1",weight=2];
+"R6" -> "E_AuthorityProcedure" [headlabel="N",color="#728095:#728095",weight=2];
+"R7" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nRule",width=1.12,height=0.67];
+"E_ComplianceRuleVersion" -> "R7" [taillabel="1",weight=2];
+"R7" -> "E_AuthorityProcedure" [headlabel="N",color="#728095",weight=2];
+"R8" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="RECORDS",width=1.12,height=0.67];
+"E_StaffProfile" -> "R8" [taillabel="1",weight=2];
+"R8" -> "E_AuthorityProcedure" [headlabel="N",color="#728095",weight=2];
+"R9" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BASED ON",width=1.12,height=0.67];
+"E_OrderRevision" -> "R9" [taillabel="1",weight=2];
+"R9" -> "E_ComplianceChecklist" [headlabel="N",color="#728095:#728095",weight=2];
+"R10" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nSpecialist",width=1.12,height=0.67];
+"E_StaffProfile" -> "R10" [taillabel="1",weight=2];
+"R10" -> "E_ComplianceChecklist" [headlabel="N",color="#728095:#728095",weight=2];
+"R11" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BASED ON",width=1.12,height=0.67];
+"E_OrderRevision" -> "R11" [taillabel="1",weight=2];
+"R11" -> "E_ComplianceChecklistHistory" [headlabel="N",color="#728095:#728095",weight=2];
+"R12" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nSpecialist",width=1.12,height=0.67];
+"E_StaffProfile" -> "R12" [taillabel="1",weight=2];
+"R12" -> "E_ComplianceChecklistHistory" [headlabel="N",color="#728095:#728095",weight=2];
+"R13" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BASED ON",width=1.12,height=0.67];
+"E_OrderRevision" -> "R13" [taillabel="1",weight=2];
+"R13" -> "E_ComplianceClearance" [headlabel="N",color="#728095:#728095",weight=2];
+"R14" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nSpecialist",width=1.12,height=0.67];
+"E_StaffProfile" -> "R14" [taillabel="1",weight=2];
+"R14" -> "E_ComplianceClearance" [headlabel="N",color="#728095:#728095",weight=2];
+"R15" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="HAS PLAN",width=1.12,height=0.67];
+"E_TransportOrder" -> "R15" [taillabel="1",weight=2];
+"R15" -> "E_ComplianceFile" [headlabel="N",color="#728095:#728095",weight=2];
+"R16" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BASED ON",width=1.12,height=0.67];
+"E_OrderRevision" -> "R16" [taillabel="1",weight=2];
+"R16" -> "E_ComplianceFile" [headlabel="N",color="#728095:#728095",weight=2];
+"R17" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BELONGS TO USER",width=1.12,height=0.67];
+"E_User" -> "R17" [taillabel="1",weight=2];
+"R17" -> "E_ComplianceFile" [headlabel="N",color="#728095:#728095",weight=2];
+"R18" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="HAS PLAN",width=1.12,height=0.67];
+"E_TransportOrder" -> "R18" [taillabel="1",weight=2];
+"R18" -> "E_ComplianceOperation" [headlabel="N",color="#728095:#728095",weight=2];
+"R19" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BELONGS TO USER",width=1.12,height=0.67];
+"E_User" -> "R19" [taillabel="1",weight=2];
+"R19" -> "E_ComplianceOperation" [headlabel="N",color="#728095:#728095",weight=2];
+"R20" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nDocument Type",width=1.12,height=0.67];
+"E_DocumentTypeCatalog" -> "R20" [taillabel="1",weight=2];
+"R20" -> "E_ComplianceRuleVersion" [headlabel="N",color="#728095:#728095",weight=2];
+"R22" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BASED ON",width=1.12,height=0.67];
+"E_OrderRevision" -> "R22" [taillabel="1",weight=2];
+"R22" -> "E_DocumentRequirement" [headlabel="N",color="#728095:#728095",weight=2];
+"R23" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nRule",width=1.12,height=0.67];
+"E_ComplianceRuleVersion" -> "R23" [taillabel="1",weight=2];
+"R23" -> "E_DocumentRequirement" [headlabel="N",color="#728095:#728095",weight=2];
+"R24" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nDocument Type",width=1.12,height=0.67];
+"E_DocumentTypeCatalog" -> "R24" [taillabel="1",weight=2];
+"R24" -> "E_DocumentRequirement" [headlabel="N",color="#728095:#728095",weight=2];
+"R25" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nHorse",width=1.12,height=0.67];
+"E_Horse" -> "R25" [taillabel="1",weight=2];
+"R25" -> "E_DocumentRequirement" [headlabel="N",color="#728095",weight=2];
+"R26" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nReviewed By",width=1.12,height=0.67];
+"E_StaffProfile" -> "R26" [taillabel="1",weight=2];
+"R26" -> "E_DocumentReview" [headlabel="N",color="#728095:#728095",weight=2];
+"R27" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nSubmission",width=1.12,height=0.67];
+"E_DocumentSubmission" -> "R27" [taillabel="1",weight=2];
+"R27" -> "E_DocumentReview" [headlabel="N",color="#728095:#728095",weight=2];
+"R28" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nDocument Version",width=1.12,height=0.67];
+"E_DocumentVersion" -> "R28" [taillabel="1",weight=2];
+"R28" -> "E_DocumentSubmission" [headlabel="N",color="#728095:#728095",weight=2];
+"R29" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nRequirement",width=1.12,height=0.67];
+"E_DocumentRequirement" -> "R29" [taillabel="1",weight=2];
+"R29" -> "E_DocumentSubmission" [headlabel="N",color="#728095:#728095",weight=2];
+"R30" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nRevoked By",width=1.12,height=0.67];
+"E_StaffProfile" -> "R30" [taillabel="1",weight=2];
+"R30" -> "E_DocumentVersion" [headlabel="N",color="#728095",weight=2];
+"R31" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nDocument",width=1.12,height=0.67];
+"E_HorseDocument" -> "R31" [taillabel="1",weight=2];
+"R31" -> "E_DocumentVersion" [headlabel="N",color="#728095:#728095",weight=2];
+"R32" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nUploaded By",width=1.12,height=0.67];
+"E_User" -> "R32" [taillabel="1",weight=2];
+"R32" -> "E_DocumentVersion" [headlabel="N",color="#728095",weight=2];
+"R40" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nDocument Type",width=1.12,height=0.67];
+"E_DocumentTypeCatalog" -> "R40" [taillabel="1",weight=2];
+"R40" -> "E_HorseDocument" [headlabel="N",color="#728095:#728095",weight=2];
+"R41" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nHorse",width=1.12,height=0.67];
+"E_Horse" -> "R41" [taillabel="1",weight=2];
+"R41" -> "E_HorseDocument" [headlabel="N",color="#728095:#728095",weight=2];
+"R115" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BASED ON",width=1.12,height=0.67];
+"E_OrderRevision" -> "R115" [taillabel="1",weight=2];
+"R115" -> "E_RevisionQuarantineAssessment" [headlabel="N",color="#728095:#728095",weight=2];
+"R116" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nSpecialist",width=1.12,height=0.67];
+"E_StaffProfile" -> "R116" [taillabel="1",weight=2];
+"R116" -> "E_RevisionQuarantineAssessment" [headlabel="N",color="#728095:#728095",weight=2];
+"R117" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BASED ON",width=1.12,height=0.67];
+"E_OrderRevision" -> "R117" [taillabel="1",weight=2];
+"R117" -> "E_RevisionVeterinaryAssessment" [headlabel="N",color="#728095:#728095",weight=2];
+"R118" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nSpecialist",width=1.12,height=0.67];
+"E_StaffProfile" -> "R118" [taillabel="1",weight=2];
+"R118" -> "E_RevisionVeterinaryAssessment" [headlabel="N",color="#728095:#728095",weight=2];
+}

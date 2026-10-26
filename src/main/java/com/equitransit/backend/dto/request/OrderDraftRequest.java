@@ -27,6 +27,13 @@ import com.equitransit.backend.entity.ImportType;
 @Schema(example = ApiExamples.DRAFT)
 public class OrderDraftRequest {
 
+    @Valid
+    @Schema(example = "{}", nullable = true,
+            description = "Optional city/airport/mode selection for routing")
+    @com.fasterxml.jackson.annotation.JsonInclude(
+            com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+    private com.equitransit.backend.dto.route.RouteMatchRequest route;
+
     @Positive
     @Schema(
             example = "12",
@@ -563,5 +570,16 @@ public class OrderDraftRequest {
      */
     public void setHealthDeclaration(HealthDeclaration healthDeclaration) {
         this.healthDeclaration = healthDeclaration;
+    }
+
+    /** @return selected endpoints, never a client-supplied estimate */
+    public com.equitransit.backend.dto.route.RouteMatchRequest getRoute() {
+        return route;
+    }
+
+    /** @param route optional route selection */
+    public void setRoute(
+            com.equitransit.backend.dto.route.RouteMatchRequest route) {
+        this.route = route;
     }
 }

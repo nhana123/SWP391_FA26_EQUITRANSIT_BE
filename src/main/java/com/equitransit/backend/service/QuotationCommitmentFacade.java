@@ -35,6 +35,7 @@ public class QuotationCommitmentFacade {
     private final AssessmentRepository orders;
     private final QuoteRepository quotes;
     private final PaymentRepository ledger;
+    private BookingFlowService booking;
 
     /**
      * @param orders shared parent-lock boundary
@@ -47,6 +48,12 @@ public class QuotationCommitmentFacade {
         this.orders = orders;
         this.quotes = quotes;
         this.ledger = ledger;
+    }
+
+    /** @param booking explicit mode-aware balance-before-departure contract */
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configureBooking(BookingFlowService booking) {
+        this.booking = booking;
     }
 
     /**
@@ -103,6 +110,7 @@ public class QuotationCommitmentFacade {
         ledger.lockLedger();
         var rows = ledger.rows("balances", Map.of("quote", quote,
                 "asOf", Timestamp.from(asOf.toInstant())));
+        boolean beforeDeparture = booking != null && booking.modeAware(order);
         var obligations = rows.stream().map(row -> {
             var at = (Timestamp) row.get("DueAt");
 
@@ -113,10 +121,22 @@ public class QuotationCommitmentFacade {
                             ? null : at.toInstant().atOffset(
                                     ZoneOffset.UTC));
         }).toList();
-        return FinancialReadinessPolicy.evaluate(quote, revision,
+        var result = FinancialReadinessPolicy.evaluate(quote, revision,
                 accepted.total(), obligations, asOf,
                 ledger.number("pendingRefunds",
                         Map.of("quote", quote)) > 0);
+        boolean balanceMissing = rows.stream().anyMatch(row ->
+                "BALANCE".equals(row.get("PaymentStage"))
+                && ((BigDecimal) row.get("PaidAmount")).compareTo(
+                        (BigDecimal) row.get("AmountDue")) < 0);
+        if (!beforeDeparture || !balanceMissing) {
+            return result;
+        }
+        var blockers = new java.util.ArrayList<>(result.departureBlockers());
+        blockers.add("BALANCE_REQUIRED_BEFORE_DEPARTURE");
+        return new CommercialReadiness(quote, revision, result.total(),
+                result.paidAmount(), asOf, obligations, List.copyOf(blockers),
+                result.settlementBlockers());
     }
 
     private OrderException conflict() {

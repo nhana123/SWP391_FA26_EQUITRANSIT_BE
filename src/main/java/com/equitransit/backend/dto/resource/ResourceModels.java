@@ -75,8 +75,9 @@ public final class ResourceModels {
 
     /** Road fleet metadata, never an aircraft or a price multiplier. */
     public record ResourceVehicleData(
-            @Schema(example = "VEH-101")
-            @NotBlank @Size(min = 1, max = 50) String vehicleCode,
+            @Schema(example = "VEH-101", description =
+                    "Optional; generated from plateNumber when blank.")
+            @Size(max = 50) String vehicleCode,
             @Schema(example = "51C-12345")
             @NotBlank @Size(min = 1, max = 50) String plateNumber,
             @Schema(example = "2") @Min(1) int horseCapacity,

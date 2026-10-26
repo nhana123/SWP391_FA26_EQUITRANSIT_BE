@@ -153,7 +153,7 @@ public class QuoteRepository {
      * @param snapshot typed, validated captured prices
      * @return generated quote identity
      */
-    public long prepare(long order, long staff, QuoteSnapshot snapshot) {
+    public long prepare(long order, Long staff, QuoteSnapshot snapshot) {
         var request = snapshot.request();
         Integer version = jdbc.queryForObject("SELECT COALESCE(MAX("
                 + "q.VersionNo),0)+1 FROM dbo.Quote q"

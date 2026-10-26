@@ -161,19 +161,32 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/api/health", "/api/auth/**")
                         .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/routes/match")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/routes/address/search").permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/routes/address/validate").permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/api/lookups/countries",
                                 "/api/lookups/locations",
+                                "/api/lookups/hubs",
                                 "/api/lookups/document-templates",
                                 "/api/lookups/document-templates/**")
                         .permitAll()
                         .requestMatchers(HttpMethod.GET,
                                 "/api/manager/resources/**")
                         .hasAnyRole("MANAGER", "COORDINATOR")
+                        .requestMatchers("/api/manager/locations",
+                                "/api/manager/locations/**")
+                         .hasAnyRole("MANAGER", "COORDINATOR")
                         .requestMatchers("/api/manager/**")
                         .hasRole("MANAGER")
                         .requestMatchers("/api/staff/**")
                         .hasAnyRole("SPECIALIST", "COORDINATOR")
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/transport-orders/*/booking-flow-status")
+                        .hasAnyRole("CUSTOMER", "MANAGER", "COORDINATOR")
                         .requestMatchers("/api/transport-orders/*/quotes",
                                 "/api/transport-orders/*/quotes/**")
                         .hasAnyRole("CUSTOMER", "MANAGER", "COORDINATOR")

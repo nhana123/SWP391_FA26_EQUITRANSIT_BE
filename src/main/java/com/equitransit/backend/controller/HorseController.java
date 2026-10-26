@@ -36,7 +36,9 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.http.HttpStatus;
 
 /** Thin HTTP adapter; ownership and concurrency belong to the service. */
 @RestController
@@ -124,5 +126,18 @@ public class HorseController {
     public HorseResponse update(@PathVariable @Positive long id,
             @RequestBody @Valid HorseUpdateRequest request) {
         return horses.update(id, request);
+    }
+    /**
+     * Deletes an owned horse profile if it has no orders.
+     * @param id the positive horse key
+     * @return 204 No Content
+     */
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete my horse profile",
+            description = "Deletes an owned horse. Attached horses return 409.")
+    public ResponseEntity<Void> delete(@PathVariable @Positive long id) {
+        horses.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

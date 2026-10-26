@@ -82,6 +82,7 @@ public class OperationalPlanService {
     private final OrderJsonCodec json;
     private final ObjectMapper mapper;
     private final Clock clock;
+    private BookingFlowService booking;
 
     /**
      * @param plans SQL planning adapter @param cases parent lock and roles
@@ -111,6 +112,12 @@ public class OperationalPlanService {
         this.json = json;
         this.mapper = mapper;
         this.clock = clock;
+    }
+
+    /** @param booking actor-neutral current-revision deposit guard */
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configureBooking(BookingFlowService booking) {
+        this.booking = booking;
     }
 
     /** @param order parent @param page zero-based @param size bounded
@@ -226,6 +233,9 @@ public class OperationalPlanService {
         var summary = editablePlan(ctx.parent(), plan, req.command());
         var targetLeg = findLeg(plan, leg, PlanLegMode.ROAD);
 
+        OperationalPlanPolicy.requireDeposit(
+                booking.internal(order).canAssignDriver(), true);
+
         availability.requireAvailable(ResourceKind.VEHICLE, req.vehicleId(),
                 new ResourceAvailabilityRequest(order, summary.revisionId(),
                         ResourceMode.ROAD, targetLeg.plannedDeparture(),
@@ -267,6 +277,9 @@ public class OperationalPlanService {
         var summary = editablePlan(ctx.parent(), plan, req.command());
         var targetLeg = findLeg(plan, leg, PlanLegMode.AIR);
 
+        OperationalPlanPolicy.requireDeposit(
+                booking.internal(order).canAssignDriver(), false);
+
         OperationalPlanPolicy.validateStallRequest(req);
         availability.requireAvailable(ResourceKind.STALL, req.stallId(),
                 new ResourceAvailabilityRequest(order, summary.revisionId(),
@@ -306,6 +319,8 @@ public class OperationalPlanService {
         }
         var summary = editablePlan(ctx.parent(), plan, req.command());
         findLeg(plan, leg, PlanLegMode.AIR);
+        OperationalPlanPolicy.requireDeposit(
+                booking.internal(order).canAssignDriver(), false);
         var now = now();
         var snapshot = json.snapshot(orders.revision(order,
                 summary.revisionId()).orElseThrow(this::missing).snapshot());
