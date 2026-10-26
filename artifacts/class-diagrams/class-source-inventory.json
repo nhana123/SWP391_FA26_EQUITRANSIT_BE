@@ -1,0 +1,711 @@
+{
+  "OperationalPlanController": {
+    "cls": "OperationalPlanController",
+    "stereo": "controller",
+    "attrs": [
+      {
+        "text": "− service : OperationalPlanService {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− graphs : JourneyGraphService {readOnly}",
+        "static": false
+      }
+    ],
+    "methods": [
+      {
+        "text": "+ graph(orderId: long, planId: long) : JourneyGraphView",
+        "static": false,
+        "name": "graph"
+      },
+      {
+        "text": "+ compileGraph(orderId: long, body: GraphDraftRequest) : JourneyGraphView",
+        "static": false,
+        "name": "compileGraph"
+      },
+      {
+        "text": "+ graphLayout(orderId: long, planId: long, body: GraphLayoutRequest) : JourneyGraphView",
+        "static": false,
+        "name": "graphLayout"
+      },
+      {
+        "text": "+ graphDrivers(orderId: long, planId: long, legId: long, search: String, bufferMinutes: int) : List<GraphDriverCandidate>",
+        "static": false,
+        "name": "graphDrivers"
+      },
+      {
+        "text": "+ list(orderId: long, page: int, size: int) : PlanPageResponse",
+        "static": false,
+        "name": "list"
+      },
+      {
+        "text": "+ sharedStallCandidates(orderId: long) : List<SharedStallCandidateView>",
+        "static": false,
+        "name": "sharedStallCandidates"
+      },
+      {
+        "text": "+ get(orderId: long, planId: long) : PlanDetailResponse",
+        "static": false,
+        "name": "get"
+      },
+      {
+        "text": "+ createDraft(orderId: long, body: PlanDraftRequest) : PlanDetailResponse",
+        "static": false,
+        "name": "createDraft"
+      },
+      {
+        "text": "+ assignRoad(orderId: long, planId: long, legId: long, body: PlanRoadAssignmentRequest) : PlanDetailResponse",
+        "static": false,
+        "name": "assignRoad"
+      },
+      {
+        "text": "+ assignStall(orderId: long, planId: long, legId: long, body: PlanStallAssignmentRequest) : PlanDetailResponse",
+        "static": false,
+        "name": "assignStall"
+      },
+      {
+        "text": "+ reserveFlight(orderId: long, planId: long, legId: long, body: PlanFlightReservationRequest) : PlanDetailResponse",
+        "static": false,
+        "name": "reserveFlight"
+      },
+      {
+        "text": "+ reserveQuarantine(orderId: long, planId: long, body: PlanQuarantineReservationRequest) : PlanDetailResponse",
+        "static": false,
+        "name": "reserveQuarantine"
+      },
+      {
+        "text": "+ verifyInsurance(orderId: long, planId: long, body: PlanInsurancePolicyRequest) : PlanDetailResponse",
+        "static": false,
+        "name": "verifyInsurance"
+      },
+      {
+        "text": "+ confirm(orderId: long, planId: long, body: PlanConfirmRequest) : PlanDetailResponse",
+        "static": false,
+        "name": "confirm"
+      }
+    ],
+    "source": "controller\\OperationalPlanController.java"
+  },
+  "DepartureGateController": {
+    "cls": "DepartureGateController",
+    "stereo": "controller",
+    "attrs": [
+      {
+        "text": "− service : DepartureGateService {readOnly}",
+        "static": false
+      }
+    ],
+    "methods": [
+      {
+        "text": "+ getReadiness(orderId: long) : DepartureReadinessResponse",
+        "static": false,
+        "name": "getReadiness"
+      },
+      {
+        "text": "+ evaluateGates(orderId: long, body: DepartureGateEvaluateRequest) : DepartureReadinessResponse",
+        "static": false,
+        "name": "evaluateGates"
+      },
+      {
+        "text": "+ authorize(orderId: long, body: DepartureAuthorizeRequest) : DepartureReadinessResponse",
+        "static": false,
+        "name": "authorize"
+      },
+      {
+        "text": "+ recordHorseReceipt(orderId: long, body: HorseReceiptRequest) : DepartureReadinessResponse",
+        "static": false,
+        "name": "recordHorseReceipt"
+      },
+      {
+        "text": "+ depart(orderId: long, body: LegDepartRequest) : DepartureReadinessResponse",
+        "static": false,
+        "name": "depart"
+      }
+    ],
+    "source": "controller\\DepartureGateController.java"
+  },
+  "OperationalPlanService": {
+    "cls": "OperationalPlanService",
+    "stereo": "service",
+    "attrs": [
+      {
+        "text": "− plans : PlanRepository {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− cases : AssessmentRepository {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− orders : OrderRepository {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− availability : ResourceAvailabilityService {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− resources : ResourceRepository {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− quotes : QuotationCommitmentFacade {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− assessments : ServiceAssessmentFacade {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− audit : AuditWriter {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− actors : CurrentActorService {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− json : OrderJsonCodec {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− mapper : ObjectMapper {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− clock : Clock {readOnly}",
+        "static": false
+      }
+    ],
+    "methods": [
+      {
+        "text": "+ list(order: long, page: int, size: int) : PlanPageResponse",
+        "static": false,
+        "name": "list"
+      },
+      {
+        "text": "+ get(order: long, plan: long) : PlanDetailResponse",
+        "static": false,
+        "name": "get"
+      },
+      {
+        "text": "+ sharedStallCandidates(order: long) : List<SharedStallCandidateView>",
+        "static": false,
+        "name": "sharedStallCandidates"
+      },
+      {
+        "text": "+ createDraft(order: long, req: PlanDraftRequest) : PlanDetailResponse",
+        "static": false,
+        "name": "createDraft"
+      },
+      {
+        "text": "+ createGraphDraft(order: long, req: PlanDraftRequest, graph: Object) : PlanDetailResponse",
+        "static": false,
+        "name": "createGraphDraft"
+      },
+      {
+        "text": "+ assignRoad(order: long, plan: long, leg: long, req: PlanRoadAssignmentRequest) : PlanDetailResponse",
+        "static": false,
+        "name": "assignRoad"
+      },
+      {
+        "text": "+ assignStall(order: long, plan: long, leg: long, req: PlanStallAssignmentRequest) : PlanDetailResponse",
+        "static": false,
+        "name": "assignStall"
+      },
+      {
+        "text": "+ reserveFlight(order: long, plan: long, leg: long, req: PlanFlightReservationRequest) : PlanDetailResponse",
+        "static": false,
+        "name": "reserveFlight"
+      },
+      {
+        "text": "+ reserveQuarantine(order: long, plan: long, req: PlanQuarantineReservationRequest) : PlanDetailResponse",
+        "static": false,
+        "name": "reserveQuarantine"
+      },
+      {
+        "text": "+ verifyInsurance(order: long, plan: long, req: PlanInsurancePolicyRequest) : PlanDetailResponse",
+        "static": false,
+        "name": "verifyInsurance"
+      },
+      {
+        "text": "+ confirm(order: long, plan: long, req: PlanConfirmRequest) : PlanDetailResponse",
+        "static": false,
+        "name": "confirm"
+      }
+    ],
+    "source": "service\\OperationalPlanService.java"
+  },
+  "DepartureGateService": {
+    "cls": "DepartureGateService",
+    "stereo": "service",
+    "attrs": [
+      {
+        "text": "− ALLOWED_ORDER_STATUSES : List<String> {readOnly}",
+        "static": true
+      },
+      {
+        "text": "− departures : DepartureRepository {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− plans : PlanRepository {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− cases : AssessmentRepository {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− orders : OrderRepository {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− resources : ResourceRepository {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− quotes : QuotationCommitmentFacade {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− compliance : ComplianceReadinessFacade {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− assessments : ServiceAssessmentFacade {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− actors : CurrentActorService {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− audit : AuditWriter {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− json : OrderJsonCodec {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− mapper : ObjectMapper {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− clock : Clock {readOnly}",
+        "static": false
+      }
+    ],
+    "methods": [
+      {
+        "text": "+ getReadiness(order: long) : DepartureReadinessResponse",
+        "static": false,
+        "name": "getReadiness"
+      },
+      {
+        "text": "+ evaluateGates(order: long, req: DepartureGateEvaluateRequest) : DepartureReadinessResponse",
+        "static": false,
+        "name": "evaluateGates"
+      },
+      {
+        "text": "+ authorize(order: long, req: DepartureAuthorizeRequest) : DepartureReadinessResponse",
+        "static": false,
+        "name": "authorize"
+      },
+      {
+        "text": "+ recordHorseReceipt(order: long, req: HorseReceiptRequest) : DepartureReadinessResponse",
+        "static": false,
+        "name": "recordHorseReceipt"
+      },
+      {
+        "text": "+ depart(order: long, req: LegDepartRequest) : DepartureReadinessResponse",
+        "static": false,
+        "name": "depart"
+      }
+    ],
+    "source": "service\\DepartureGateService.java"
+  },
+  "OperationalPlanPolicy": {
+    "cls": "OperationalPlanPolicy",
+    "stereo": "utility",
+    "attrs": [],
+    "methods": [
+      {
+        "text": "+ editable(status: PlanState) : boolean",
+        "static": true,
+        "name": "editable"
+      },
+      {
+        "text": "+ validateLegs(legs: List<PlanLegInput>) : void",
+        "static": true,
+        "name": "validateLegs"
+      },
+      {
+        "text": "+ validateStallRequest(req: PlanStallAssignmentRequest) : void",
+        "static": true,
+        "name": "validateStallRequest"
+      },
+      {
+        "text": "+ validateFlightRequest(req: PlanFlightReservationRequest, requiredSlots: BigDecimal, now: OffsetDateTime) : void",
+        "static": true,
+        "name": "validateFlightRequest"
+      },
+      {
+        "text": "+ validateQuarantineRequest(req: PlanQuarantineReservationRequest, requiredDays: Integer, now: OffsetDateTime) : void",
+        "static": true,
+        "name": "validateQuarantineRequest"
+      },
+      {
+        "text": "+ validateInsuranceRequest(req: PlanInsurancePolicyRequest, planStart: OffsetDateTime, planEnd: OffsetDateTime) : void",
+        "static": true,
+        "name": "validateInsuranceRequest"
+      },
+      {
+        "text": "+ confirmationBlockers(legs: List<PlanLegView>, quarantine: List<PlanQuarantineReservationView>, insurance: List<PlanInsurancePolicyView>, choices: List<Map<String, Object>>, quarantineRequiredDays: Integer, now: OffsetDateTime) : List<String>",
+        "static": true,
+        "name": "confirmationBlockers"
+      }
+    ],
+    "source": "service\\OperationalPlanPolicy.java"
+  },
+  "DepartureGatePolicy": {
+    "cls": "DepartureGatePolicy",
+    "stereo": "utility",
+    "attrs": [],
+    "methods": [
+      {
+        "text": "+ verifyIdentity(expectedChip: String, expectedPassport: String, observedChip: String, observedPassport: String) : IdentityResult",
+        "static": true,
+        "name": "verifyIdentity"
+      },
+      {
+        "text": "+ receiptStatus(identity: IdentityResult, fitToTravel: boolean) : ReceiptState",
+        "static": true,
+        "name": "receiptStatus"
+      },
+      {
+        "text": "+ gateView(blockers: List<String>) : GateDetailView",
+        "static": true,
+        "name": "gateView"
+      },
+      {
+        "text": "+ departureBlockers(financial: GateDetailView, legal: GateDetailView, operational: GateDetailView, authorized: boolean, receipt: HorseReceiptView, recheckedIdentity: IdentityResult, horseOverlap: boolean) : List<String>",
+        "static": true,
+        "name": "departureBlockers"
+      },
+      {
+        "text": "+ redactForCustomer(raw: DepartureReadinessResponse) : DepartureReadinessResponse",
+        "static": true,
+        "name": "redactForCustomer"
+      }
+    ],
+    "source": "service\\DepartureGatePolicy.java"
+  },
+  "PlanRepository": {
+    "cls": "PlanRepository",
+    "stereo": "repository",
+    "attrs": [
+      {
+        "text": "− jdbc : NamedParameterJdbcTemplate {readOnly}",
+        "static": false
+      }
+    ],
+    "methods": [
+      {
+        "text": "+ ready() : boolean",
+        "static": false,
+        "name": "ready"
+      },
+      {
+        "text": "+ operation(order: long, user: long, op: UUID) : List<Map<String, Object>>",
+        "static": false,
+        "name": "operation"
+      },
+      {
+        "text": "+ saveOperation(order: long, user: long, op: UUID, hash: String, receipt: String) : void",
+        "static": false,
+        "name": "saveOperation"
+      },
+      {
+        "text": "+ nextVersion(revision: long) : int",
+        "static": false,
+        "name": "nextVersion"
+      },
+      {
+        "text": "+ insertPlan(order: long, revision: long, staff: long, version: int, start: OffsetDateTime, end: OffsetDateTime) : long",
+        "static": false,
+        "name": "insertPlan"
+      },
+      {
+        "text": "+ insertLeg(plan: long, leg: PlanLegInput, staff: Long, now: OffsetDateTime) : long",
+        "static": false,
+        "name": "insertLeg"
+      },
+      {
+        "text": "+ recordAirfareEstimate(draft: PlanDraftRequest, plan: long, staff: long, now: OffsetDateTime) : void",
+        "static": false,
+        "name": "recordAirfareEstimate"
+      },
+      {
+        "text": "+ setCurrentPlan(order: long, plan: long) : void",
+        "static": false,
+        "name": "setCurrentPlan"
+      },
+      {
+        "text": "+ touchOrder(order: long) : void",
+        "static": false,
+        "name": "touchOrder"
+      },
+      {
+        "text": "+ currentPlanId(order: long) : Long",
+        "static": false,
+        "name": "currentPlanId"
+      },
+      {
+        "text": "+ findPlan(order: long, plan: long) : Optional<PlanSummaryView>",
+        "static": false,
+        "name": "findPlan"
+      },
+      {
+        "text": "+ listPlans(order: long, page: int, size: int) : List<PlanSummaryView>",
+        "static": false,
+        "name": "listPlans"
+      },
+      {
+        "text": "+ countPlans(order: long) : long",
+        "static": false,
+        "name": "countPlans"
+      },
+      {
+        "text": "+ legs(plan: long) : List<PlanLegView>",
+        "static": false,
+        "name": "legs"
+      },
+      {
+        "text": "+ assignRoad(leg: long, req: PlanRoadAssignmentRequest, start: OffsetDateTime, end: OffsetDateTime) : void",
+        "static": false,
+        "name": "assignRoad"
+      },
+      {
+        "text": "+ driverOverlaps(staff: long, start: OffsetDateTime, end: OffsetDateTime, buffer: int, excludeLeg: long) : boolean",
+        "static": false,
+        "name": "driverOverlaps"
+      },
+      {
+        "text": "+ assignStall(leg: long, req: PlanStallAssignmentRequest, slots: BigDecimal, sharing: String, fit: String, start: OffsetDateTime, end: OffsetDateTime, now: OffsetDateTime) : void",
+        "static": false,
+        "name": "assignStall"
+      },
+      {
+        "text": "+ sharedStallCandidates(order: long, revision: long) : List<SharedStallCandidateView>",
+        "static": false,
+        "name": "sharedStallCandidates"
+      },
+      {
+        "text": "+ airfareOffer(revision: long, offerId: long, now: OffsetDateTime) : List<Map<String, Object>>",
+        "static": false,
+        "name": "airfareOffer"
+      },
+      {
+        "text": "+ reserveFlight(leg: long, req: PlanFlightReservationRequest, staff: long, now: OffsetDateTime) : void",
+        "static": false,
+        "name": "reserveFlight"
+      },
+      {
+        "text": "+ quarantineChoice(revision: long) : List<Map<String, Object>>",
+        "static": false,
+        "name": "quarantineChoice"
+      },
+      {
+        "text": "+ reserveQuarantine(choiceId: long, req: PlanQuarantineReservationRequest, staff: long, now: OffsetDateTime) : void",
+        "static": false,
+        "name": "reserveQuarantine"
+      },
+      {
+        "text": "+ quarantineReservations(revision: long) : List<PlanQuarantineReservationView>",
+        "static": false,
+        "name": "quarantineReservations"
+      },
+      {
+        "text": "+ insuranceChoice(revision: long) : List<Map<String, Object>>",
+        "static": false,
+        "name": "insuranceChoice"
+      },
+      {
+        "text": "+ verifyInsurance(choiceId: long, req: PlanInsurancePolicyRequest, staff: long, now: OffsetDateTime) : void",
+        "static": false,
+        "name": "verifyInsurance"
+      },
+      {
+        "text": "+ insurancePolicies(revision: long) : List<PlanInsurancePolicyView>",
+        "static": false,
+        "name": "insurancePolicies"
+      },
+      {
+        "text": "+ lockHorseAndCheckOverlap(order: long, start: OffsetDateTime, end: OffsetDateTime) : boolean",
+        "static": false,
+        "name": "lockHorseAndCheckOverlap"
+      },
+      {
+        "text": "+ confirmPlan(order: long, plan: long, quote: long, now: OffsetDateTime) : void",
+        "static": false,
+        "name": "confirmPlan"
+      },
+      {
+        "text": "+ serviceChoices(revision: long) : List<Map<String, Object>>",
+        "static": false,
+        "name": "serviceChoices"
+      }
+    ],
+    "source": "repository\\PlanRepository.java"
+  },
+  "DepartureRepository": {
+    "cls": "DepartureRepository",
+    "stereo": "repository",
+    "attrs": [
+      {
+        "text": "− jdbc : NamedParameterJdbcTemplate {readOnly}",
+        "static": false
+      }
+    ],
+    "methods": [
+      {
+        "text": "+ ready() : boolean",
+        "static": false,
+        "name": "ready"
+      },
+      {
+        "text": "+ orderScope(order: long) : Optional<OrderScopeRow>",
+        "static": false,
+        "name": "orderScope"
+      },
+      {
+        "text": "+ plan(order: long, plan: long, lock: boolean) : Optional<PlanGateRow>",
+        "static": false,
+        "name": "plan"
+      },
+      {
+        "text": "+ firstLeg(plan: long) : Optional<FirstLegRow>",
+        "static": false,
+        "name": "firstLeg"
+      },
+      {
+        "text": "+ assignedDriverOnPlan(plan: long, staff: long) : boolean",
+        "static": false,
+        "name": "assignedDriverOnPlan"
+      },
+      {
+        "text": "+ assignedDriverOnLeg(plan: long, leg: long, staff: long) : boolean",
+        "static": false,
+        "name": "assignedDriverOnLeg"
+      },
+      {
+        "text": "+ legDriversActive(leg: long) : boolean",
+        "static": false,
+        "name": "legDriversActive"
+      },
+      {
+        "text": "+ complianceHoldActive(revision: long) : boolean",
+        "static": false,
+        "name": "complianceHoldActive"
+      },
+      {
+        "text": "+ horseIdentity(order: long, lock: boolean) : Optional<HorseIdentityRow>",
+        "static": false,
+        "name": "horseIdentity"
+      },
+      {
+        "text": "+ updateGates(order: long, plan: long, financial: GateState, legal: GateState, operational: GateState, checkedAt: OffsetDateTime, clearAuth: boolean) : void",
+        "static": false,
+        "name": "updateGates"
+      },
+      {
+        "text": "+ authorizeDeparture(order: long, plan: long, managerStaffId: long, now: OffsetDateTime) : void",
+        "static": false,
+        "name": "authorizeDeparture"
+      },
+      {
+        "text": "+ insertHorseReceipt(plan: long, leg: long, staffId: long, req: HorseReceiptRequest, identity: IdentityResult, status: ReceiptState, now: OffsetDateTime) : long",
+        "static": false,
+        "name": "insertHorseReceipt"
+      },
+      {
+        "text": "+ receipts(plan: long) : List<HorseReceiptView>",
+        "static": false,
+        "name": "receipts"
+      },
+      {
+        "text": "+ departFirstLeg(order: long, plan: long, leg: long, now: OffsetDateTime) : void",
+        "static": false,
+        "name": "departFirstLeg"
+      }
+    ],
+    "source": "repository\\DepartureRepository.java"
+  },
+  "JourneyGraphService": {
+    "cls": "JourneyGraphService",
+    "stereo": "service",
+    "attrs": [
+      {
+        "text": "− graphs : JourneyGraphRepository {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− planning : OperationalPlanService {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− plans : PlanRepository {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− cases : AssessmentRepository {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− orders : OrderRepository {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− actors : CurrentActorService {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− json : OrderJsonCodec {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− mapper : ObjectMapper {readOnly}",
+        "static": false
+      },
+      {
+        "text": "− audit : AuditWriter {readOnly}",
+        "static": false
+      }
+    ],
+    "methods": [
+      {
+        "text": "+ get(order: long, plan: long) : JourneyGraphView",
+        "static": false,
+        "name": "get"
+      },
+      {
+        "text": "+ compile(order: long, request: GraphDraftRequest) : JourneyGraphView",
+        "static": false,
+        "name": "compile"
+      },
+      {
+        "text": "+ drivers(order: long, plan: long, leg: long, search: String, buffer: int) : List<GraphDriverCandidate>",
+        "static": false,
+        "name": "drivers"
+      },
+      {
+        "text": "+ layout(order: long, plan: long, request: GraphLayoutRequest) : JourneyGraphView",
+        "static": false,
+        "name": "layout"
+      }
+    ],
+    "source": "service\\JourneyGraphService.java"
+  }
+}

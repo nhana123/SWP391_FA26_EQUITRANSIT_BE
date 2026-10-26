@@ -1,0 +1,65 @@
+{
+  "tables": 73,
+  "columnsRepresented": 775,
+  "totalColumns": 775,
+  "foreignKeyConstraints": 156,
+  "relationships": 152,
+  "compositeForeignKeys": 13,
+  "nodeOverlapChecks": [
+    {
+      "id": "00-overview",
+      "shapes": 84,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "full-schema",
+      "shapes": 857,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "01-identity",
+      "shapes": 35,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "02-orders",
+      "shapes": 59,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "03-commercial",
+      "shapes": 72,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "04-payments",
+      "shapes": 65,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "05-compliance",
+      "shapes": 113,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "06-resources",
+      "shapes": 34,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "07-planning",
+      "shapes": 116,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "08-execution",
+      "shapes": 87,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "09-support",
+      "shapes": 38,
+      "overlappingShapePairs": 0
+    }
+  ]
+}

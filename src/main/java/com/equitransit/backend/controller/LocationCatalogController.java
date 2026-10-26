@@ -36,7 +36,16 @@ public class LocationCatalogController {
     @GetMapping("/locations")
     public List<Location> locations(
             @RequestParam @Pattern(regexp = "[A-Z]{2}") String country,
-            @RequestParam @Pattern(regexp = "CITY|AIRPORT") String type) {
+            @RequestParam @Pattern(regexp = "CITY|AIRPORT|HUB") String type) {
         return service.locations(country, type);
+    }
+
+    /** @param country ISO country @param primaryOnly primary filter
+     * @return active company hubs with optional coordinates */
+    @GetMapping("/hubs")
+    public List<Location> hubs(
+            @RequestParam @Pattern(regexp = "[A-Z]{2}") String country,
+            @RequestParam(defaultValue = "false") boolean primaryOnly) {
+        return service.hubs(country, primaryOnly);
     }
 }

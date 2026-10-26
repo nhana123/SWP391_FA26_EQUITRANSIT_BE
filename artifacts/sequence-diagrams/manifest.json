@@ -1,0 +1,37 @@
+[
+  {
+    "id": "01-customer",
+    "actor": "Customer",
+    "title": "Submit Transport Request",
+    "width": 1640,
+    "height": 1627
+  },
+  {
+    "id": "02-manager",
+    "actor": "Manager",
+    "title": "Assess Request & Assign Case Team",
+    "width": 1640,
+    "height": 1382
+  },
+  {
+    "id": "03-coordinator",
+    "actor": "Coordinator",
+    "title": "Manage Operational Plan",
+    "width": 1640,
+    "height": 2072
+  },
+  {
+    "id": "04-specialist",
+    "actor": "Specialist",
+    "title": "Review Documents & Clear Compliance Phase",
+    "width": 1640,
+    "height": 1998
+  },
+  {
+    "id": "05-driver",
+    "actor": "Driver",
+    "title": "Record Intermediate Handover or Final Delivery",
+    "width": 1640,
+    "height": 1347
+  }
+]

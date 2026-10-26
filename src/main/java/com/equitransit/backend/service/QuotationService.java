@@ -66,6 +66,7 @@ public class QuotationService {
     private final OrderJsonCodec json;
     private final ObjectMapper mapper;
     private final Clock clock;
+    private BookingFlowService booking;
 
     /**
      * @param cases shared parent lock and live assignment access
@@ -91,6 +92,12 @@ public class QuotationService {
         this.json = json;
         this.mapper = mapper;
         this.clock = clock;
+    }
+
+    /** @param booking accepted quote deposit automation */
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configureBooking(BookingFlowService booking) {
+        this.booking = booking;
     }
 
     /**
@@ -230,11 +237,14 @@ public class QuotationService {
         CurrentActor actor = access(order, false);
         boolean customer = "CUSTOMER".equals(actor.roleCode());
         boolean manager = "MANAGER".equals(actor.roleCode());
+        boolean coordinator = "COORDINATOR".equals(actor.roleCode())
+                && request.action() == QuoteAction.ISSUE;
 
-        if ((!customer && !manager)
+        if ((!customer && !manager && !coordinator)
                 || (request.action() == QuoteAction.ACCEPT && !customer)
                 || (!List.of(QuoteAction.ACCEPT, QuoteAction.REJECT)
-                        .contains(request.action()) && !manager)) {
+                        .contains(request.action())
+                        && !manager && !coordinator)) {
             throw new AccessDeniedException("Access is denied.");
         }
         String hash = fingerprint("ACTION_" + quote, request);
@@ -258,7 +268,13 @@ public class QuotationService {
             throw conflict("QUOTE_STATE_CONFLICT",
                     "Only an issued quotation can receive your response.");
         }
-        QuoteStatus target = transition(record, request.action(), customer);
+        QuoteStatus target;
+        if (coordinator && record.status() == QuoteStatus.DRAFT) {
+            future(record.validUntil());
+            target = QuoteStatus.ISSUED;
+        } else {
+            target = transition(record, request.action(), customer);
+        }
 
         if (target == QuoteStatus.ACCEPTED
                 && commitments.protectedOrder(id)) {
@@ -268,7 +284,14 @@ public class QuotationService {
         if (target == QuoteStatus.APPROVED || target == QuoteStatus.ISSUED) {
             requirePublishable(id, order, record);
         }
+        if (booking != null && (target == QuoteStatus.ISSUED
+                || target == QuoteStatus.ACCEPTED)) {
+            booking.requireSchedule(id, quote);
+        }
         quotes.transition(quote, target, actor.staffId(), actor.customerId());
+        if (booking != null && target == QuoteStatus.ACCEPTED) {
+            booking.accepted(id, quote);
+        }
         touch(order);
         QuoteResponse receipt = response(parent(id), record(id, quote));
 

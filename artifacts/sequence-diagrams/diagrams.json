@@ -1,0 +1,261 @@
+[
+  {
+    "id": "01-customer",
+    "actor": "Customer",
+    "title": "Submit Transport Request",
+    "view": "TransportRequestView",
+    "controller": "TransportOrderController",
+    "service": "TransportOrderService",
+    "pre": "Signed in as CUSTOMER; horse belongs to the customer.",
+    "steps": [
+      {
+        "action": "Create transport request",
+        "call": "create(OrderDraftRequest)",
+        "reply": "OrderResponse [DRAFT]",
+        "note": "POST /api/transport-orders"
+      },
+      {
+        "kind": "opt",
+        "guard": "Customer edits the saved draft",
+        "steps": [
+          {
+            "action": "Save changes",
+            "call": "saveDraft(id, request)",
+            "reply": "OrderResponse + recordVersion",
+            "note": "PUT /api/transport-orders/{id}/draft"
+          }
+        ]
+      },
+      {
+        "action": "Submit request",
+        "call": "submit(id, OrderSubmitRequest)",
+        "reply": "OrderRevisionResponse [SUBMITTED]",
+        "note": "POST /api/transport-orders/{id}/submit"
+      },
+      {
+        "kind": "opt",
+        "guard": "Revision is allowed before protected commitments",
+        "steps": [
+          {
+            "action": "Revise request and provide reason",
+            "call": "revise(id, OrderRevisionRequest)",
+            "reply": "OrderRevisionResponse [new revision]",
+            "note": "POST /api/transport-orders/{id}/revisions"
+          }
+        ]
+      }
+    ],
+    "foot": "Submission requests Manager assessment. It does not confirm a booking or accept a quotation."
+  },
+  {
+    "id": "02-manager",
+    "actor": "Manager",
+    "title": "Assess Request & Assign Case Team",
+    "view": "RequestAssessmentView",
+    "controller": "ManagerAssessmentController",
+    "service": "OrderAssessmentService",
+    "pre": "Manager has reviewed the current submitted revision and selected active staff.",
+    "steps": [
+      {
+        "kind": "alt",
+        "guard": "decision = APPROVED; Specialist and Coordinator selected",
+        "steps": [
+          {
+            "action": "Approve request and assign team",
+            "call": "decide(id, AssessmentRequest)",
+            "reply": "AssessmentReceipt [APPROVED]",
+            "note": "POST /api/manager/transport-orders/{id}/decisions"
+          }
+        ],
+        "elseGuard": "decision = REJECTED or CHANGES_REQUESTED; reason supplied",
+        "otherwise": [
+          {
+            "action": "Reject or request changes",
+            "call": "decide(id, AssessmentRequest)",
+            "reply": "AssessmentReceipt [decision recorded]"
+          }
+        ]
+      },
+      {
+        "kind": "opt",
+        "guard": "Approved case remains eligible for reassignment",
+        "steps": [
+          {
+            "action": "Replace Specialist or Coordinator",
+            "call": "assign(id, role, CaseAssignmentRequest)",
+            "reply": "AssessmentReceipt [assignment updated]",
+            "note": "PUT /api/manager/transport-orders/{id}/assignments/{role}"
+          }
+        ]
+      }
+    ],
+    "foot": "Approval and initial team assignment are atomic. Payment allocation is a separate Manager workflow."
+  },
+  {
+    "id": "03-coordinator",
+    "actor": "Coordinator",
+    "title": "Manage Operational Plan",
+    "view": "OperationalPlanView",
+    "controller": "OperationalPlanController",
+    "service": "OperationalPlanService",
+    "pre": "Assigned COORDINATOR; order is APPROVED or IN_PREPARATION.",
+    "steps": [
+      {
+        "action": "Select Manage Operational Plan",
+        "call": "list(orderId, page, size)",
+        "reply": "PlanPageResponse",
+        "note": "GET /api/transport-orders/{orderId}/plans"
+      },
+      {
+        "kind": "opt",
+        "guard": "Create Draft selected",
+        "steps": [
+          {
+            "action": "Create draft route and legs",
+            "call": "createDraft(orderId, PlanDraftRequest)",
+            "reply": "PlanDetailResponse [DRAFT]",
+            "note": "AIR legs may carry estimatedAirfare; a price estimate is not a flight reservation."
+          }
+        ]
+      },
+      {
+        "kind": "opt",
+        "guard": "Resource preparation selected; route includes ROAD and AIR legs",
+        "steps": [
+          {
+            "action": "Assign vehicle and driver to ROAD leg",
+            "call": "assignRoad(orderId, planId, legId, body)",
+            "reply": "PlanDetailResponse"
+          },
+          {
+            "action": "Assign shared stall to AIR leg",
+            "call": "assignStall(orderId, planId, legId, body)",
+            "reply": "PlanDetailResponse"
+          },
+          {
+            "action": "Record confirmed flight reservation",
+            "call": "reserveFlight(orderId, planId, legId, body)",
+            "reply": "PlanDetailResponse"
+          }
+        ]
+      },
+      {
+        "kind": "opt",
+        "guard": "Confirm selected; accepted quote and all resources ready",
+        "steps": [
+          {
+            "action": "Confirm operational plan",
+            "call": "confirm(orderId, planId, PlanConfirmRequest)",
+            "reply": "PlanDetailResponse [CONFIRMED]",
+            "note": "POST /api/transport-orders/{orderId}/plans/{planId}/confirm"
+          }
+        ]
+      }
+    ],
+    "foot": "Required quarantine reservations and insurance must also pass confirmation checks. Failed checks return 409."
+  },
+  {
+    "id": "04-specialist",
+    "actor": "Specialist",
+    "title": "Review Documents & Clear Compliance Phase",
+    "view": "ComplianceWorkspaceView",
+    "controller": "ComplianceController",
+    "service": "ComplianceService",
+    "pre": "Assigned SPECIALIST. Customer has submitted evidence, or Specialist uploads on their behalf.",
+    "steps": [
+      {
+        "action": "Open compliance checklist",
+        "call": "overview(order, phase, page, size, true)",
+        "reply": "ComplianceOverview [requirements + files + feedback]",
+        "note": "GET /api/transport-orders/{order}/compliance?phase=...&bootstrap=true"
+      },
+      {
+        "kind": "opt",
+        "guard": "Specialist submits a document for the customer",
+        "steps": [
+          {
+            "action": "Upload file and submit requirement",
+            "call": "uploadAndSubmit(order, id, body)",
+            "reply": "ComplianceReceipt [submissionId + fileKey]",
+            "note": "POST .../compliance/requirements/{id}/upload-and-submit; one transaction"
+          }
+        ]
+      },
+      {
+        "kind": "loop",
+        "guard": "For each current submission requiring review",
+        "steps": [
+          {
+            "action": "Approve or reject with feedback",
+            "call": "review(order, id, ComplianceReviewRequest)",
+            "reply": "ComplianceReceipt [review recorded]",
+            "note": "POST .../compliance/submissions/{id}/reviews"
+          }
+        ]
+      },
+      {
+        "kind": "alt",
+        "guard": "All required documents approved and other clearance checks pass",
+        "steps": [
+          {
+            "action": "Clear selected phase",
+            "call": "clear(order, ComplianceClearanceRequest)",
+            "reply": "ComplianceReceipt [clearance recorded]",
+            "note": "POST .../compliance/clearances; default authority procedure may be created"
+          }
+        ],
+        "elseGuard": "Evidence is rejected, missing, expired or otherwise invalid",
+        "otherwise": [
+          {
+            "action": "Read blockers and latest feedback",
+            "call": "overview(order, phase, page, size, false)",
+            "reply": "ComplianceOverview [not cleared + reasons]"
+          }
+        ]
+      }
+    ],
+    "foot": "Apply independently to PRE_EXPORT, ARRIVAL and QUARANTINE_RELEASE. Customer can read feedback and resubmit."
+  },
+  {
+    "id": "05-driver",
+    "actor": "Driver",
+    "title": "Record Intermediate Handover or Final Delivery",
+    "view": "TripHandoverView",
+    "controller": "DriverHandoverController",
+    "service": "TripHandoverService",
+    "pre": "Assigned DRIVER; current leg has departed. Signature and photo file keys were uploaded through HandoverFileController.",
+    "steps": [
+      {
+        "action": "Open handover history for assigned leg",
+        "call": "getHandovers(legId)",
+        "serviceCall": "getHandoversForLeg(legId)",
+        "reply": "List<TripHandoverResponse>",
+        "note": "GET /api/driver/legs/{legId}/handovers"
+      },
+      {
+        "kind": "alt",
+        "guard": "Intermediate custody transfer",
+        "steps": [
+          {
+            "action": "Record transfer to next carrier or quarantine",
+            "call": "recordIntermediate(legId, request)",
+            "serviceCall": "recordIntermediateByDriver(legId, request)",
+            "reply": "201 TripHandoverResponse",
+            "note": "POST /api/driver/legs/{legId}/intermediate-handover; next leg stays CONFIRMED"
+          }
+        ],
+        "elseGuard": "Last leg; final delivery to authorized receiver",
+        "otherwise": [
+          {
+            "action": "Record final delivery with signature and photo",
+            "call": "recordFinalDelivery(legId, request)",
+            "serviceCall": "recordFinalDeliveryByDriver(legId, request)",
+            "reply": "200 OperationalCompletionReceipt [DELIVERED]",
+            "note": "POST /api/driver/legs/{legId}/final-delivery"
+          }
+        ]
+      }
+    ],
+    "foot": "Final delivery requires QUARANTINE_RELEASE clearance, receiver authority and files. Manager closes DELIVERED orders separately."
+  }
+]

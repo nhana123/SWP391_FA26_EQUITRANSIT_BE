@@ -145,6 +145,19 @@ public class HorseRepository {
         }
         return id;
     }
+    /**
+     * Checks whether the horse appears in any transport order details.
+     * @param horseId the horse key
+     * @return true if the horse is attached to an order
+     */
+    public boolean hasOrders(long horseId) {
+        String sql = "SELECT COUNT(*) FROM dbo.TransportOrderDetail "
+                + "WHERE HorseID = :horseId";
+        MapSqlParameterSource args = new MapSqlParameterSource(
+                "horseId", horseId);
+        Integer count = jdbc.queryForObject(sql, args, Integer.class);
+        return count != null && count > 0;
+    }
 
     /**
      * Updates atomically only if owner and binary version still match.
@@ -159,7 +172,20 @@ public class HorseRepository {
 
         return jdbc.update(UPDATE, args) == 1;
     }
-
+    /**
+     * Deletes an owned horse profile permanently from the database.
+     * @param horseId the horse key
+     * @param customerId the authenticated owner
+     * @return true if one row was removed
+     */
+    public boolean delete(long horseId, long customerId) {
+        String sql = "DELETE FROM dbo.Horse WHERE HorseID = :horseId "
+                + "AND CustomerID = :customerId";
+        MapSqlParameterSource args = new MapSqlParameterSource()
+                .addValue("horseId", horseId)
+                .addValue("customerId", customerId);
+        return jdbc.update(sql, args) == 1;
+    }
     private String filter() {
         return " WHERE CustomerID=:customerId"
                 + " AND Name LIKE :query ESCAPE '\\'";

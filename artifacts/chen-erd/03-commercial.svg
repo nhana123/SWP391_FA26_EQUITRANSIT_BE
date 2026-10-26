@@ -1,0 +1,959 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1331" height="1586" viewBox="0 0 1331 1586"><rect width="100%" height="100%" fill="white"/><g font-family="Arial" text-anchor="middle"><text x="665.5" y="30" font-size="24" font-weight="bold" fill="#263445">Service selection and quotations</text><text x="665.5" y="53" font-size="12" fill="#64748b">EquiTransit_Demo · 13 entities · 18 relationships · selected attributes; complete dictionary in the atlas</text><text x="665.5" y="77" font-size="11" fill="#64748b">Rectangle: entity · Diamond: relationship · Ellipse: attribute · Underlined: primary key</text><text x="665.5" y="97" font-size="11" fill="#64748b">1/N = maximum cardinality · Double line = mandatory child participation · No arrows / no crow's feet</text></g><g transform="translate(0,115)">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(21.6 1414.6)">
+<title>G</title>
+<polygon fill="white" stroke="none" points="-21.6,21.6 -21.6,-1414.6 1309.84,-1414.6 1309.84,21.6 -21.6,21.6"/>
+<g id="clust1" class="cluster">
+<title>cluster_OrderServiceChoice</title>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_StallChoice</title>
+</g>
+<g id="clust5" class="cluster">
+<title>cluster_QuarantineChoice</title>
+</g>
+<g id="clust7" class="cluster">
+<title>cluster_InsuranceChoice</title>
+</g>
+<g id="clust9" class="cluster">
+<title>cluster_Quote</title>
+</g>
+<g id="clust11" class="cluster">
+<title>cluster_QuoteItem</title>
+</g>
+<g id="clust13" class="cluster">
+<title>cluster_QuotePaymentSchedule</title>
+</g>
+<g id="clust15" class="cluster">
+<title>cluster_SupplierOffer</title>
+</g>
+<g id="clust17" class="cluster">
+<title>cluster_ServiceTariff</title>
+</g>
+<g id="clust19" class="cluster">
+<title>cluster_OrderRevision</title>
+</g>
+<g id="clust21" class="cluster">
+<title>cluster_StaffProfile</title>
+</g>
+<g id="clust23" class="cluster">
+<title>cluster_Customer</title>
+</g>
+<g id="clust25" class="cluster">
+<title>cluster_Supplier</title>
+</g>
+<!-- E_OrderServiceChoice&#45;&gt;A_OrderServiceChoice_0 -->
+<g id="edge1" class="edge">
+<title>E_OrderServiceChoice&#45;&gt;A_OrderServiceChoice_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M546.1,-1017.5C529.44,-1013.18 517.19,-1010 517.19,-1010 517.19,-1010 487.19,-1001.5 487.19,-1001.5 487.19,-1001.5 487.19,-960.5 487.19,-960.5 487.19,-960.5 517.19,-952 517.19,-952 517.19,-952 553.93,-943.08 586.66,-935.13"/>
+</g>
+<!-- E_OrderServiceChoice&#45;&gt;A_OrderServiceChoice_1 -->
+<g id="edge2" class="edge">
+<title>E_OrderServiceChoice&#45;&gt;A_OrderServiceChoice_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M699.45,-1017.52C699.45,-1011.79 699.45,-1001 699.45,-1001 699.45,-1001 691.86,-998.58 681.95,-995.43"/>
+</g>
+<!-- E_OrderServiceChoice&#45;&gt;A_OrderServiceChoice_2 -->
+<g id="edge3" class="edge">
+<title>E_OrderServiceChoice&#45;&gt;A_OrderServiceChoice_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M740.04,-1064.48C740.04,-1070.21 740.04,-1081 740.04,-1081 740.04,-1081 715.38,-1085.77 690.15,-1090.65"/>
+</g>
+<!-- E_OrderServiceChoice&#45;&gt;A_OrderServiceChoice_2 -->
+<!-- E_OrderServiceChoice&#45;&gt;R52 -->
+<g id="edge83" class="edge">
+<title>E_OrderServiceChoice&#45;&gt;R52</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M727.38,-1064.5C743.89,-1068.82 756.04,-1072 756.04,-1072 756.04,-1072 836.88,-1145.51 881.41,-1186"/>
+<text xml:space="preserve" text-anchor="middle" x="740.61" y="-1073.1" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- E_OrderServiceChoice&#45;&gt;R95 -->
+<g id="edge87" class="edge">
+<title>E_OrderServiceChoice&#45;&gt;R95</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M727.38,-1017.5C743.89,-1013.18 756.04,-1010 756.04,-1010 756.04,-1010 828.81,-963.68 874.3,-934.73"/>
+<text xml:space="preserve" text-anchor="middle" x="744.89" y="-1018.05" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- E_OrderServiceChoice&#45;&gt;R124 -->
+<g id="edge111" class="edge">
+<title>E_OrderServiceChoice&#45;&gt;R124</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M740.21,-1039.12C768.26,-1038.6 798.34,-1038.05 825.27,-1037.56"/>
+<text xml:space="preserve" text-anchor="middle" x="756.25" y="-1043.67" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_OrderServiceChoice_0&#45;&gt;A_OrderServiceChoice_1 -->
+<!-- A_OrderServiceChoice_1&#45;&gt;E_OrderServiceChoice -->
+<!-- E_StallChoice&#45;&gt;A_StallChoice_0 -->
+<g id="edge7" class="edge">
+<title>E_StallChoice&#45;&gt;A_StallChoice_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1098.92,-1009.63C1066.6,-1000.32 1035.97,-991.5 1035.97,-991.5 1035.97,-991.5 1035.97,-950.5 1035.97,-950.5 1035.97,-950.5 1065.97,-942 1065.97,-942 1065.97,-942 1095.1,-934.11 1122.99,-926.57"/>
+</g>
+<!-- E_StallChoice&#45;&gt;A_StallChoice_1 -->
+<g id="edge8" class="edge">
+<title>E_StallChoice&#45;&gt;A_StallChoice_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1234.3,-1007.52C1234.3,-1001.79 1234.3,-991 1234.3,-991 1234.3,-991 1226.91,-988.58 1217.26,-985.43"/>
+</g>
+<!-- E_StallChoice&#45;&gt;A_StallChoice_2 -->
+<g id="edge9" class="edge">
+<title>E_StallChoice&#45;&gt;A_StallChoice_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1246.9,-1054.48C1246.9,-1060.21 1246.9,-1071 1246.9,-1071 1246.9,-1071 1235.87,-1073.99 1222.33,-1077.66"/>
+</g>
+<!-- E_StallChoice&#45;&gt;A_StallChoice_2 -->
+<!-- A_StallChoice_0&#45;&gt;A_StallChoice_1 -->
+<!-- A_StallChoice_1&#45;&gt;E_StallChoice -->
+<!-- E_QuarantineChoice&#45;&gt;A_QuarantineChoice_0 -->
+<g id="edge13" class="edge">
+<title>E_QuarantineChoice&#45;&gt;A_QuarantineChoice_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1091.75,-728.57C1062.22,-720.06 1035.97,-712.5 1035.97,-712.5 1035.97,-712.5 1035.97,-671.5 1035.97,-671.5 1035.97,-671.5 1065.97,-663 1065.97,-663 1065.97,-663 1089.31,-656.68 1114.21,-649.94"/>
+</g>
+<!-- E_QuarantineChoice&#45;&gt;A_QuarantineChoice_1 -->
+<g id="edge14" class="edge">
+<title>E_QuarantineChoice&#45;&gt;A_QuarantineChoice_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1240.67,-728.52C1240.67,-722.79 1240.67,-712 1240.67,-712 1240.67,-712 1232.5,-709.58 1221.85,-706.43"/>
+</g>
+<!-- E_QuarantineChoice&#45;&gt;A_QuarantineChoice_2 -->
+<g id="edge15" class="edge">
+<title>E_QuarantineChoice&#45;&gt;A_QuarantineChoice_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1263.61,-775.48C1263.61,-781.21 1263.61,-792 1263.61,-792 1263.61,-792 1247.2,-795.63 1228.36,-799.79"/>
+</g>
+<!-- E_QuarantineChoice&#45;&gt;A_QuarantineChoice_2 -->
+<!-- A_QuarantineChoice_0&#45;&gt;A_QuarantineChoice_1 -->
+<!-- A_QuarantineChoice_1&#45;&gt;E_QuarantineChoice -->
+<!-- E_InsuranceChoice&#45;&gt;A_InsuranceChoice_0 -->
+<g id="edge19" class="edge">
+<title>E_InsuranceChoice&#45;&gt;A_InsuranceChoice_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1091.75,-1265.57C1062.22,-1257.06 1035.97,-1249.5 1035.97,-1249.5 1035.97,-1249.5 1035.97,-1208.5 1035.97,-1208.5 1035.97,-1208.5 1065.97,-1200 1065.97,-1200 1065.97,-1200 1090.1,-1193.47 1115.46,-1186.6"/>
+</g>
+<!-- E_InsuranceChoice&#45;&gt;A_InsuranceChoice_1 -->
+<g id="edge20" class="edge">
+<title>E_InsuranceChoice&#45;&gt;A_InsuranceChoice_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1244.44,-1265.52C1244.44,-1259.79 1244.44,-1249 1244.44,-1249 1244.44,-1249 1235.81,-1246.58 1224.57,-1243.43"/>
+</g>
+<!-- E_InsuranceChoice&#45;&gt;A_InsuranceChoice_2 -->
+<g id="edge21" class="edge">
+<title>E_InsuranceChoice&#45;&gt;A_InsuranceChoice_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1258.61,-1312.48C1258.61,-1318.21 1258.61,-1329 1258.61,-1329 1258.61,-1329 1244.77,-1332.24 1228.22,-1336.11"/>
+</g>
+<!-- E_InsuranceChoice&#45;&gt;A_InsuranceChoice_2 -->
+<!-- A_InsuranceChoice_0&#45;&gt;A_InsuranceChoice_1 -->
+<!-- A_InsuranceChoice_1&#45;&gt;E_InsuranceChoice -->
+<!-- E_Quote&#45;&gt;A_Quote_0 -->
+<g id="edge25" class="edge">
+<title>E_Quote&#45;&gt;A_Quote_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M562.34,-147.72C538.05,-141.42 517.19,-136 517.19,-136 517.19,-136 487.19,-127.5 487.19,-127.5 487.19,-127.5 487.19,-86.5 487.19,-86.5 487.19,-86.5 517.19,-78 517.19,-78 517.19,-78 553.93,-69.08 586.66,-61.13"/>
+</g>
+<!-- E_Quote&#45;&gt;A_Quote_1 -->
+<g id="edge26" class="edge">
+<title>E_Quote&#45;&gt;A_Quote_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M710.69,-150.58C720.26,-148.45 726.81,-147 726.81,-147 726.81,-147 726.81,-127 726.81,-127 726.81,-127 715.91,-124.58 701.69,-121.43"/>
+</g>
+<!-- E_Quote&#45;&gt;A_Quote_2 -->
+<g id="edge27" class="edge">
+<title>E_Quote&#45;&gt;A_Quote_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M710.42,-190.48C710.42,-196.21 710.42,-207 710.42,-207 710.42,-207 698.7,-210.18 684.6,-214"/>
+</g>
+<!-- E_Quote&#45;&gt;A_Quote_2 -->
+<!-- E_Quote&#45;&gt;A_Quote_3 -->
+<g id="edge28" class="edge">
+<title>E_Quote&#45;&gt;A_Quote_3</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M562.34,-186.28C538.05,-192.58 517.19,-198 517.19,-198 517.19,-198 487.19,-206.5 487.19,-206.5 487.19,-206.5 487.19,-247.5 487.19,-247.5 487.19,-247.5 517.19,-256 517.19,-256 517.19,-256 553.93,-264.92 586.66,-272.87"/>
+</g>
+<!-- E_Quote&#45;&gt;R106 -->
+<g id="edge103" class="edge">
+<title>E_Quote&#45;&gt;R106</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M710.59,-186.1C734.97,-192.48 756.04,-198 756.04,-198 756.04,-198 833.01,-257.49 878.1,-292.34"/>
+<text xml:space="preserve" text-anchor="middle" x="723.83" y="-194.7" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- E_Quote&#45;&gt;R108 -->
+<g id="edge107" class="edge">
+<title>E_Quote&#45;&gt;R108</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M710.61,-166.73C742.84,-166.61 781.13,-166.47 815.5,-166.35"/>
+<text xml:space="preserve" text-anchor="middle" x="726.54" y="-171.52" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_Quote_0&#45;&gt;A_Quote_1 -->
+<!-- A_Quote_1&#45;&gt;E_Quote -->
+<!-- A_Quote_2&#45;&gt;A_Quote_3 -->
+<!-- E_QuoteItem&#45;&gt;A_QuoteItem_0 -->
+<g id="edge33" class="edge">
+<title>E_QuoteItem&#45;&gt;A_QuoteItem_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1098.92,-462.63C1066.6,-453.32 1035.97,-444.5 1035.97,-444.5 1035.97,-444.5 1035.97,-403.5 1035.97,-403.5 1035.97,-403.5 1065.97,-395 1065.97,-395 1065.97,-395 1096.65,-386.69 1125.18,-378.97"/>
+</g>
+<!-- E_QuoteItem&#45;&gt;A_QuoteItem_1 -->
+<g id="edge34" class="edge">
+<title>E_QuoteItem&#45;&gt;A_QuoteItem_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1235.94,-460.52C1235.94,-454.79 1235.94,-444 1235.94,-444 1235.94,-444 1228.34,-441.58 1218.44,-438.43"/>
+</g>
+<!-- E_QuoteItem&#45;&gt;A_QuoteItem_2 -->
+<g id="edge35" class="edge">
+<title>E_QuoteItem&#45;&gt;A_QuoteItem_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1246.9,-507.48C1246.9,-513.21 1246.9,-524 1246.9,-524 1246.9,-524 1236.31,-526.87 1223.15,-530.44"/>
+</g>
+<!-- E_QuoteItem&#45;&gt;A_QuoteItem_2 -->
+<!-- A_QuoteItem_0&#45;&gt;A_QuoteItem_1 -->
+<!-- A_QuoteItem_1&#45;&gt;E_QuoteItem -->
+<!-- E_QuotePaymentSchedule&#45;&gt;A_QuotePaymentSchedule_0 -->
+<g id="edge39" class="edge">
+<title>E_QuotePaymentSchedule&#45;&gt;A_QuotePaymentSchedule_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1097.72,-141.64C1065.85,-131.76 1035.97,-122.5 1035.97,-122.5 1035.97,-122.5 1035.97,-81.5 1035.97,-81.5 1035.97,-81.5 1065.97,-73 1065.97,-73 1065.97,-73 1096.65,-64.69 1125.18,-56.97"/>
+</g>
+<!-- E_QuotePaymentSchedule&#45;&gt;A_QuotePaymentSchedule_1 -->
+<g id="edge40" class="edge">
+<title>E_QuotePaymentSchedule&#45;&gt;A_QuotePaymentSchedule_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1243.02,-139.55C1243.02,-133.38 1243.02,-123 1243.02,-123 1243.02,-123 1233.99,-120.29 1222.42,-116.81"/>
+</g>
+<!-- E_QuotePaymentSchedule&#45;&gt;A_QuotePaymentSchedule_2 -->
+<g id="edge41" class="edge">
+<title>E_QuotePaymentSchedule&#45;&gt;A_QuotePaymentSchedule_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1248.19,-190.45C1248.19,-196.62 1248.19,-207 1248.19,-207 1248.19,-207 1235.32,-210.6 1220.23,-214.82"/>
+</g>
+<!-- E_QuotePaymentSchedule&#45;&gt;A_QuotePaymentSchedule_2 -->
+<!-- E_QuotePaymentSchedule&#45;&gt;A_QuotePaymentSchedule_3 -->
+<g id="edge42" class="edge">
+<title>E_QuotePaymentSchedule&#45;&gt;A_QuotePaymentSchedule_3</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1097.72,-188.36C1065.85,-198.24 1035.97,-207.5 1035.97,-207.5 1035.97,-207.5 1035.97,-248.5 1035.97,-248.5 1035.97,-248.5 1065.97,-257 1065.97,-257 1065.97,-257 1096.65,-265.31 1125.18,-273.03"/>
+</g>
+<!-- A_QuotePaymentSchedule_0&#45;&gt;A_QuotePaymentSchedule_1 -->
+<!-- A_QuotePaymentSchedule_1&#45;&gt;E_QuotePaymentSchedule -->
+<!-- A_QuotePaymentSchedule_2&#45;&gt;A_QuotePaymentSchedule_3 -->
+<!-- E_SupplierOffer&#45;&gt;A_SupplierOffer_0 -->
+<g id="edge47" class="edge">
+<title>E_SupplierOffer&#45;&gt;A_SupplierOffer_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M561.66,-763.54C537.66,-757.31 517.19,-752 517.19,-752 517.19,-752 487.19,-743.5 487.19,-743.5 487.19,-743.5 487.19,-702.5 487.19,-702.5 487.19,-702.5 517.19,-694 517.19,-694 517.19,-694 553.93,-685.08 586.66,-677.13"/>
+</g>
+<!-- E_SupplierOffer&#45;&gt;A_SupplierOffer_1 -->
+<g id="edge48" class="edge">
+<title>E_SupplierOffer&#45;&gt;A_SupplierOffer_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M705.1,-759.52C705.1,-753.79 705.1,-743 705.1,-743 705.1,-743 696.82,-740.58 686.02,-737.43"/>
+</g>
+<!-- E_SupplierOffer&#45;&gt;A_SupplierOffer_2 -->
+<g id="edge49" class="edge">
+<title>E_SupplierOffer&#45;&gt;A_SupplierOffer_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M711.29,-806.48C711.29,-812.21 711.29,-823 711.29,-823 711.29,-823 701.86,-825.53 689.69,-828.78"/>
+</g>
+<!-- E_SupplierOffer&#45;&gt;A_SupplierOffer_2 -->
+<!-- E_SupplierOffer&#45;&gt;R105 -->
+<g id="edge101" class="edge">
+<title>E_SupplierOffer&#45;&gt;R105</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M711.69,-767.5C755.17,-758.4 809.4,-747.05 850.16,-738.52"/>
+<text xml:space="preserve" text-anchor="middle" x="728.97" y="-768.92" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_SupplierOffer_0&#45;&gt;A_SupplierOffer_1 -->
+<!-- A_SupplierOffer_1&#45;&gt;E_SupplierOffer -->
+<!-- E_ServiceTariff&#45;&gt;A_ServiceTariff_0 -->
+<g id="edge53" class="edge">
+<title>E_ServiceTariff&#45;&gt;A_ServiceTariff_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M562.34,-463.72C538.05,-457.42 517.19,-452 517.19,-452 517.19,-452 487.19,-443.5 487.19,-443.5 487.19,-443.5 487.19,-402.5 487.19,-402.5 487.19,-402.5 517.19,-394 517.19,-394 517.19,-394 553.93,-385.08 586.66,-377.13"/>
+</g>
+<!-- E_ServiceTariff&#45;&gt;A_ServiceTariff_1 -->
+<g id="edge54" class="edge">
+<title>E_ServiceTariff&#45;&gt;A_ServiceTariff_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M699.45,-459.52C699.45,-453.79 699.45,-443 699.45,-443 699.45,-443 691.86,-440.58 681.95,-437.43"/>
+</g>
+<!-- E_ServiceTariff&#45;&gt;A_ServiceTariff_2 -->
+<g id="edge55" class="edge">
+<title>E_ServiceTariff&#45;&gt;A_ServiceTariff_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M710.42,-506.48C710.42,-512.21 710.42,-523 710.42,-523 710.42,-523 698.7,-526.18 684.6,-530"/>
+</g>
+<!-- E_ServiceTariff&#45;&gt;A_ServiceTariff_2 -->
+<!-- E_ServiceTariff&#45;&gt;R107 -->
+<g id="edge105" class="edge">
+<title>E_ServiceTariff&#45;&gt;R107</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M710.61,-483C744.65,-483 785.46,-483 821.26,-483"/>
+<text xml:space="preserve" text-anchor="middle" x="726.5" y="-487.85" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_ServiceTariff_0&#45;&gt;A_ServiceTariff_1 -->
+<!-- A_ServiceTariff_1&#45;&gt;E_ServiceTariff -->
+<!-- E_OrderRevision&#45;&gt;A_OrderRevision_0 -->
+<g id="edge59" class="edge">
+<title>E_OrderRevision&#45;&gt;A_OrderRevision_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M53.62,-921.91C25.37,-913.26 0,-905.5 0,-905.5 0,-905.5 0,-864.5 0,-864.5 0,-864.5 45.51,-851.28 82.49,-840.54"/>
+</g>
+<!-- E_OrderRevision&#45;&gt;A_OrderRevision_1 -->
+<g id="edge60" class="edge">
+<title>E_OrderRevision&#45;&gt;A_OrderRevision_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M190.29,-921.52C190.29,-915.79 190.29,-905 190.29,-905 190.29,-905 182.89,-902.58 173.24,-899.43"/>
+</g>
+<!-- E_OrderRevision&#45;&gt;A_OrderRevision_2 -->
+<g id="edge61" class="edge">
+<title>E_OrderRevision&#45;&gt;A_OrderRevision_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M204.18,-968.48C204.18,-974.21 204.18,-985 204.18,-985 204.18,-985 192.02,-988.24 177.49,-992.11"/>
+</g>
+<!-- E_OrderRevision&#45;&gt;A_OrderRevision_2 -->
+<!-- E_OrderRevision&#45;&gt;R79 -->
+<g id="edge85" class="edge">
+<title>E_OrderRevision&#45;&gt;R79</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M204.61,-945.31C237.68,-945.45 276.1,-945.61 307.33,-945.75"/>
+<text xml:space="preserve" text-anchor="middle" x="220.47" y="-950.23" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- E_OrderRevision&#45;&gt;R104 -->
+<g id="edge99" class="edge">
+<title>E_OrderRevision&#45;&gt;R104</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M198.37,-921.5C210.94,-917.18 220.18,-914 220.18,-914 220.18,-914 280.18,-848 280.18,-848 280.18,-848 309.82,-837.16 334.6,-828.1"/>
+<text xml:space="preserve" text-anchor="middle" x="216.15" y="-920.72" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- E_OrderRevision&#45;&gt;R131 -->
+<g id="edge117" class="edge">
+<title>E_OrderRevision&#45;&gt;R131</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M204.61,-924.93C246.94,-913.52 298.01,-899.77 331.59,-890.72"/>
+<text xml:space="preserve" text-anchor="middle" x="222.16" y="-925.35" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_OrderRevision_0&#45;&gt;A_OrderRevision_1 -->
+<!-- A_OrderRevision_1&#45;&gt;E_OrderRevision -->
+<!-- E_StaffProfile&#45;&gt;A_StaffProfile_0 -->
+<g id="edge65" class="edge">
+<title>E_StaffProfile&#45;&gt;A_StaffProfile_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M55.12,-405.37C26.28,-396.54 0,-388.5 0,-388.5 0,-388.5 0,-347.5 0,-347.5 0,-347.5 45.51,-334.28 82.49,-323.54"/>
+</g>
+<!-- E_StaffProfile&#45;&gt;A_StaffProfile_1 -->
+<g id="edge66" class="edge">
+<title>E_StaffProfile&#45;&gt;A_StaffProfile_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M190.29,-404.52C190.29,-398.79 190.29,-388 190.29,-388 190.29,-388 182.89,-385.58 173.24,-382.43"/>
+</g>
+<!-- E_StaffProfile&#45;&gt;A_StaffProfile_2 -->
+<g id="edge67" class="edge">
+<title>E_StaffProfile&#45;&gt;A_StaffProfile_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M202.89,-451.48C202.89,-457.21 202.89,-468 202.89,-468 202.89,-468 191.17,-471.18 177.08,-475"/>
+</g>
+<!-- E_StaffProfile&#45;&gt;A_StaffProfile_2 -->
+<!-- E_StaffProfile&#45;&gt;R96 -->
+<g id="edge89" class="edge">
+<title>E_StaffProfile&#45;&gt;R96</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M198.37,-451.5C210.94,-455.82 220.18,-459 220.18,-459 220.18,-459 280.18,-528 280.18,-528 280.18,-528 305.24,-541.75 328.54,-554.53"/>
+<text xml:space="preserve" text-anchor="middle" x="210.65" y="-461.06" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- E_StaffProfile&#45;&gt;R101 -->
+<g id="edge93" class="edge">
+<title>E_StaffProfile&#45;&gt;R101</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M203.31,-419.37C244.76,-414.49 294.94,-408.57 328.87,-404.57"/>
+<text xml:space="preserve" text-anchor="middle" x="220.09" y="-422.3" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- E_StaffProfile&#45;&gt;R102 -->
+<g id="edge95" class="edge">
+<title>E_StaffProfile&#45;&gt;R102</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M198.37,-404.5C210.94,-400.18 220.18,-397 220.18,-397 220.18,-397 280.18,-367 280.18,-367 280.18,-367 311.85,-354.33 337.08,-344.24"/>
+<text xml:space="preserve" text-anchor="middle" x="216.15" y="-403.72" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- E_StaffProfile&#45;&gt;R103 -->
+<g id="edge97" class="edge">
+<title>E_StaffProfile&#45;&gt;R103</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M198.37,-404.5C210.94,-400.18 220.18,-397 220.18,-397 220.18,-397 280.18,-299 280.18,-299 280.18,-299 312.67,-284.89 338.06,-273.87"/>
+<text xml:space="preserve" text-anchor="middle" x="216.15" y="-403.72" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- E_StaffProfile&#45;&gt;R119 -->
+<g id="edge109" class="edge">
+<title>E_StaffProfile&#45;&gt;R119</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M203.31,-444.33C237.4,-451.94 277.39,-460.86 309.39,-468"/>
+<text xml:space="preserve" text-anchor="middle" x="216.99" y="-452.44" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- E_StaffProfile&#45;&gt;R130 -->
+<g id="edge115" class="edge">
+<title>E_StaffProfile&#45;&gt;R130</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M198.37,-451.5C210.94,-455.82 220.18,-459 220.18,-459 220.18,-459 280.18,-623 280.18,-623 280.18,-623 311.85,-634.94 337.08,-644.46"/>
+<text xml:space="preserve" text-anchor="middle" x="210.65" y="-461.06" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_StaffProfile_0&#45;&gt;A_StaffProfile_1 -->
+<!-- A_StaffProfile_1&#45;&gt;E_StaffProfile -->
+<!-- E_Customer&#45;&gt;A_Customer_0 -->
+<g id="edge71" class="edge">
+<title>E_Customer&#45;&gt;A_Customer_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M55.12,-144.37C26.28,-135.54 0,-127.5 0,-127.5 0,-127.5 0,-86.5 0,-86.5 0,-86.5 45.51,-73.28 82.49,-62.54"/>
+</g>
+<!-- E_Customer&#45;&gt;A_Customer_1 -->
+<g id="edge72" class="edge">
+<title>E_Customer&#45;&gt;A_Customer_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M190.29,-143.52C190.29,-137.79 190.29,-127 190.29,-127 190.29,-127 182.89,-124.58 173.24,-121.43"/>
+</g>
+<!-- E_Customer&#45;&gt;A_Customer_2 -->
+<g id="edge73" class="edge">
+<title>E_Customer&#45;&gt;A_Customer_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M202.89,-190.48C202.89,-196.21 202.89,-207 202.89,-207 202.89,-207 191.17,-210.18 177.08,-214"/>
+</g>
+<!-- E_Customer&#45;&gt;A_Customer_2 -->
+<!-- E_Customer&#45;&gt;R100 -->
+<g id="edge91" class="edge">
+<title>E_Customer&#45;&gt;R100</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M203.31,-167C227.31,-167 254.23,-167 279.23,-167"/>
+<text xml:space="preserve" text-anchor="middle" x="219.21" y="-171.85" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_Customer_0&#45;&gt;A_Customer_1 -->
+<!-- A_Customer_1&#45;&gt;E_Customer -->
+<!-- E_Supplier&#45;&gt;A_Supplier_0 -->
+<g id="edge77" class="edge">
+<title>E_Supplier&#45;&gt;A_Supplier_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M55.12,-664.37C26.28,-655.54 0,-647.5 0,-647.5 0,-647.5 0,-606.5 0,-606.5 0,-606.5 45.51,-593.28 82.49,-582.54"/>
+</g>
+<!-- E_Supplier&#45;&gt;A_Supplier_1 -->
+<g id="edge78" class="edge">
+<title>E_Supplier&#45;&gt;A_Supplier_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M190.29,-663.52C190.29,-657.79 190.29,-647 190.29,-647 190.29,-647 182.89,-644.58 173.24,-641.43"/>
+</g>
+<!-- E_Supplier&#45;&gt;A_Supplier_2 -->
+<g id="edge79" class="edge">
+<title>E_Supplier&#45;&gt;A_Supplier_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M202.89,-710.48C202.89,-716.21 202.89,-727 202.89,-727 202.89,-727 192.29,-729.87 179.13,-733.44"/>
+</g>
+<!-- E_Supplier&#45;&gt;A_Supplier_2 -->
+<!-- E_Supplier&#45;&gt;R129 -->
+<g id="edge113" class="edge">
+<title>E_Supplier&#45;&gt;R129</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M203.31,-702.1C236.86,-709.02 276.11,-717.11 307.85,-723.66"/>
+<text xml:space="preserve" text-anchor="middle" x="217.17" y="-709.99" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_Supplier_0&#45;&gt;A_Supplier_1 -->
+<!-- A_Supplier_1&#45;&gt;E_Supplier -->
+<!-- R52&#45;&gt;E_InsuranceChoice -->
+<g id="edge84" class="edge">
+<title>R52&#45;&gt;E_InsuranceChoice</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M964.85,-1226.74C1009.45,-1240.07 1066.25,-1257.04 1065.97,-1258 1066.25,-1257.04 1077.14,-1260.22 1091.94,-1264.54"/>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M964.27,-1228.66C1008.88,-1241.99 1065.68,-1258.96 1065.97,-1258 1065.69,-1258.96 1076.58,-1262.14 1091.38,-1266.46"/>
+<text xml:space="preserve" text-anchor="middle" x="1078.77" y="-1249.34" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- R79&#45;&gt;E_OrderServiceChoice -->
+<g id="edge86" class="edge">
+<title>R79&#45;&gt;E_OrderServiceChoice</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M399.22,-957.73C442.21,-976.38 517.59,-1009.08 517.19,-1010 517.44,-1009.03 529.59,-1012.21 546.11,-1016.54"/>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M398.43,-959.56C441.42,-978.21 516.79,-1010.92 517.19,-1010 516.94,-1010.97 529.09,-1014.15 545.6,-1018.47"/>
+<text xml:space="preserve" text-anchor="middle" x="532.62" y="-1001.7" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R95&#45;&gt;E_QuarantineChoice -->
+<g id="edge88" class="edge">
+<title>R95&#45;&gt;E_QuarantineChoice</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M941.41,-886.05C986.22,-848.51 1065.33,-782.23 1065.97,-783 1065.69,-782.04 1076.58,-778.86 1091.38,-774.54"/>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M942.7,-887.59C987.5,-850.05 1066.61,-783.77 1065.97,-783 1066.25,-783.96 1077.14,-780.78 1091.94,-776.46"/>
+<text xml:space="preserve" text-anchor="middle" x="1074.04" y="-768.24" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- R96&#45;&gt;E_QuarantineChoice -->
+<g id="edge90" class="edge">
+<title>R96&#45;&gt;E_QuarantineChoice</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M438.31,-584.7C549.34,-598.78 756.04,-625 756.04,-625 756.04,-625 1005.97,-679 1005.97,-679 1005.97,-679 1065.97,-721 1065.97,-721 1065.97,-721 1076.86,-724.18 1091.66,-728.5"/>
+<text xml:space="preserve" text-anchor="middle" x="1078.77" y="-712.34" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R100&#45;&gt;E_Quote -->
+<g id="edge92" class="edge">
+<title>R100&#45;&gt;E_Quote</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M457.87,-167C491.88,-167 530.33,-167 562.74,-167"/>
+<text xml:space="preserve" text-anchor="middle" x="546.85" y="-154.95" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R101&#45;&gt;E_Quote -->
+<g id="edge94" class="edge">
+<title>R101&#45;&gt;E_Quote</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M396.41,-389.31C422.15,-379.02 457.19,-365 457.19,-365 457.19,-365 517.19,-198 517.19,-198 517.19,-198 538.27,-192.48 562.64,-186.1"/>
+<text xml:space="preserve" text-anchor="middle" x="545.12" y="-178.35" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R102&#45;&gt;E_Quote -->
+<g id="edge96" class="edge">
+<title>R102&#45;&gt;E_Quote</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M399.31,-319.13C424.7,-308.11 457.19,-294 457.19,-294 457.19,-294 517.19,-198 517.19,-198 517.19,-198 538.27,-192.48 562.64,-186.1"/>
+<text xml:space="preserve" text-anchor="middle" x="545.12" y="-178.35" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R103&#45;&gt;E_Quote -->
+<g id="edge98" class="edge">
+<title>R103&#45;&gt;E_Quote</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M400.78,-248.56C425.93,-238.5 457.19,-226 457.19,-226 457.19,-226 517.19,-198 517.19,-198 517.19,-198 538.27,-192.48 562.64,-186.1"/>
+<text xml:space="preserve" text-anchor="middle" x="545.12" y="-178.35" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R104&#45;&gt;E_Quote -->
+<g id="edge100" class="edge">
+<title>R104&#45;&gt;E_Quote</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M401.91,-802.78C426.79,-793.39 456.84,-782.06 457.19,-783 456.19,-782.9 516.19,-197.9 517.19,-198 516.94,-197.03 538.01,-191.52 562.38,-185.14"/>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M402.62,-804.65C427.5,-795.27 457.54,-783.94 457.19,-783 458.18,-783.1 518.18,-198.1 517.19,-198 517.44,-198.97 538.52,-193.45 562.89,-187.07"/>
+<text xml:space="preserve" text-anchor="middle" x="545.12" y="-178.35" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R105&#45;&gt;E_QuoteItem -->
+<g id="edge102" class="edge">
+<title>R105&#45;&gt;E_QuoteItem</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M933.09,-697.1C975.26,-639.32 1065.97,-515 1065.97,-515 1065.97,-515 1080.58,-510.73 1098.97,-505.36"/>
+<text xml:space="preserve" text-anchor="middle" x="1081.34" y="-498.11" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R106&#45;&gt;E_QuoteItem -->
+<g id="edge104" class="edge">
+<title>R106&#45;&gt;E_QuoteItem</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M941.63,-341.83C986.23,-381.23 1066.63,-452.25 1065.97,-453 1066.25,-452.04 1080.86,-456.31 1099.25,-461.68"/>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M940.3,-343.33C984.9,-382.73 1065.31,-453.75 1065.97,-453 1065.69,-453.96 1080.3,-458.23 1098.69,-463.6"/>
+<text xml:space="preserve" text-anchor="middle" x="1086.08" y="-446.47" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R107&#45;&gt;E_QuoteItem -->
+<g id="edge106" class="edge">
+<title>R107&#45;&gt;E_QuoteItem</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M999.7,-483.34C1032,-483.46 1068.21,-483.6 1099.08,-483.72"/>
+<text xml:space="preserve" text-anchor="middle" x="1083.22" y="-471.61" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R108&#45;&gt;E_QuotePaymentSchedule -->
+<g id="edge108" class="edge">
+<title>R108&#45;&gt;E_QuotePaymentSchedule</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M1006.27,-164.64C1036.37,-164.52 1069.23,-164.4 1097.71,-164.29"/>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M1006.28,-166.64C1036.37,-166.52 1069.24,-166.4 1097.72,-166.29"/>
+<text xml:space="preserve" text-anchor="middle" x="1081.79" y="-153.3" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R119&#45;&gt;E_ServiceTariff -->
+<g id="edge110" class="edge">
+<title>R119&#45;&gt;E_ServiceTariff</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M456.76,-481.65C490.99,-481.91 529.85,-482.2 562.59,-482.45"/>
+<text xml:space="preserve" text-anchor="middle" x="546.76" y="-470.28" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R124&#45;&gt;E_StallChoice -->
+<g id="edge112" class="edge">
+<title>R124&#45;&gt;E_StallChoice</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M996.79,-1033.37C1029.85,-1032.73 1067.37,-1032.01 1099.18,-1031.4"/>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M996.83,-1035.37C1029.89,-1034.73 1067.4,-1034.01 1099.22,-1033.4"/>
+<text xml:space="preserve" text-anchor="middle" x="1083.15" y="-1020.66" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- R129&#45;&gt;E_SupplierOffer -->
+<g id="edge114" class="edge">
+<title>R129&#45;&gt;E_SupplierOffer</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M432.71,-747.14C471.41,-753.98 521.17,-762.77 561.73,-769.94"/>
+<text xml:space="preserve" text-anchor="middle" x="547.55" y="-755.25" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R130&#45;&gt;E_SupplierOffer -->
+<g id="edge116" class="edge">
+<title>R130&#45;&gt;E_SupplierOffer</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M400.29,-667.54C425.52,-677.06 457.19,-689 457.19,-689 457.19,-689 517.19,-752 517.19,-752 517.19,-752 537.69,-757.37 561.62,-763.63"/>
+<text xml:space="preserve" text-anchor="middle" x="548.39" y="-747.83" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R131&#45;&gt;E_SupplierOffer -->
+<g id="edge118" class="edge">
+<title>R131&#45;&gt;E_SupplierOffer</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M400.93,-868.51C426,-859.34 456.85,-848.06 457.19,-849 456.69,-848.14 516.69,-813.14 517.19,-814 516.94,-813.03 537.43,-807.67 561.37,-801.4"/>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M401.62,-870.39C426.68,-861.22 457.53,-849.94 457.19,-849 457.69,-849.86 517.69,-814.86 517.19,-814 517.44,-814.97 537.94,-809.6 561.88,-803.34"/>
+<text xml:space="preserve" text-anchor="middle" x="544.11" y="-794.62" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- E_OrderServiceChoice -->
+<g id="node1" class="node">
+<title>E_OrderServiceChoice</title>
+<polygon fill="#555555" stroke="#353535" points="740.04,-1064.04 533.19,-1064.04 533.19,-1017.96 740.04,-1017.96 740.04,-1064.04"/>
+<text xml:space="preserve" text-anchor="middle" x="636.62" y="-1036.5" font-family="Arial" font-size="15.00" fill="white">ORDER SERVICE CHOICE</text>
+</g>
+<!-- A_OrderServiceChoice_0 -->
+<g id="node2" class="node">
+<title>A_OrderServiceChoice_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="636.62" cy="-923" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="611.94" y="-920.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">ChoiceID</text>
+</g>
+<!-- A_OrderServiceChoice_1 -->
+<g id="node3" class="node">
+<title>A_OrderServiceChoice_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="636.62" cy="-981" rx="62.83" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="602.27" y="-976.2" font-family="Arial" font-size="12.00" fill="white">ServiceCode</text>
+</g>
+<!-- A_OrderServiceChoice_2 -->
+<g id="node4" class="node">
+<title>A_OrderServiceChoice_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="636.62" cy="-1101" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="604.59" y="-1096.2" font-family="Arial" font-size="12.00" fill="white">OptionCode</text>
+</g>
+<!-- E_StallChoice -->
+<g id="node5" class="node">
+<title>E_StallChoice</title>
+<polygon fill="#555555" stroke="#353535" points="1246.9,-1054.04 1099.3,-1054.04 1099.3,-1007.96 1246.9,-1007.96 1246.9,-1054.04"/>
+<text xml:space="preserve" text-anchor="middle" x="1173.1" y="-1026.5" font-family="Arial" font-size="15.00" fill="white">STALL CHOICE</text>
+</g>
+<!-- A_StallChoice_0 -->
+<g id="node6" class="node">
+<title>A_StallChoice_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-913" rx="65.66" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1136.76" y="-910.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">StallChoiceID</text>
+</g>
+<!-- A_StallChoice_1 -->
+<g id="node7" class="node">
+<title>A_StallChoice_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-971" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1140.42" y="-966.2" font-family="Arial" font-size="12.00" fill="white">SlotQuantity</text>
+</g>
+<!-- A_StallChoice_2 -->
+<g id="node8" class="node">
+<title>A_StallChoice_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-1091" rx="63.79" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1138.08" y="-1086.2" font-family="Arial" font-size="12.00" fill="white">SharingCode</text>
+</g>
+<!-- E_QuarantineChoice -->
+<g id="node9" class="node">
+<title>E_QuarantineChoice</title>
+<polygon fill="#555555" stroke="#353535" points="1263.61,-775.04 1082.6,-775.04 1082.6,-728.96 1263.61,-728.96 1263.61,-775.04"/>
+<text xml:space="preserve" text-anchor="middle" x="1173.1" y="-747.5" font-family="Arial" font-size="15.00" fill="white">QUARANTINE CHOICE</text>
+</g>
+<!-- A_QuarantineChoice_0 -->
+<g id="node10" class="node">
+<title>A_QuarantineChoice_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-634" rx="91.14" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1118.74" y="-631.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">QuarantineChoiceID</text>
+</g>
+<!-- A_QuarantineChoice_1 -->
+<g id="node11" class="node">
+<title>A_QuarantineChoice_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-692" rx="67.56" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1135.41" y="-687.2" font-family="Arial" font-size="12.00" fill="white">PackageCode</text>
+</g>
+<!-- A_QuarantineChoice_2 -->
+<g id="node12" class="node">
+<title>A_QuarantineChoice_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-812" rx="68.02" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1135.09" y="-807.2" font-family="Arial" font-size="12.00" fill="white">RequiredDays</text>
+</g>
+<!-- E_InsuranceChoice -->
+<g id="node13" class="node">
+<title>E_InsuranceChoice</title>
+<polygon fill="#555555" stroke="#353535" points="1258.61,-1312.04 1087.6,-1312.04 1087.6,-1265.96 1258.61,-1265.96 1258.61,-1312.04"/>
+<text xml:space="preserve" text-anchor="middle" x="1173.1" y="-1284.5" font-family="Arial" font-size="15.00" fill="white">INSURANCE CHOICE</text>
+</g>
+<!-- A_InsuranceChoice_0 -->
+<g id="node14" class="node">
+<title>A_InsuranceChoice_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-1171" rx="86.42" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1122.08" y="-1168.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">InsuranceChoiceID</text>
+</g>
+<!-- A_InsuranceChoice_1 -->
+<g id="node15" class="node">
+<title>A_InsuranceChoice_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-1229" rx="71.33" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1132.75" y="-1224.2" font-family="Arial" font-size="12.00" fill="white">CoverageCode</text>
+</g>
+<!-- A_InsuranceChoice_2 -->
+<g id="node16" class="node">
+<title>A_InsuranceChoice_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-1349" rx="69.92" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1133.75" y="-1344.2" font-family="Arial" font-size="12.00" fill="white">DeclaredValue</text>
+</g>
+<!-- E_Quote -->
+<g id="node17" class="node">
+<title>E_Quote</title>
+<polygon fill="#555555" stroke="#353535" points="710.42,-190.04 562.82,-190.04 562.82,-143.96 710.42,-143.96 710.42,-190.04"/>
+<text xml:space="preserve" text-anchor="middle" x="636.62" y="-162.5" font-family="Arial" font-size="15.00" fill="white">QUOTE</text>
+</g>
+<!-- A_Quote_0 -->
+<g id="node18" class="node">
+<title>A_Quote_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="636.62" cy="-49" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="614.27" y="-46.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">QuoteID</text>
+</g>
+<!-- A_Quote_1 -->
+<g id="node19" class="node">
+<title>A_Quote_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="636.62" cy="-107" rx="90.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="582.92" y="-102.2" font-family="Arial" font-size="12.00" fill="white">TotalQuotedAmount</text>
+</g>
+<!-- A_Quote_2 -->
+<g id="node20" class="node">
+<title>A_Quote_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="636.62" cy="-227" rx="61.43" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="603.26" y="-222.2" font-family="Arial" font-size="12.00" fill="white">QuoteStatus</text>
+</g>
+<!-- A_Quote_3 -->
+<g id="node21" class="node">
+<title>A_Quote_3</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="636.62" cy="-285" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="611.27" y="-280.2" font-family="Arial" font-size="12.00" fill="white">ValidUntil</text>
+</g>
+<!-- E_QuoteItem -->
+<g id="node22" class="node">
+<title>E_QuoteItem</title>
+<polygon fill="#555555" stroke="#353535" points="1246.9,-507.04 1099.3,-507.04 1099.3,-460.96 1246.9,-460.96 1246.9,-507.04"/>
+<text xml:space="preserve" text-anchor="middle" x="1173.1" y="-479.5" font-family="Arial" font-size="15.00" fill="white">QUOTE ITEM</text>
+</g>
+<!-- A_QuoteItem_0 -->
+<g id="node23" class="node">
+<title>A_QuoteItem_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-366" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1155.44" y="-363.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">ItemID</text>
+</g>
+<!-- A_QuoteItem_1 -->
+<g id="node24" class="node">
+<title>A_QuoteItem_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-424" rx="62.83" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1138.75" y="-419.2" font-family="Arial" font-size="12.00" fill="white">ServiceCode</text>
+</g>
+<!-- A_QuoteItem_2 -->
+<g id="node25" class="node">
+<title>A_QuoteItem_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-544" rx="66.13" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1136.42" y="-539.2" font-family="Arial" font-size="12.00" fill="white">CostCategory</text>
+</g>
+<!-- E_QuotePaymentSchedule -->
+<g id="node26" class="node">
+<title>E_QuotePaymentSchedule</title>
+<polygon fill="#555555" stroke="#353535" points="1248.19,-190.2 1098.02,-190.2 1098.02,-139.8 1248.19,-139.8 1248.19,-190.2"/>
+<text xml:space="preserve" text-anchor="middle" x="1173.1" y="-169.5" font-family="Arial" font-size="15.00" fill="white">QUOTE PAYMENT</text>
+<text xml:space="preserve" text-anchor="middle" x="1173.1" y="-151.5" font-family="Arial" font-size="15.00" fill="white">SCHEDULE</text>
+</g>
+<!-- A_QuotePaymentSchedule_0 -->
+<g id="node27" class="node">
+<title>A_QuotePaymentSchedule_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-44" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1142.08" y="-41.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">ScheduleID</text>
+</g>
+<!-- A_QuotePaymentSchedule_1 -->
+<g id="node28" class="node">
+<title>A_QuotePaymentSchedule_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-102" rx="69.92" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1133.75" y="-97.2" font-family="Arial" font-size="12.00" fill="white">PaymentStage</text>
+</g>
+<!-- A_QuotePaymentSchedule_2 -->
+<g id="node29" class="node">
+<title>A_QuotePaymentSchedule_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-228" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1141.42" y="-223.2" font-family="Arial" font-size="12.00" fill="white">AmountDue</text>
+</g>
+<!-- A_QuotePaymentSchedule_3 -->
+<g id="node30" class="node">
+<title>A_QuotePaymentSchedule_3</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1173.1" cy="-286" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1156.43" y="-281.2" font-family="Arial" font-size="12.00" fill="white">DueAt</text>
+</g>
+<!-- E_SupplierOffer -->
+<g id="node31" class="node">
+<title>E_SupplierOffer</title>
+<polygon fill="#555555" stroke="#353535" points="711.29,-806.04 561.94,-806.04 561.94,-759.96 711.29,-759.96 711.29,-806.04"/>
+<text xml:space="preserve" text-anchor="middle" x="636.62" y="-778.5" font-family="Arial" font-size="15.00" fill="white">SUPPLIER OFFER</text>
+</g>
+<!-- A_SupplierOffer_0 -->
+<g id="node32" class="node">
+<title>A_SupplierOffer_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="636.62" cy="-665" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="617.28" y="-662.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">OfferID</text>
+</g>
+<!-- A_SupplierOffer_1 -->
+<g id="node33" class="node">
+<title>A_SupplierOffer_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="636.62" cy="-723" rx="68.49" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="598.27" y="-718.2" font-family="Arial" font-size="12.00" fill="white">ProviderName</text>
+</g>
+<!-- A_SupplierOffer_2 -->
+<g id="node34" class="node">
+<title>A_SupplierOffer_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="636.62" cy="-843" rx="72.26" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="595.6" y="-838.2" font-family="Arial" font-size="12.00" fill="white">OfferReference</text>
+</g>
+<!-- E_ServiceTariff -->
+<g id="node35" class="node">
+<title>E_ServiceTariff</title>
+<polygon fill="#555555" stroke="#353535" points="710.42,-506.04 562.82,-506.04 562.82,-459.96 710.42,-459.96 710.42,-506.04"/>
+<text xml:space="preserve" text-anchor="middle" x="636.62" y="-478.5" font-family="Arial" font-size="15.00" fill="white">SERVICE TARIFF</text>
+</g>
+<!-- A_ServiceTariff_0 -->
+<g id="node36" class="node">
+<title>A_ServiceTariff_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="636.62" cy="-365" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="616.95" y="-362.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">TariffID</text>
+</g>
+<!-- A_ServiceTariff_1 -->
+<g id="node37" class="node">
+<title>A_ServiceTariff_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="636.62" cy="-423" rx="62.83" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="602.27" y="-418.2" font-family="Arial" font-size="12.00" fill="white">ServiceCode</text>
+</g>
+<!-- A_ServiceTariff_2 -->
+<g id="node38" class="node">
+<title>A_ServiceTariff_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="636.62" cy="-543" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="604.59" y="-538.2" font-family="Arial" font-size="12.00" fill="white">OptionCode</text>
+</g>
+<!-- E_OrderRevision -->
+<g id="node39" class="node">
+<title>E_OrderRevision</title>
+<polygon fill="#555555" stroke="#353535" points="204.18,-968.04 54,-968.04 54,-921.96 204.18,-921.96 204.18,-968.04"/>
+<text xml:space="preserve" text-anchor="middle" x="129.09" y="-940.5" font-family="Arial" font-size="15.00" fill="white">ORDER REVISION</text>
+</g>
+<!-- A_OrderRevision_0 -->
+<g id="node40" class="node">
+<title>A_OrderRevision_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="129.09" cy="-827" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="100.08" y="-824.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">RevisionID</text>
+</g>
+<!-- A_OrderRevision_1 -->
+<g id="node41" class="node">
+<title>A_OrderRevision_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="129.09" cy="-885" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="98.41" y="-880.2" font-family="Arial" font-size="12.00" fill="white">RevisionNo</text>
+</g>
+<!-- A_OrderRevision_2 -->
+<g id="node42" class="node">
+<title>A_OrderRevision_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="129.09" cy="-1005" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="96.41" y="-1000.2" font-family="Arial" font-size="12.00" fill="white">SubmittedAt</text>
+</g>
+<!-- E_StaffProfile -->
+<g id="node43" class="node">
+<title>E_StaffProfile</title>
+<polygon fill="#555555" stroke="#353535" points="202.89,-451.04 55.29,-451.04 55.29,-404.96 202.89,-404.96 202.89,-451.04"/>
+<text xml:space="preserve" text-anchor="middle" x="129.09" y="-423.5" font-family="Arial" font-size="15.00" fill="white">STAFF PROFILE</text>
+</g>
+<!-- A_StaffProfile_0 -->
+<g id="node44" class="node">
+<title>A_StaffProfile_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="129.09" cy="-310" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="110.75" y="-307.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">StaffID</text>
+</g>
+<!-- A_StaffProfile_1 -->
+<g id="node45" class="node">
+<title>A_StaffProfile_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="129.09" cy="-368" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="103.42" y="-363.2" font-family="Arial" font-size="12.00" fill="white">FullName</text>
+</g>
+<!-- A_StaffProfile_2 -->
+<g id="node46" class="node">
+<title>A_StaffProfile_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="129.09" cy="-488" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="99.74" y="-483.2" font-family="Arial" font-size="12.00" fill="white">StaffStatus</text>
+</g>
+<!-- E_Customer -->
+<g id="node47" class="node">
+<title>E_Customer</title>
+<polygon fill="#555555" stroke="#353535" points="202.89,-190.04 55.29,-190.04 55.29,-143.96 202.89,-143.96 202.89,-190.04"/>
+<text xml:space="preserve" text-anchor="middle" x="129.09" y="-162.5" font-family="Arial" font-size="15.00" fill="white">CUSTOMER</text>
+</g>
+<!-- A_Customer_0 -->
+<g id="node48" class="node">
+<title>A_Customer_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="129.09" cy="-49" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="97.08" y="-46.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">CustomerID</text>
+</g>
+<!-- A_Customer_1 -->
+<g id="node49" class="node">
+<title>A_Customer_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="129.09" cy="-107" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="103.42" y="-102.2" font-family="Arial" font-size="12.00" fill="white">FullName</text>
+</g>
+<!-- A_Customer_2 -->
+<g id="node50" class="node">
+<title>A_Customer_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="129.09" cy="-227" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="111.74" y="-222.2" font-family="Arial" font-size="12.00" fill="white">Phone</text>
+</g>
+<!-- E_Supplier -->
+<g id="node51" class="node">
+<title>E_Supplier</title>
+<polygon fill="#555555" stroke="#353535" points="202.89,-710.04 55.29,-710.04 55.29,-663.96 202.89,-663.96 202.89,-710.04"/>
+<text xml:space="preserve" text-anchor="middle" x="129.09" y="-682.5" font-family="Arial" font-size="15.00" fill="white">SUPPLIER</text>
+</g>
+<!-- A_Supplier_0 -->
+<g id="node52" class="node">
+<title>A_Supplier_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="129.09" cy="-569" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="101.08" y="-566.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">SupplierID</text>
+</g>
+<!-- A_Supplier_1 -->
+<g id="node53" class="node">
+<title>A_Supplier_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="129.09" cy="-627" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="113.08" y="-622.2" font-family="Arial" font-size="12.00" fill="white">Name</text>
+</g>
+<!-- A_Supplier_2 -->
+<g id="node54" class="node">
+<title>A_Supplier_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="129.09" cy="-747" rx="66.13" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="92.41" y="-742.2" font-family="Arial" font-size="12.00" fill="white">ContactName</text>
+</g>
+<!-- R52 -->
+<g id="node55" class="node">
+<title>R52</title>
+<polygon fill="#7a78a7" stroke="#585781" points="911.01,-1250.4 822.5,-1212 911.01,-1173.6 999.51,-1212 911.01,-1250.4"/>
+<text xml:space="preserve" text-anchor="middle" x="911.01" y="-1215" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="911.01" y="-1203" font-family="Arial" font-size="10.00" fill="white">Choice</text>
+</g>
+<!-- R79 -->
+<g id="node56" class="node">
+<title>R79</title>
+<polygon fill="#7a78a7" stroke="#585781" points="368.68,-970.12 307.99,-946 368.68,-921.88 429.38,-946 368.68,-970.12"/>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-943" font-family="Arial" font-size="10.00" fill="white">BASED ON</text>
+</g>
+<!-- R95 -->
+<g id="node57" class="node">
+<title>R95</title>
+<polygon fill="#7a78a7" stroke="#585781" points="911.01,-950.4 822.5,-912 911.01,-873.6 999.51,-912 911.01,-950.4"/>
+<text xml:space="preserve" text-anchor="middle" x="911.01" y="-915" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="911.01" y="-903" font-family="Arial" font-size="10.00" fill="white">Choice</text>
+</g>
+<!-- R96 -->
+<g id="node58" class="node">
+<title>R96</title>
+<polygon fill="#7a78a7" stroke="#585781" points="368.68,-614.4 280.18,-576 368.68,-537.6 457.19,-576 368.68,-614.4"/>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-579" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-567" font-family="Arial" font-size="10.00" fill="white">Confirmed By</text>
+</g>
+<!-- R100 -->
+<g id="node59" class="node">
+<title>R100</title>
+<polygon fill="#7a78a7" stroke="#585781" points="368.68,-217.4 280.18,-167 368.68,-116.6 457.19,-167 368.68,-217.4"/>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-176" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-164" font-family="Arial" font-size="10.00" fill="white">Accepted By</text>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-152" font-family="Arial" font-size="10.00" fill="white">Customer</text>
+</g>
+<!-- R101 -->
+<g id="node60" class="node">
+<title>R101</title>
+<polygon fill="#7a78a7" stroke="#585781" points="368.68,-424.12 320.66,-400 368.68,-375.88 416.71,-400 368.68,-424.12"/>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-397" font-family="Arial" font-size="10.00" fill="white">ISSUES</text>
+</g>
+<!-- R102 -->
+<g id="node61" class="node">
+<title>R102</title>
+<polygon fill="#7a78a7" stroke="#585781" points="368.68,-356.12 305.64,-332 368.68,-307.88 431.73,-332 368.68,-356.12"/>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-329" font-family="Arial" font-size="10.00" fill="white">PREPARES</text>
+</g>
+<!-- R103 -->
+<g id="node62" class="node">
+<title>R103</title>
+<polygon fill="#7a78a7" stroke="#585781" points="368.68,-285.12 305.17,-261 368.68,-236.88 432.2,-261 368.68,-285.12"/>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-258" font-family="Arial" font-size="10.00" fill="white">APPROVES</text>
+</g>
+<!-- R104 -->
+<g id="node63" class="node">
+<title>R104</title>
+<polygon fill="#7a78a7" stroke="#585781" points="368.68,-840.12 301.89,-816 368.68,-791.88 435.48,-816 368.68,-840.12"/>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-813" font-family="Arial" font-size="10.00" fill="white">HAS QUOTE</text>
+</g>
+<!-- R105 -->
+<g id="node64" class="node">
+<title>R105</title>
+<polygon fill="#7a78a7" stroke="#585781" points="911.01,-764.4 822.5,-726 911.01,-687.6 999.51,-726 911.01,-764.4"/>
+<text xml:space="preserve" text-anchor="middle" x="911.01" y="-729" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="911.01" y="-717" font-family="Arial" font-size="10.00" fill="white">Offer</text>
+</g>
+<!-- R106 -->
+<g id="node65" class="node">
+<title>R106</title>
+<polygon fill="#7a78a7" stroke="#585781" points="911.01,-355.4 822.5,-317 911.01,-278.6 999.51,-317 911.01,-355.4"/>
+<text xml:space="preserve" text-anchor="middle" x="911.01" y="-320" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="911.01" y="-308" font-family="Arial" font-size="10.00" fill="white">Quote</text>
+</g>
+<!-- R107 -->
+<g id="node66" class="node">
+<title>R107</title>
+<polygon fill="#7a78a7" stroke="#585781" points="911.01,-521.4 822.5,-483 911.01,-444.6 999.51,-483 911.01,-521.4"/>
+<text xml:space="preserve" text-anchor="middle" x="911.01" y="-486" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="911.01" y="-474" font-family="Arial" font-size="10.00" fill="white">Tariff</text>
+</g>
+<!-- R108 -->
+<g id="node67" class="node">
+<title>R108</title>
+<polygon fill="#7a78a7" stroke="#585781" points="911.01,-190.12 816.04,-166 911.01,-141.88 1005.97,-166 911.01,-190.12"/>
+<text xml:space="preserve" text-anchor="middle" x="911.01" y="-163" font-family="Arial" font-size="10.00" fill="white">HAS INSTALLMENT</text>
+</g>
+<!-- R119 -->
+<g id="node68" class="node">
+<title>R119</title>
+<polygon fill="#7a78a7" stroke="#585781" points="368.68,-519.4 280.18,-481 368.68,-442.6 457.19,-481 368.68,-519.4"/>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-484" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-472" font-family="Arial" font-size="10.00" fill="white">Published By</text>
+</g>
+<!-- R124 -->
+<g id="node69" class="node">
+<title>R124</title>
+<polygon fill="#7a78a7" stroke="#585781" points="911.01,-1074.4 822.5,-1036 911.01,-997.6 999.51,-1036 911.01,-1074.4"/>
+<text xml:space="preserve" text-anchor="middle" x="911.01" y="-1039" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="911.01" y="-1027" font-family="Arial" font-size="10.00" fill="white">Choice</text>
+</g>
+<!-- R129 -->
+<g id="node70" class="node">
+<title>R129</title>
+<polygon fill="#7a78a7" stroke="#585781" points="368.68,-774.4 280.18,-736 368.68,-697.6 457.19,-736 368.68,-774.4"/>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-739" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-727" font-family="Arial" font-size="10.00" fill="white">Supplier</text>
+</g>
+<!-- R130 -->
+<g id="node71" class="node">
+<title>R130</title>
+<polygon fill="#7a78a7" stroke="#585781" points="368.68,-680.12 309.41,-656 368.68,-631.88 427.96,-656 368.68,-680.12"/>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-653" font-family="Arial" font-size="10.00" fill="white">RECORDS</text>
+</g>
+<!-- R131 -->
+<g id="node72" class="node">
+<title>R131</title>
+<polygon fill="#7a78a7" stroke="#585781" points="368.68,-905.12 307.99,-881 368.68,-856.88 429.38,-881 368.68,-905.12"/>
+<text xml:space="preserve" text-anchor="middle" x="368.68" y="-878" font-family="Arial" font-size="10.00" fill="white">BASED ON</text>
+</g>
+</g>
+</g><text x="665.5" y="1577" text-anchor="middle" font-family="Arial" font-size="11" fill="#64748b">EquiTransit_Demo · metadata only · 2026-10-23 · Layout: Graphviz dot</text></svg>

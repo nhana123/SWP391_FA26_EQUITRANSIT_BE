@@ -195,6 +195,12 @@ public class OrderAssessmentIntegrationTest {
     @Test
     public void approvalIsAtomicAndDoesNotApproveDepartureOrMoney()
             throws Exception {
+        mvc.perform(get("/api/transport-orders/{id}/booking-flow-status", order)
+                .header("Authorization", owner.token()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("blockReason")
+                        .value("AWAITING_MANAGER_APPROVAL"))
+                .andExpect(jsonPath("depositRequired").value(false));
         ObjectNode command = approval(order);
         JsonNode receipt = decide(order, command, manager.token(), 200);
 

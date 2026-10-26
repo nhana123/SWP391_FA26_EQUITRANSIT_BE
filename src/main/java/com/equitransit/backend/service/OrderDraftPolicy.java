@@ -82,6 +82,7 @@ public class OrderDraftPolicy {
         draft.setSpecialNeeds(optional(source.getSpecialNeeds()));
         draft.setServices(source.getServices());
         draft.setHealthDeclaration(declaration(source.getHealthDeclaration()));
+        draft.setRoute(source.getRoute());
         if (new HashSet<>(airports).size() != airports.size()) {
             throw invalid("Transit airports must not be duplicated.");
         }

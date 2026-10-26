@@ -1,0 +1,127 @@
+digraph G {
+graph [rankdir=LR, bgcolor="white", nodesep=0.24, ranksep=1.05, splines=polyline, overlap=false, outputorder=edgesfirst, pad=0.3];
+node [fontname="Arial", fontsize=15, margin="0.14,0.10", style=filled];
+edge [fontname="Arial", fontsize=12, color="#728095", penwidth=1.2, dir=none, labeldistance=1.8, labelangle=28];
+subgraph "cluster_AuditEvent" { style=invis; margin=16;
+"E_AuditEvent" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="AUDIT EVENT",width=2.05,height=0.64];
+"A_AuditEvent_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>EventID</U>>,width=1.7,height=0.47];
+"E_AuditEvent" -> "A_AuditEvent_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_AuditEvent_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<EntityType>,width=1.7,height=0.47];
+"E_AuditEvent" -> "A_AuditEvent_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_AuditEvent_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<EntityID>,width=1.7,height=0.47];
+"E_AuditEvent" -> "A_AuditEvent_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_AuditEvent_0";"A_AuditEvent_1";"E_AuditEvent";"A_AuditEvent_2";}
+"A_AuditEvent_0" -> "A_AuditEvent_1" [style=invis,weight=70];
+"A_AuditEvent_1" -> "E_AuditEvent" [style=invis,weight=70];
+"E_AuditEvent" -> "A_AuditEvent_2" [style=invis,weight=70];
+}
+subgraph "cluster_Notification" { style=invis; margin=16;
+"E_Notification" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="NOTIFICATION",width=2.05,height=0.64];
+"A_Notification_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>NotificationID</U>>,width=1.7,height=0.47];
+"E_Notification" -> "A_Notification_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Notification_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Title>,width=1.7,height=0.47];
+"E_Notification" -> "A_Notification_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Notification_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Message>,width=1.7,height=0.47];
+"E_Notification" -> "A_Notification_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_Notification_0";"A_Notification_1";"E_Notification";"A_Notification_2";}
+"A_Notification_0" -> "A_Notification_1" [style=invis,weight=70];
+"A_Notification_1" -> "E_Notification" [style=invis,weight=70];
+"E_Notification" -> "A_Notification_2" [style=invis,weight=70];
+}
+subgraph "cluster_NotificationProjection" { style=invis; margin=16;
+"E_NotificationProjection" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="NOTIFICATION\nPROJECTION",width=2.05,height=0.64];
+"A_NotificationProjection_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>EventID</U>>,width=1.7,height=0.47];
+"E_NotificationProjection" -> "A_NotificationProjection_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_NotificationProjection_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ProjectedAt>,width=1.7,height=0.47];
+"E_NotificationProjection" -> "A_NotificationProjection_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_NotificationProjection_0";"E_NotificationProjection";"A_NotificationProjection_1";}
+"A_NotificationProjection_0" -> "E_NotificationProjection" [style=invis,weight=70];
+"E_NotificationProjection" -> "A_NotificationProjection_1" [style=invis,weight=70];
+}
+subgraph "cluster_StaffAdminOperation" { style=invis; margin=16;
+"E_StaffAdminOperation" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="STAFF ADMIN OPERATION",width=2.05,height=0.64];
+"A_StaffAdminOperation_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>UserID</U>>,width=1.7,height=0.47];
+"E_StaffAdminOperation" -> "A_StaffAdminOperation_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StaffAdminOperation_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<RequestHash>,width=1.7,height=0.47];
+"E_StaffAdminOperation" -> "A_StaffAdminOperation_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StaffAdminOperation_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ReceiptJSON>,width=1.7,height=0.47];
+"E_StaffAdminOperation" -> "A_StaffAdminOperation_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_StaffAdminOperation_0";"A_StaffAdminOperation_1";"E_StaffAdminOperation";"A_StaffAdminOperation_2";}
+"A_StaffAdminOperation_0" -> "A_StaffAdminOperation_1" [style=invis,weight=70];
+"A_StaffAdminOperation_1" -> "E_StaffAdminOperation" [style=invis,weight=70];
+"E_StaffAdminOperation" -> "A_StaffAdminOperation_2" [style=invis,weight=70];
+}
+subgraph "cluster_SchemaMigrationHistory" { style=invis; margin=16;
+"E_SchemaMigrationHistory" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="SCHEMA MIGRATION\nHISTORY",width=2.05,height=0.64];
+"A_SchemaMigrationHistory_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>MigrationID</U>>,width=1.7,height=0.47];
+"E_SchemaMigrationHistory" -> "A_SchemaMigrationHistory_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_SchemaMigrationHistory_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<AppliedAt>,width=1.7,height=0.47];
+"E_SchemaMigrationHistory" -> "A_SchemaMigrationHistory_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_SchemaMigrationHistory_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<AppliedBy>,width=1.7,height=0.47];
+"E_SchemaMigrationHistory" -> "A_SchemaMigrationHistory_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_SchemaMigrationHistory_0";"A_SchemaMigrationHistory_1";"E_SchemaMigrationHistory";"A_SchemaMigrationHistory_2";}
+"A_SchemaMigrationHistory_0" -> "A_SchemaMigrationHistory_1" [style=invis,weight=70];
+"A_SchemaMigrationHistory_1" -> "E_SchemaMigrationHistory" [style=invis,weight=70];
+"E_SchemaMigrationHistory" -> "A_SchemaMigrationHistory_2" [style=invis,weight=70];
+}
+subgraph "cluster_sysdiagrams" { style=invis; margin=16;
+"E_sysdiagrams" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="SYSDIAGRAMS",width=2.05,height=0.64];
+"A_sysdiagrams_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<name>,width=1.7,height=0.47];
+"E_sysdiagrams" -> "A_sysdiagrams_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_sysdiagrams_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<principal_id>,width=1.7,height=0.47];
+"E_sysdiagrams" -> "A_sysdiagrams_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_sysdiagrams_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>diagram_id</U>>,width=1.7,height=0.47];
+"E_sysdiagrams" -> "A_sysdiagrams_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_sysdiagrams_0";"A_sysdiagrams_1";"E_sysdiagrams";"A_sysdiagrams_2";}
+"A_sysdiagrams_0" -> "A_sysdiagrams_1" [style=invis,weight=70];
+"A_sysdiagrams_1" -> "E_sysdiagrams" [style=invis,weight=70];
+"E_sysdiagrams" -> "A_sysdiagrams_2" [style=invis,weight=70];
+}
+subgraph "cluster_User" { style=invis; margin=16;
+"E_User" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="USER",width=2.05,height=0.64];
+"A_User_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>UserID</U>>,width=1.7,height=0.47];
+"E_User" -> "A_User_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_User_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Email>,width=1.7,height=0.47];
+"E_User" -> "A_User_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_User_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Status>,width=1.7,height=0.47];
+"E_User" -> "A_User_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_User_0";"A_User_1";"E_User";"A_User_2";}
+"A_User_0" -> "A_User_1" [style=invis,weight=70];
+"A_User_1" -> "E_User" [style=invis,weight=70];
+"E_User" -> "A_User_2" [style=invis,weight=70];
+}
+subgraph "cluster_TransportOrder" { style=invis; margin=16;
+"E_TransportOrder" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="TRANSPORT ORDER",width=2.05,height=0.64];
+"A_TransportOrder_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>OrderID</U>>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_TransportOrder_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<OrderNumber>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_TransportOrder_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<OrderStatus>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_TransportOrder_3" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<CreatedAt>,width=1.7,height=0.47];
+"E_TransportOrder" -> "A_TransportOrder_3" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_TransportOrder_0";"A_TransportOrder_1";"E_TransportOrder";"A_TransportOrder_2";"A_TransportOrder_3";}
+"A_TransportOrder_0" -> "A_TransportOrder_1" [style=invis,weight=70];
+"A_TransportOrder_1" -> "E_TransportOrder" [style=invis,weight=70];
+"E_TransportOrder" -> "A_TransportOrder_2" [style=invis,weight=70];
+"A_TransportOrder_2" -> "A_TransportOrder_3" [style=invis,weight=70];
+}
+"R4" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BELONGS TO USER",width=1.12,height=0.67];
+"E_User" -> "R4" [taillabel="1",weight=2];
+"R4" -> "E_AuditEvent" [headlabel="N",color="#728095",weight=2];
+"R59" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nSource Event",width=1.12,height=0.67];
+"E_AuditEvent" -> "R59" [taillabel="1",weight=2];
+"R59" -> "E_Notification" [headlabel="N",color="#728095",weight=2];
+"R60" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="HAS PLAN",width=1.12,height=0.67];
+"E_TransportOrder" -> "R60" [taillabel="1",weight=2];
+"R60" -> "E_Notification" [headlabel="N",color="#728095",weight=2];
+"R61" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BELONGS TO USER",width=1.12,height=0.67];
+"E_User" -> "R61" [taillabel="1",weight=2];
+"R61" -> "E_Notification" [headlabel="N",color="#728095:#728095",weight=2];
+"R62" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nEvent",width=1.12,height=0.67];
+"E_AuditEvent" -> "R62" [taillabel="1",weight=2];
+"R62" -> "E_NotificationProjection" [headlabel="1",color="#728095:#728095",weight=2];
+"R120" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BELONGS TO USER",width=1.12,height=0.67];
+"E_User" -> "R120" [taillabel="1",weight=2];
+"R120" -> "E_StaffAdminOperation" [headlabel="N",color="#728095:#728095",weight=2];
+}

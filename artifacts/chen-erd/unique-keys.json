@@ -1,0 +1,1109 @@
+[
+  {
+    "tableName": "StaffAdminOperation",
+    "indexName": "PK_StaffAdminOperation",
+    "keyColumns": [
+      {
+        "columnName": "UserID"
+      },
+      {
+        "columnName": "OperationID"
+      }
+    ]
+  },
+  {
+    "tableName": "LegExecutionOperation",
+    "indexName": "PK_LegExecutionOperation",
+    "keyColumns": [
+      {
+        "columnName": "OrderID"
+      },
+      {
+        "columnName": "UserID"
+      },
+      {
+        "columnName": "OperationID"
+      }
+    ]
+  },
+  {
+    "tableName": "ActualCost",
+    "indexName": "PK_ActualCost",
+    "keyColumns": [
+      {
+        "columnName": "CostID"
+      }
+    ]
+  },
+  {
+    "tableName": "AuditEvent",
+    "indexName": "PK_AuditEvent",
+    "keyColumns": [
+      {
+        "columnName": "EventID"
+      }
+    ]
+  },
+  {
+    "tableName": "RefreshTokenSession",
+    "indexName": "PK_RefreshTokenSession",
+    "keyColumns": [
+      {
+        "columnName": "TokenID"
+      }
+    ]
+  },
+  {
+    "tableName": "RefreshTokenSession",
+    "indexName": "UQ_RefreshTokenSession_Hash",
+    "keyColumns": [
+      {
+        "columnName": "TokenHash"
+      }
+    ]
+  },
+  {
+    "tableName": "AuthenticationToken",
+    "indexName": "PK_AuthenticationToken",
+    "keyColumns": [
+      {
+        "columnName": "TokenID"
+      }
+    ]
+  },
+  {
+    "tableName": "AuthenticationToken",
+    "indexName": "UQ_AuthenticationToken_Hash",
+    "keyColumns": [
+      {
+        "columnName": "TokenHash"
+      }
+    ]
+  },
+  {
+    "tableName": "AuthorityProcedure",
+    "indexName": "PK_AuthorityProcedure",
+    "keyColumns": [
+      {
+        "columnName": "ProcedureID"
+      }
+    ]
+  },
+  {
+    "tableName": "ComplianceClearance",
+    "indexName": "PK_ComplianceClearance",
+    "keyColumns": [
+      {
+        "columnName": "ClearanceID"
+      }
+    ]
+  },
+  {
+    "tableName": "ComplianceRuleVersion",
+    "indexName": "PK_ComplianceRuleVersion",
+    "keyColumns": [
+      {
+        "columnName": "RuleID"
+      }
+    ]
+  },
+  {
+    "tableName": "ComplianceRuleVersion",
+    "indexName": "UQ_ComplianceRuleVersion_Version",
+    "keyColumns": [
+      {
+        "columnName": "RuleCode"
+      },
+      {
+        "columnName": "VersionNo"
+      }
+    ]
+  },
+  {
+    "tableName": "Customer",
+    "indexName": "PK_Customer",
+    "keyColumns": [
+      {
+        "columnName": "CustomerID"
+      }
+    ]
+  },
+  {
+    "tableName": "Customer",
+    "indexName": "UQ_Customer_UserID",
+    "keyColumns": [
+      {
+        "columnName": "UserID"
+      }
+    ]
+  },
+  {
+    "tableName": "PlanCheckpointNode",
+    "indexName": "PK_PlanCheckpointNode",
+    "keyColumns": [
+      {
+        "columnName": "NodeID"
+      }
+    ]
+  },
+  {
+    "tableName": "PlanCheckpointNode",
+    "indexName": "UQ_PlanCheckpointNode_Sequence",
+    "keyColumns": [
+      {
+        "columnName": "PlanID"
+      },
+      {
+        "columnName": "SequenceOrder"
+      }
+    ]
+  },
+  {
+    "tableName": "PlanCheckpointNode",
+    "indexName": "UQ_PlanCheckpointNode_Key",
+    "keyColumns": [
+      {
+        "columnName": "PlanID"
+      },
+      {
+        "columnName": "NodeKey"
+      }
+    ]
+  },
+  {
+    "tableName": "DocumentRequirement",
+    "indexName": "PK_DocumentRequirement",
+    "keyColumns": [
+      {
+        "columnName": "RequirementID"
+      }
+    ]
+  },
+  {
+    "tableName": "DocumentReview",
+    "indexName": "PK_DocumentReview",
+    "keyColumns": [
+      {
+        "columnName": "ReviewID"
+      }
+    ]
+  },
+  {
+    "tableName": "DocumentSubmission",
+    "indexName": "PK_DocumentSubmission",
+    "keyColumns": [
+      {
+        "columnName": "SubmissionID"
+      }
+    ]
+  },
+  {
+    "tableName": "DocumentTypeCatalog",
+    "indexName": "PK_DocumentTypeCatalog",
+    "keyColumns": [
+      {
+        "columnName": "TypeCode"
+      }
+    ]
+  },
+  {
+    "tableName": "DocumentVersion",
+    "indexName": "PK_DocumentVersion",
+    "keyColumns": [
+      {
+        "columnName": "DocumentVersionID"
+      }
+    ]
+  },
+  {
+    "tableName": "DocumentVersion",
+    "indexName": "UQ_DocumentVersion_Version",
+    "keyColumns": [
+      {
+        "columnName": "DocumentID"
+      },
+      {
+        "columnName": "VersionNo"
+      }
+    ]
+  },
+  {
+    "tableName": "FleetVehicle",
+    "indexName": "PK_FleetVehicle",
+    "keyColumns": [
+      {
+        "columnName": "VehicleID"
+      }
+    ]
+  },
+  {
+    "tableName": "FleetVehicle",
+    "indexName": "UQ_FleetVehicle_PlateNumber",
+    "keyColumns": [
+      {
+        "columnName": "PlateNumber"
+      }
+    ]
+  },
+  {
+    "tableName": "FleetVehicle",
+    "indexName": "UQ_FleetVehicle_VehicleCode",
+    "keyColumns": [
+      {
+        "columnName": "VehicleCode"
+      }
+    ]
+  },
+  {
+    "tableName": "FlightReservation",
+    "indexName": "PK_FlightReservation",
+    "keyColumns": [
+      {
+        "columnName": "ReservationID"
+      }
+    ]
+  },
+  {
+    "tableName": "Horse",
+    "indexName": "PK_Horse",
+    "keyColumns": [
+      {
+        "columnName": "HorseID"
+      }
+    ]
+  },
+  {
+    "tableName": "HorseDocument",
+    "indexName": "PK_HorseDocument",
+    "keyColumns": [
+      {
+        "columnName": "DocumentID"
+      }
+    ]
+  },
+  {
+    "tableName": "HorseReceipt",
+    "indexName": "PK_HorseReceipt",
+    "keyColumns": [
+      {
+        "columnName": "ReceiptID"
+      }
+    ]
+  },
+  {
+    "tableName": "HorseWelfareLog",
+    "indexName": "PK_HorseWelfareLog",
+    "keyColumns": [
+      {
+        "columnName": "WelfareLogID"
+      }
+    ]
+  },
+  {
+    "tableName": "HorseWelfareLog",
+    "indexName": "UQ_Figma_HorseWelfareLog_Parent",
+    "keyColumns": [
+      {
+        "columnName": "WelfareLogID"
+      },
+      {
+        "columnName": "LegID"
+      }
+    ]
+  },
+  {
+    "tableName": "IncidentReport",
+    "indexName": "PK_IncidentReport",
+    "keyColumns": [
+      {
+        "columnName": "IncidentID"
+      }
+    ]
+  },
+  {
+    "tableName": "InsuranceChoice",
+    "indexName": "PK_InsuranceChoice",
+    "keyColumns": [
+      {
+        "columnName": "InsuranceChoiceID"
+      }
+    ]
+  },
+  {
+    "tableName": "InsuranceChoice",
+    "indexName": "UQ_InsuranceChoice_ChoiceID",
+    "keyColumns": [
+      {
+        "columnName": "ChoiceID"
+      }
+    ]
+  },
+  {
+    "tableName": "InsurancePolicy",
+    "indexName": "PK_InsurancePolicy",
+    "keyColumns": [
+      {
+        "columnName": "PolicyID"
+      }
+    ]
+  },
+  {
+    "tableName": "LegMilestoneLog",
+    "indexName": "PK_LegMilestoneLog",
+    "keyColumns": [
+      {
+        "columnName": "MilestoneID"
+      }
+    ]
+  },
+  {
+    "tableName": "Notification",
+    "indexName": "PK_Notification",
+    "keyColumns": [
+      {
+        "columnName": "NotificationID"
+      }
+    ]
+  },
+  {
+    "tableName": "OperationalAdjustment",
+    "indexName": "PK_OperationalAdjustment",
+    "keyColumns": [
+      {
+        "columnName": "AdjustmentID"
+      }
+    ]
+  },
+  {
+    "tableName": "PaymentOperation",
+    "indexName": "PK_PaymentOperation",
+    "keyColumns": [
+      {
+        "columnName": "OrderID"
+      },
+      {
+        "columnName": "UserID"
+      },
+      {
+        "columnName": "OperationID"
+      }
+    ]
+  },
+  {
+    "tableName": "OrderAssignment",
+    "indexName": "PK_OrderAssignment",
+    "keyColumns": [
+      {
+        "columnName": "AssignmentID"
+      }
+    ]
+  },
+  {
+    "tableName": "OrderChangeRequest",
+    "indexName": "PK_OrderChangeRequest",
+    "keyColumns": [
+      {
+        "columnName": "ChangeRequestID"
+      }
+    ]
+  },
+  {
+    "tableName": "OrderDecision",
+    "indexName": "PK_OrderDecision",
+    "keyColumns": [
+      {
+        "columnName": "DecisionID"
+      }
+    ]
+  },
+  {
+    "tableName": "OrderDecision",
+    "indexName": "UX_OrderDecision_Revision",
+    "keyColumns": [
+      {
+        "columnName": "RevisionID"
+      }
+    ]
+  },
+  {
+    "tableName": "PaymentProof",
+    "indexName": "PK__PaymentP__0AF62913EAD3D6DB",
+    "keyColumns": [
+      {
+        "columnName": "FileKey"
+      }
+    ]
+  },
+  {
+    "tableName": "OrderRevision",
+    "indexName": "PK_OrderRevision",
+    "keyColumns": [
+      {
+        "columnName": "RevisionID"
+      }
+    ]
+  },
+  {
+    "tableName": "OrderRevision",
+    "indexName": "UQ_OrderRevision_Order_RevisionNo",
+    "keyColumns": [
+      {
+        "columnName": "OrderID"
+      },
+      {
+        "columnName": "RevisionNo"
+      }
+    ]
+  },
+  {
+    "tableName": "OrderRevision",
+    "indexName": "UQ_Figma_OrderRevision_Parent",
+    "keyColumns": [
+      {
+        "columnName": "RevisionID"
+      },
+      {
+        "columnName": "OrderID"
+      }
+    ]
+  },
+  {
+    "tableName": "OrderServiceChoice",
+    "indexName": "PK_OrderServiceChoice",
+    "keyColumns": [
+      {
+        "columnName": "ChoiceID"
+      }
+    ]
+  },
+  {
+    "tableName": "OrderServiceChoice",
+    "indexName": "UQ_OrderServiceChoice_Revision_Service",
+    "keyColumns": [
+      {
+        "columnName": "RevisionID"
+      },
+      {
+        "columnName": "ServiceCode"
+      }
+    ]
+  },
+  {
+    "tableName": "HandoverFile",
+    "indexName": "PK_HandoverFile",
+    "keyColumns": [
+      {
+        "columnName": "FileID"
+      }
+    ]
+  },
+  {
+    "tableName": "HandoverFile",
+    "indexName": "UQ_HandoverFile_FileKey",
+    "keyColumns": [
+      {
+        "columnName": "FileKey"
+      }
+    ]
+  },
+  {
+    "tableName": "PaymentAllocation",
+    "indexName": "PK_PaymentAllocation",
+    "keyColumns": [
+      {
+        "columnName": "AllocationID"
+      }
+    ]
+  },
+  {
+    "tableName": "PaymentReport",
+    "indexName": "PK_PaymentReport",
+    "keyColumns": [
+      {
+        "columnName": "ReportID"
+      }
+    ]
+  },
+  {
+    "tableName": "PaymentRequest",
+    "indexName": "PK_PaymentRequest",
+    "keyColumns": [
+      {
+        "columnName": "PaymentRequestID"
+      }
+    ]
+  },
+  {
+    "tableName": "PaymentRequest",
+    "indexName": "UQ_PaymentRequest_PaymentNumber",
+    "keyColumns": [
+      {
+        "columnName": "PaymentNumber"
+      }
+    ]
+  },
+  {
+    "tableName": "NotificationProjection",
+    "indexName": "PK__Notifica__7944C8708D5168CF",
+    "keyColumns": [
+      {
+        "columnName": "EventID"
+      }
+    ]
+  },
+  {
+    "tableName": "PaymentTransaction",
+    "indexName": "PK_PaymentTransaction",
+    "keyColumns": [
+      {
+        "columnName": "TransactionID"
+      }
+    ]
+  },
+  {
+    "tableName": "PaymentTransaction",
+    "indexName": "UQ_PaymentTransaction_BankReference",
+    "keyColumns": [
+      {
+        "columnName": "RecipientAccount"
+      },
+      {
+        "columnName": "BankTransactionReference"
+      }
+    ]
+  },
+  {
+    "tableName": "QuarantineChoice",
+    "indexName": "PK_QuarantineChoice",
+    "keyColumns": [
+      {
+        "columnName": "QuarantineChoiceID"
+      }
+    ]
+  },
+  {
+    "tableName": "QuarantineChoice",
+    "indexName": "UQ_QuarantineChoice_ChoiceID",
+    "keyColumns": [
+      {
+        "columnName": "ChoiceID"
+      }
+    ]
+  },
+  {
+    "tableName": "QuarantineReservation",
+    "indexName": "PK_QuarantineReservation",
+    "keyColumns": [
+      {
+        "columnName": "ReservationID"
+      }
+    ]
+  },
+  {
+    "tableName": "Quote",
+    "indexName": "PK_Quote",
+    "keyColumns": [
+      {
+        "columnName": "QuoteID"
+      }
+    ]
+  },
+  {
+    "tableName": "Quote",
+    "indexName": "UQ_Quote_Revision_Version",
+    "keyColumns": [
+      {
+        "columnName": "RevisionID"
+      },
+      {
+        "columnName": "VersionNo"
+      }
+    ]
+  },
+  {
+    "tableName": "Quote",
+    "indexName": "UQ_Quote_QuoteNumber",
+    "keyColumns": [
+      {
+        "columnName": "QuoteNumber"
+      }
+    ]
+  },
+  {
+    "tableName": "Quote",
+    "indexName": "UQ_Figma_Quote_Parent",
+    "keyColumns": [
+      {
+        "columnName": "QuoteID"
+      },
+      {
+        "columnName": "RevisionID"
+      }
+    ]
+  },
+  {
+    "tableName": "ComplianceFile",
+    "indexName": "PK__Complian__6F0F989F6EDCC26B",
+    "keyColumns": [
+      {
+        "columnName": "FileID"
+      }
+    ]
+  },
+  {
+    "tableName": "ComplianceFile",
+    "indexName": "UQ__Complian__0AF62912FF780D64",
+    "keyColumns": [
+      {
+        "columnName": "FileKey"
+      }
+    ]
+  },
+  {
+    "tableName": "QuoteItem",
+    "indexName": "PK_QuoteItem",
+    "keyColumns": [
+      {
+        "columnName": "ItemID"
+      }
+    ]
+  },
+  {
+    "tableName": "QuotePaymentSchedule",
+    "indexName": "PK_QuotePaymentSchedule",
+    "keyColumns": [
+      {
+        "columnName": "ScheduleID"
+      }
+    ]
+  },
+  {
+    "tableName": "QuotePaymentSchedule",
+    "indexName": "UQ_QuotePaymentSchedule_Parent",
+    "keyColumns": [
+      {
+        "columnName": "ScheduleID"
+      },
+      {
+        "columnName": "QuoteID"
+      }
+    ]
+  },
+  {
+    "tableName": "QuotePaymentSchedule",
+    "indexName": "UQ_QuotePaymentSchedule_Sequence",
+    "keyColumns": [
+      {
+        "columnName": "QuoteID"
+      },
+      {
+        "columnName": "SequenceNo"
+      }
+    ]
+  },
+  {
+    "tableName": "Refund",
+    "indexName": "PK_Refund",
+    "keyColumns": [
+      {
+        "columnName": "RefundID"
+      }
+    ]
+  },
+  {
+    "tableName": "RevisionQuarantineAssessment",
+    "indexName": "PK__Revision__3D2BF83E1E42ACCE",
+    "keyColumns": [
+      {
+        "columnName": "AssessmentID"
+      }
+    ]
+  },
+  {
+    "tableName": "RevisionVeterinaryAssessment",
+    "indexName": "PK__Revision__3D2BF83EB0D2F0D7",
+    "keyColumns": [
+      {
+        "columnName": "AssessmentID"
+      }
+    ]
+  },
+  {
+    "tableName": "Role",
+    "indexName": "PK_Role",
+    "keyColumns": [
+      {
+        "columnName": "RoleID"
+      }
+    ]
+  },
+  {
+    "tableName": "Role",
+    "indexName": "UQ_Role_RoleCode",
+    "keyColumns": [
+      {
+        "columnName": "RoleCode"
+      }
+    ]
+  },
+  {
+    "tableName": "SchemaMigrationHistory",
+    "indexName": "PK_SchemaMigrationHistory",
+    "keyColumns": [
+      {
+        "columnName": "MigrationID"
+      }
+    ]
+  },
+  {
+    "tableName": "ComplianceOperation",
+    "indexName": "PK_ComplianceOperation",
+    "keyColumns": [
+      {
+        "columnName": "OrderID"
+      },
+      {
+        "columnName": "UserID"
+      },
+      {
+        "columnName": "OperationID"
+      }
+    ]
+  },
+  {
+    "tableName": "ServiceTariff",
+    "indexName": "PK_ServiceTariff",
+    "keyColumns": [
+      {
+        "columnName": "TariffID"
+      }
+    ]
+  },
+  {
+    "tableName": "ServiceTariff",
+    "indexName": "UQ_ServiceTariff_Version",
+    "keyColumns": [
+      {
+        "columnName": "ServiceCode"
+      },
+      {
+        "columnName": "OptionCode"
+      },
+      {
+        "columnName": "Currency"
+      },
+      {
+        "columnName": "VersionNo"
+      }
+    ]
+  },
+  {
+    "tableName": "StaffProfile",
+    "indexName": "PK_StaffProfile",
+    "keyColumns": [
+      {
+        "columnName": "StaffID"
+      }
+    ]
+  },
+  {
+    "tableName": "StaffProfile",
+    "indexName": "UQ_StaffProfile_UserID",
+    "keyColumns": [
+      {
+        "columnName": "UserID"
+      }
+    ]
+  },
+  {
+    "tableName": "ComplianceChecklist",
+    "indexName": "PK_ComplianceChecklist",
+    "keyColumns": [
+      {
+        "columnName": "RevisionID"
+      },
+      {
+        "columnName": "PhaseCode"
+      }
+    ]
+  },
+  {
+    "tableName": "StallAssignment",
+    "indexName": "PK_StallAssignment",
+    "keyColumns": [
+      {
+        "columnName": "StallAssignmentID"
+      }
+    ]
+  },
+  {
+    "tableName": "StallChoice",
+    "indexName": "PK_StallChoice",
+    "keyColumns": [
+      {
+        "columnName": "StallChoiceID"
+      }
+    ]
+  },
+  {
+    "tableName": "StallChoice",
+    "indexName": "UQ_StallChoice_ChoiceID",
+    "keyColumns": [
+      {
+        "columnName": "ChoiceID"
+      }
+    ]
+  },
+  {
+    "tableName": "StallEquipment",
+    "indexName": "PK_StallEquipment",
+    "keyColumns": [
+      {
+        "columnName": "StallID"
+      }
+    ]
+  },
+  {
+    "tableName": "StallEquipment",
+    "indexName": "UQ_StallEquipment_StallCode",
+    "keyColumns": [
+      {
+        "columnName": "StallCode"
+      }
+    ]
+  },
+  {
+    "tableName": "StallFitPolicy",
+    "indexName": "PK_StallFitPolicy",
+    "keyColumns": [
+      {
+        "columnName": "PolicyID"
+      }
+    ]
+  },
+  {
+    "tableName": "StallFitPolicy",
+    "indexName": "UQ_StallFitPolicy_Version",
+    "keyColumns": [
+      {
+        "columnName": "PolicyCode"
+      },
+      {
+        "columnName": "VersionNo"
+      }
+    ]
+  },
+  {
+    "tableName": "Supplier",
+    "indexName": "PK_Supplier",
+    "keyColumns": [
+      {
+        "columnName": "SupplierID"
+      }
+    ]
+  },
+  {
+    "tableName": "ComplianceChecklistHistory",
+    "indexName": "PK__Complian__3D2BF83E36D2BFEB",
+    "keyColumns": [
+      {
+        "columnName": "AssessmentID"
+      }
+    ]
+  },
+  {
+    "tableName": "SupplierOffer",
+    "indexName": "PK_SupplierOffer",
+    "keyColumns": [
+      {
+        "columnName": "OfferID"
+      }
+    ]
+  },
+  {
+    "tableName": "sysdiagrams",
+    "indexName": "PK__sysdiagr__C2B05B61E672F905",
+    "keyColumns": [
+      {
+        "columnName": "diagram_id"
+      }
+    ]
+  },
+  {
+    "tableName": "sysdiagrams",
+    "indexName": "UK_principal_name",
+    "keyColumns": [
+      {
+        "columnName": "principal_id"
+      },
+      {
+        "columnName": "name"
+      }
+    ]
+  },
+  {
+    "tableName": "TransportOrder",
+    "indexName": "PK_TransportOrder",
+    "keyColumns": [
+      {
+        "columnName": "OrderID"
+      }
+    ]
+  },
+  {
+    "tableName": "TransportOrder",
+    "indexName": "UQ_TransportOrder_OrderNumber",
+    "keyColumns": [
+      {
+        "columnName": "OrderNumber"
+      }
+    ]
+  },
+  {
+    "tableName": "ResourceOperation",
+    "indexName": "PK_ResourceOperation",
+    "keyColumns": [
+      {
+        "columnName": "UserID"
+      },
+      {
+        "columnName": "OperationID"
+      }
+    ]
+  },
+  {
+    "tableName": "TransportOrderDetail",
+    "indexName": "PK_TransportOrderDetail",
+    "keyColumns": [
+      {
+        "columnName": "DetailID"
+      }
+    ]
+  },
+  {
+    "tableName": "TransportOrderDetail",
+    "indexName": "UQ_TransportOrderDetail_OrderID",
+    "keyColumns": [
+      {
+        "columnName": "OrderID"
+      }
+    ]
+  },
+  {
+    "tableName": "TransportPlan",
+    "indexName": "PK_TransportPlan",
+    "keyColumns": [
+      {
+        "columnName": "PlanID"
+      }
+    ]
+  },
+  {
+    "tableName": "TransportPlan",
+    "indexName": "UQ_TransportPlan_Version",
+    "keyColumns": [
+      {
+        "columnName": "RevisionID"
+      },
+      {
+        "columnName": "VersionNo"
+      }
+    ]
+  },
+  {
+    "tableName": "TransportPlan",
+    "indexName": "UQ_Figma_TransportPlan_Parent",
+    "keyColumns": [
+      {
+        "columnName": "PlanID"
+      },
+      {
+        "columnName": "OrderID"
+      }
+    ]
+  },
+  {
+    "tableName": "TripAssignment",
+    "indexName": "PK_TripAssignment",
+    "keyColumns": [
+      {
+        "columnName": "AssignmentID"
+      }
+    ]
+  },
+  {
+    "tableName": "TripHandover",
+    "indexName": "PK_TripHandover",
+    "keyColumns": [
+      {
+        "columnName": "HandoverID"
+      }
+    ]
+  },
+  {
+    "tableName": "TripLeg",
+    "indexName": "PK_TripLeg",
+    "keyColumns": [
+      {
+        "columnName": "LegID"
+      }
+    ]
+  },
+  {
+    "tableName": "TripLeg",
+    "indexName": "UQ_TripLeg_Sequence",
+    "keyColumns": [
+      {
+        "columnName": "PlanID"
+      },
+      {
+        "columnName": "SequenceNo"
+      }
+    ]
+  },
+  {
+    "tableName": "TripLeg",
+    "indexName": "UQ_Figma_TripLeg_Parent",
+    "keyColumns": [
+      {
+        "columnName": "LegID"
+      },
+      {
+        "columnName": "PlanID"
+      }
+    ]
+  },
+  {
+    "tableName": "PlanOperation",
+    "indexName": "PK_PlanOperation",
+    "keyColumns": [
+      {
+        "columnName": "OrderID"
+      },
+      {
+        "columnName": "UserID"
+      },
+      {
+        "columnName": "OperationID"
+      }
+    ]
+  },
+  {
+    "tableName": "User",
+    "indexName": "PK_User",
+    "keyColumns": [
+      {
+        "columnName": "UserID"
+      }
+    ]
+  },
+  {
+    "tableName": "User",
+    "indexName": "UQ_User_Email",
+    "keyColumns": [
+      {
+        "columnName": "Email"
+      }
+    ]
+  }
+]

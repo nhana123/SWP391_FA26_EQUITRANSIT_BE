@@ -263,3 +263,55 @@ authenticated users; private horse papers are not published through this flow.
 All six seeded layouts are unsigned reference samples. No official PDF is
 seeded automatically. FE uses layout fields for print and the optional URL for
 authenticated PDF download. FE source remains unchanged.
+
+## Predefined routing and custom-route intake (migration026)
+
+Contract: [ROUTE_TEMPLATES_API.md](docs/ROUTE_TEMPLATES_API.md).
+COORDINATOR/MANAGER CRUD uses `/api/coordinator/route-templates`.
+Public POST `/api/routes/match` returns road/air distances, hours and separate
+indicative USD charges, or requiresCustomCoordinatorPlan=true with unknown
+costs as NULL. AIR slots reuse SHARED_ONE=1, WIDE=1.5, PRIVATE=3.
+Existing draft DTO accepts optional `route` with selected city/airport/mode.
+Submit recomputes and freezes `snapshot.routeMatch` in the order revision;
+Coordinator sees it through the existing assigned-case API after allocation.
+Rates/flags from the client are not accepted. This preview does not replace
+official plan/quotation gates or auto-assign a random Coordinator.
+Migration026 and three sample routes were applied only to Demo after backup.
+
+## Nearest Hub Discovery
+
+`POST /api/routes/match` now accepts optional `originHubId` and
+`destinationHubId`; returns applied IDs plus `originHubOptions` and
+`destinationHubOptions` ranked by estimated road km. Submit the same IDs in
+order `route` to freeze the applied selection in the revision snapshot.
+<=100 km transfer is free; >100 km is full km x2 USD. Unknown option distances
+and costs remain null. Invalid/inactive/foreign selected hubs return 422.
+See `docs/NEAREST_HUB_DISCOVERY_API.md` for the complete contract and limitations.
+
+## Offline province/state lookup
+
+`GET /api/lookups/locations?country=XX&type=CITY` now merges SQL cities with
+versioned offline subdivisions and coordinates: VN63 (historical edition),
+LA18, CN34, TH77, US51. SQL-only cities may increase those counts. Read-only
+resource options have stable negative locationId; keep sending their names/codes
+as originCity/destinationCity, not as Hub IDs or Manager CRUD IDs.
+Province-only selections now feed nearest-Hub distance fallback without network.
+Contract and licensing: `docs/SUBDIVISION_LOOKUP_API.md` and
+`src/main/resources/geo/README.md`.
+
+## Address search and validation
+
+Public `GET /api/routes/address/search?query=...&countryCode=VN&limit=5`
+returns AddressSuggestion[] (displayName/formattedAddress/coordinates/country/
+city/district/road). `POST /api/routes/address/validate` accepts address and
+optional countryCode; returns isValid, nullable matchedAddress and message.
+No provider matches ->[] / false. Provider outage ->503, quota ->429.
+Validation never uses province fallback. See `docs/ADDRESS_GEOCODING_API.md`.
+Public Nominatim forbids keystroke autocomplete; wire explicit user search and
+show OSM attribution. Use a private compatible provider for actual autocomplete.
+
+## ROAD / AIR deposit and assignment gates
+See docs/BOOKING_FLOW_API.md for booking-flow-status, automatic ROAD deposits, AIR acceptance, and assignment/departure blockers.
+
+### Manager approval precedes deposit
+SUBMITTED now returns AWAITING_MANAGER_APPROVAL with depositRequired=false. Fixed ROAD automation runs only after Manager APPROVED and team allocation, not on SUBMIT. See docs/BOOKING_FLOW_API.md.

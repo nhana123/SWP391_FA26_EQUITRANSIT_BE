@@ -101,7 +101,28 @@ public class HorseService {
         }
         return horse;
     }
+    /**
+     * Deletes an owned horse if it has never been attached to an order.
+     * @param id the positive horse key
+     */
+    @Transactional
+    public void delete(@Positive long id) {
+        long owner = actors.current().customerId();
 
+        // Ensure horse exists and belongs to this customer (or throws 404).
+        owned(id, owner);
+
+        if (horses.hasOrders(id)) {
+            throw new HorseException(HttpStatus.CONFLICT, "HORSE_IN_USE",
+                    "Cannot delete a horse attached to an order.");
+        }
+
+        boolean deleted = horses.delete(id, owner);
+        if (!deleted) {
+            throw new HorseException(HttpStatus.NOT_FOUND, "HORSE_NOT_FOUND",
+                    "Horse profile was not found.");
+        }
+    }
     /**
      * Creates a profile with server-derived ownership.
      * @param request the editable fields, never an owner or version
@@ -206,4 +227,5 @@ public class HorseService {
                 horse.getVeterinaryInstructionSource(),
                 horse.getRecordVersion(), complete);
     }
+
 }

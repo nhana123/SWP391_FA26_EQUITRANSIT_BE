@@ -1205,22 +1205,16 @@ public class ComplianceIntegrationTest {
                 resource, 200);
         fixtureVehicles.add(vehicle.path("id").asLong());
         String planBase = base() + "/plans/" + planId;
-        for (long leg : List.of(first, last)) {
-            var assignment = body();
-            assignment.put("vehicleId", vehicle.path("id").asLong());
-            assignment.put("vehicleRecordVersion", vehicle.path(
-                    "recordVersion").asText());
-            assignment.put("driverStaffId", driverId);
-            assignment.put("driverBufferMinutes", 0);
-            post(planBase + "/legs/" + leg + "/road-assignment",
-                    coordinator, assignment, 200);
-        }
         var quoteBody = body();
         quoteBody.put("revisionId", revision).put("validUntil", time(5));
         quoteBody.put("termsVersion", "BE03-TEST").put("terms", "Test terms");
         quoteBody.put("cancellationTerms", "Test cancellation terms");
-        var schedule = quoteBody.putArray("paymentSchedule").addObject();
-        schedule.put("sequenceNo", 1).put("paymentStage", "FULL")
+        var schedules = quoteBody.putArray("paymentSchedule");
+        var schedule = schedules.addObject();
+        schedule.put("sequenceNo", 1).put("paymentStage", "DEPOSIT")
+                .put("amountDue", "1.00").put("dueAt", time(6));
+        var balanceSchedule = schedules.addObject();
+        balanceSchedule.put("sequenceNo", 2).put("paymentStage", "BALANCE")
                 .put("amountDue", "1.00").put("dueAt", time(6));
         var assessments = quoteBody.putArray("assessments");
         for (String service : List.of("AIRPORT_HANDLING", "TERMINAL_HANDLING",
@@ -1233,7 +1227,13 @@ public class ComplianceIntegrationTest {
         var priced = post(base() + "/quotes", coordinator, quoteBody, 200);
         assertThat(priced.path("blockers").toString()).isEqualTo("[]");
         String total = priced.at("/quote/total").asText();
-        schedule.put("amountDue", total);
+        var totalMoney = new java.math.BigDecimal(total);
+        var depositMoney = totalMoney.multiply(new java.math.BigDecimal("0.30"))
+                .setScale(2, java.math.RoundingMode.HALF_UP);
+        String deposit = depositMoney.toPlainString();
+        String balance = totalMoney.subtract(depositMoney).toPlainString();
+        schedule.put("amountDue", deposit);
+        balanceSchedule.put("amountDue", balance);
         quoteBody.set("command", command());
         var quote = post(base() + "/quotes", coordinator, quoteBody, 200);
         long quoteId = quote.at("/quote/quoteId").asLong();
@@ -1245,7 +1245,8 @@ public class ComplianceIntegrationTest {
                     actionBody, 200);
         }
         long scheduleId = jdbc.queryForObject("SELECT ScheduleID FROM"
-                + " dbo.QuotePaymentSchedule WHERE QuoteID=?", Long.class,
+                + " dbo.QuotePaymentSchedule WHERE QuoteID=? AND "
+                + "PaymentStage='DEPOSIT'", Long.class,
                 quoteId);
         var obligation = body();
         obligation.put("quoteId", quoteId).put("scheduleId", scheduleId);
@@ -1266,9 +1267,31 @@ public class ComplianceIntegrationTest {
                 bank, 200).path("entityId").asLong();
         var allocation = body();
         allocation.put("transactionId", transaction);
-        allocation.put("paymentRequestId", requestId).put("amount", total);
+        allocation.put("paymentRequestId", requestId).put("amount", deposit);
         post(base() + "/payments/allocations", manager, allocation, 200);
         assertOrder("IN_PREPARATION");
+        for (long leg : List.of(first, last)) {
+            var assignment = body();
+            assignment.put("vehicleId", vehicle.path("id").asLong());
+            assignment.put("vehicleRecordVersion", vehicle.path(
+                    "recordVersion").asText());
+            assignment.put("driverStaffId", driverId);
+            assignment.put("driverBufferMinutes", 0);
+            post(planBase + "/legs/" + leg + "/road-assignment",
+                    coordinator, assignment, 200);
+        }
+        long balanceId = jdbc.queryForObject("SELECT ScheduleID FROM"
+                + " dbo.QuotePaymentSchedule WHERE QuoteID=? AND "
+                + "PaymentStage='BALANCE'", Long.class, quoteId);
+        var remainder = body();
+        remainder.put("quoteId", quoteId).put("scheduleId", balanceId);
+        long balanceRequest = post(base() + "/payments/requests", manager,
+                remainder, 200).path("entityId").asLong();
+        var finalPayment = body();
+        finalPayment.put("transactionId", transaction);
+        finalPayment.put("paymentRequestId", balanceRequest)
+                .put("amount", balance);
+        post(base() + "/payments/allocations", manager, finalPayment, 200);
         defaultPhasesUploadAndClearWithoutSeparateProcedures();
         var confirm = body();
         confirm.put("acceptedQuoteId", quoteId);
