@@ -24,6 +24,8 @@ spring:
       "[mail.smtp.writetimeout]": 5000
 
 app:
+  jwt:
+    refresh-cookie-secure: ${EQ_REFRESH_COOKIE_SECURE:false}
   mail:
     mode: smtp
     from: huytgse160995@fpt.edu.vn

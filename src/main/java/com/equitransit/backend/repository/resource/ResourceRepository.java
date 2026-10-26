@@ -31,17 +31,28 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.math.BigDecimal;
 import java.util.UUID;
 import javax.sql.DataSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 /** SQL identifiers are enum-selected; all caller values are bound. */
 @Repository
 @SuppressWarnings("null")
 public class ResourceRepository {
+
+    /** Public scheduling label only; no supplier or assignment details. */
+    public record ResourceOption(long id, String code, Object view) { }
+
+    /** Approved policy and its optional equipment scope. */
+    public record CandidatePolicy(Long stallId, FitPolicyRecord policy) { }
 
     private final NamedParameterJdbcTemplate jdbc;
     private final ObjectMapper mapper;
@@ -102,6 +113,171 @@ public class ResourceRepository {
                 "SELECT COUNT_BIG(*) FROM dbo." + table(kind), Long.class);
 
         return result == null ? 0L : result;
+    }
+
+    /** A bounded, set-based catalogue search for a scoped case probe. */
+    public List<ResourceOption> options(ResourceKind kind, String prefix,
+            int page, int size) {
+        String id = kind == ResourceKind.STALL ? "StallID" : "VehicleID";
+        String code = kind == ResourceKind.STALL ? "StallCode" : "VehicleCode";
+        var args = new MapSqlParameterSource("prefix", prefix + "%")
+                .addValue("offset", (long) page * size)
+                .addValue("size", size);
+        return jdbc.query(select(kind) + " WHERE " + code
+                + " LIKE :prefix ORDER BY " + code
+                + "," + id + " OFFSET :offset ROWS FETCH NEXT :size "
+                + "ROWS ONLY", args, (r, i) -> new ResourceOption(
+                        r.getLong(id), r.getString(code), view(kind, r)));
+    }
+
+    /** Count catalogue matches without exposing other orders. */
+    public long optionCount(ResourceKind kind, String prefix) {
+        String table = kind == ResourceKind.STALL
+                ? "dbo.StallEquipment" : "dbo.FleetVehicle";
+        String code = kind == ResourceKind.STALL ? "StallCode" : "VehicleCode";
+        return jdbc.queryForObject("SELECT COUNT_BIG(*) FROM " + table
+                + " WHERE " + code + " LIKE :prefix",
+                Map.of("prefix", prefix + "%"), Long.class);
+    }
+
+    /** Batch active supplier lookup; null ownership is handled by caller. */
+    public Set<Long> activeSuppliers(Set<Long> ids) {
+        if (ids.isEmpty()) {
+            return Set.of();
+        }
+        return new HashSet<>(jdbc.query("SELECT SupplierID FROM "
+                + "dbo.Supplier WITH (HOLDLOCK) WHERE "
+                + "SupplierID IN (:ids) AND IsActive=1",
+                Map.of("ids", ids), (r, i) -> r.getLong("SupplierID")));
+    }
+
+    /** One query for all applicable, sourced policy versions in the page. */
+    public List<CandidatePolicy> candidatePolicies(List<Long> ids,
+            Long carrier, BigDecimal slots, OffsetDateTime now,
+            OffsetDateTime end) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        var args = new MapSqlParameterSource("ids", ids)
+                .addValue("carrier", carrier)
+                .addValue("slots", slots).addValue("now", utc(now))
+                .addValue("end", utc(end));
+        return jdbc.query("SELECT s.StallID,p.PolicyID,p.PolicyCode,"
+                + "p.VersionNo,p.SlotQuantity,p.MaxWeightKg,p.MaxHeightCm,"
+                + "p.MaxWidthCm FROM dbo.StallEquipment s CROSS APPLY "
+                + "(SELECT TOP (2) PolicyID,PolicyCode,VersionNo,SlotQuantity,"
+                + "MaxWeightKg,MaxHeightCm,MaxWidthCm FROM "
+                + "dbo.StallFitPolicy WITH (HOLDLOCK) WHERE "
+                + "Status='APPROVED' AND "
+                + "(StallID IS NULL OR StallID=s.StallID) AND "
+                + "(CarrierSupplierID IS NULL OR "
+                + "CarrierSupplierID=:carrier) AND SlotQuantity=:slots "
+                + "AND EffectiveFrom<=:now AND "
+                + "(EffectiveTo IS NULL OR EffectiveTo>:end) AND "
+                + "ReviewedBy IS NOT NULL AND ReviewedAt<=:now AND "
+                + "(SourceURL LIKE 'https://%' OR SourceURL LIKE "
+                + "'http://%' OR LEN(LTRIM(RTRIM(SourceFileKey)))>0) "
+                + "ORDER BY PolicyID) p WHERE s.StallID IN (:ids)",
+                args, (r, i) -> new CandidatePolicy(
+                        number(r, "StallID"),
+                        new FitPolicyRecord(r.getLong("PolicyID"),
+                                r.getString("PolicyCode"),
+                                r.getInt("VersionNo"),
+                                r.getBigDecimal("SlotQuantity"),
+                                r.getBigDecimal("MaxWeightKg"),
+                                r.getBigDecimal("MaxHeightCm"),
+                                r.getBigDecimal("MaxWidthCm"))));
+    }
+
+    /** One grouped schedule probe for a bounded page of assets. */
+    public Map<Long, List<ResourceBlocker>> candidateSchedules(
+            ResourceKind kind, List<Long> ids, OffsetDateTime start,
+            OffsetDateTime end, long exclude) {
+        if (ids.isEmpty()) {
+            return Map.of();
+        }
+        var args = new MapSqlParameterSource("ids", ids)
+                .addValue("start", utc(start)).addValue("end", utc(end))
+                .addValue("exclude", exclude);
+        String sql = kind == ResourceKind.VEHICLE
+                ? candidateVehicleScheduleSql() : candidateStallScheduleSql();
+        var results = new HashMap<Long, List<ResourceBlocker>>();
+
+        jdbc.query(sql, args, r -> {
+            var blockers = new java.util.ArrayList<ResourceBlocker>();
+
+            if (r.getInt("Missing") > 0) {
+                blockers.add(ResourceBlocker.SCHEDULE_PENDING);
+            }
+            if (r.getInt("Busy") > 0) {
+                blockers.add(ResourceBlocker.OVERLAP);
+            }
+            results.put(r.getLong("ResourceID"), List.copyOf(blockers));
+        });
+        return results;
+    }
+
+    private String candidateVehicleScheduleSql() {
+        return "SELECT a.VehicleID AS ResourceID,"
+                + "SUM(CASE WHEN a.PlannedDeparture IS NULL OR "
+                + "a.PlannedArrival IS NULL THEN 1 ELSE 0 END) Missing,"
+                + "SUM(CASE WHEN a.PlannedDeparture<DATEADD(minute,"
+                + "v.BufferMinutes,:end) AND DATEADD(minute,"
+                + "v.BufferMinutes,a.PlannedArrival)>:start THEN 1 "
+                + "ELSE 0 END) Busy FROM dbo.TripLeg a "
+                + "JOIN dbo.TransportPlan p ON p.PlanID=a.PlanID "
+                + "JOIN dbo.FleetVehicle v ON v.VehicleID=a.VehicleID "
+                + "WHERE a.VehicleID IN (:ids) AND a.LegStatus NOT IN "
+                + "('CANCELLED','CANCELED','REJECTED') AND "
+                + "a.LegID<>:exclude AND p.PlanStatus NOT IN "
+                + "('CANCELLED','CANCELED','SUPERSEDED','REJECTED') "
+                + "GROUP BY a.VehicleID";
+    }
+
+    private String candidateStallScheduleSql() {
+        String overlap = "a.AssignedFrom<DATEADD(minute,"
+                + "se.BufferMinutes,:end) AND DATEADD(minute,"
+                + "se.BufferMinutes,a.AssignedTo)>:start";
+        String incompatible = ":exclude<=0 OR a.SharingCode<>'SHARED' "
+                + "OR tl.LegID IS NULL OR tl.TransportMode<>'AIR' "
+                + "OR l.TransportMode<>'AIR' OR tl.StartPoint<>l.StartPoint "
+                + "OR tl.EndPoint<>l.EndPoint OR "
+                + "tl.PlannedFlightNumber IS NULL OR "
+                + "l.PlannedFlightNumber IS NULL OR "
+                + "tl.PlannedFlightNumber<>l.PlannedFlightNumber OR "
+                + "tl.PlannedDeparture<>l.PlannedDeparture OR "
+                + "tl.PlannedArrival<>l.PlannedArrival OR "
+                + "tp.OrderID=p.OrderID OR "
+                + "(COALESCE(sc.SharingCode,'')<>'SHARED' AND "
+                + "COALESCE(osc.OptionCode,'') NOT IN ('SHARED_ONE','WIDE'))";
+
+        return "SELECT a.StallID AS ResourceID,"
+                + "SUM(CASE WHEN a.AssignedFrom IS NULL OR "
+                + "a.AssignedTo IS NULL THEN 1 ELSE 0 END) Missing,"
+                + "CASE WHEN SUM(CASE WHEN " + overlap + " AND ("
+                + incompatible + ") THEN 1 ELSE 0 END)>0 OR "
+                + "(:exclude>0 AND SUM(CASE WHEN " + overlap
+                + " THEN 1 ELSE 0 END)>0 "
+                + "AND SUM(CASE WHEN " + overlap
+                + " THEN a.SlotQuantity ELSE 0 END)+COALESCE(MAX("
+                + "COALESCE(sc.SlotQuantity, CASE WHEN osc.OptionCode="
+                + "'SHARED_ONE' THEN 1.0 WHEN osc.OptionCode='WIDE' THEN 1.5 "
+                + "ELSE 3.0 END)),3.0)>"
+                + "MAX(se.CapacitySlots)) THEN 1 ELSE 0 END Busy "
+                + "FROM dbo.StallAssignment a JOIN dbo.TripLeg l "
+                + "ON l.LegID=a.LegID JOIN dbo.TransportPlan p "
+                + "ON p.PlanID=l.PlanID JOIN dbo.StallEquipment se "
+                + "ON se.StallID=a.StallID LEFT JOIN dbo.TripLeg tl "
+                + "ON tl.LegID=:exclude AND :exclude>0 LEFT JOIN "
+                + "dbo.TransportPlan tp ON tp.PlanID=tl.PlanID LEFT JOIN "
+                + "dbo.OrderServiceChoice osc ON osc.RevisionID="
+                + "tp.RevisionID AND osc.ServiceCode='AIR_STALL' LEFT JOIN "
+                + "dbo.StallChoice sc ON sc.ChoiceID=osc.ChoiceID "
+                + "WHERE a.StallID IN (:ids) AND a.Status NOT IN "
+                + "('CANCELLED','CANCELED','INACTIVE') AND "
+                + "a.LegID<>:exclude AND p.PlanStatus NOT IN "
+                + "('CANCELLED','CANCELED','SUPERSEDED','REJECTED') "
+                + "GROUP BY a.StallID";
     }
 
     /** @param kind catalogue @param page zero-based @param size bounded

@@ -452,6 +452,236 @@ public class ResourceIntegrationTest {
                 .contains("DOCUMENT_EXPIRED");
     }
 
+    /** Picker is scoped, searchable, and never creates an assignment. */
+    @Test
+    public void candidatePickerRespectsCaseAndAvailability() throws Exception {
+        currentCase();
+        var vehicle = create("vehicles", body("vehicles"));
+        long id = vehicle.get("id").asLong();
+        var start = OffsetDateTime.now(ZoneOffset.UTC).plusDays(7)
+                .withNano(0);
+        var end = start.plusHours(2);
+        String code = vehicle.at("/data/vehicleCode").asText();
+        int assignmentsBefore = jdbc.queryForObject("SELECT COUNT(*) FROM "
+                + "dbo.StallAssignment", Integer.class);
+        int legsBefore = jdbc.queryForObject("SELECT COUNT(*) FROM "
+                + "dbo.TripLeg", Integer.class);
+        var request = mapper.writeValueAsString(Map.of("orderId", order,
+                "revisionId", revision, "mode", "ROAD",
+                "start", start.toString(), "end", end.toString()));
+        String url = "/api/resources/VEHICLE/candidates?search=" + code;
+        var result = read(mvc.perform(post(url)
+                .header("Authorization", actor("COORDINATOR").token())
+                .contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isOk()).andReturn());
+
+        assertThat(result.at("/items/0/id").asLong()).isEqualTo(id);
+        assertThat(result.at("/items/0/status").asText())
+                .isEqualTo("AVAILABLE");
+        assertThat(result.at("/items/0/recordVersion").asText())
+                .matches("^[0-9a-fA-F]{16}$");
+        assertThat(result.path("totalElements").asLong()).isEqualTo(1);
+        assertThat(result.at("/items/0").toString())
+                .doesNotContain("InternalNotes", "ownerSupplierId", "data");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM "
+                + "dbo.StallAssignment", Integer.class))
+                .isEqualTo(assignmentsBefore);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM "
+                + "dbo.TripLeg", Integer.class)).isEqualTo(legsBefore);
+        leg(plan(), "ROAD", id, start, end, 1);
+        var busy = read(mvc.perform(post(url)
+                .header("Authorization", actor("COORDINATOR").token())
+                .contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isOk()).andReturn());
+
+        assertThat(busy.at("/items/0/status").asText())
+                .isEqualTo("UNAVAILABLE");
+        assertThat(busy.at("/items/0/blockers").toString())
+                .contains("OVERLAP");
+        var stall = create("stalls", body("stalls"));
+        String stallCode = stall.at("/data/stallCode").asText();
+        String stallUrl = "/api/resources/STALL/candidates?search="
+                + stallCode;
+        String air = request.replace("\"ROAD\"", "\"AIR\"");
+        var pending = read(mvc.perform(post(stallUrl)
+                .header("Authorization", actor("COORDINATOR").token())
+                .contentType(MediaType.APPLICATION_JSON).content(air))
+                .andExpect(status().isOk()).andReturn());
+
+        assertThat(pending.at("/items/0/status").asText())
+                .isEqualTo("PENDING");
+        var policy = body("fit-policies");
+
+        ((ObjectNode) policy.get("data")).put("status", "APPROVED");
+        create("fit-policies", policy);
+        var available = read(mvc.perform(post(stallUrl)
+                .header("Authorization", actor("COORDINATOR").token())
+                .contentType(MediaType.APPLICATION_JSON).content(air))
+                .andExpect(status().isOk()).andReturn());
+
+        assertThat(available.at("/items/0/status").asText())
+                .isEqualTo("AVAILABLE");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM "
+                + "dbo.StallAssignment", Integer.class))
+                .isEqualTo(assignmentsBefore);
+        mvc.perform(post(url).header("Authorization",
+                actor("CUSTOMER").token())
+                .contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isForbidden());
+        mvc.perform(post(url + "&size=11").header("Authorization",
+                actor("MANAGER").token())
+                .contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isBadRequest());
+        mvc.perform(post("/api/resources/SUPPLIER/candidates")
+                .header("Authorization", actor("MANAGER").token())
+                .contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isBadRequest());
+        mvc.perform(post(url).header("Authorization",
+                actor("MANAGER").token())
+                .contentType(MediaType.APPLICATION_JSON).content(air))
+                .andExpect(status().isBadRequest());
+        var stale = (ObjectNode) mapper.readTree(request);
+
+        stale.put("revisionId", revision + 1);
+        mvc.perform(post(url).header("Authorization",
+                actor("MANAGER").token())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(stale.toString()))
+                .andExpect(status().isConflict());
+        mvc.perform(post("/api/resources/VEHICLE/candidates")
+                .queryParam("search", " ")
+                .header("Authorization", actor("MANAGER").token())
+                .contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isBadRequest());
+        jdbc.update("DELETE dbo.OrderAssignment WHERE OrderID=?", order);
+        mvc.perform(post(url).header("Authorization",
+                actor("COORDINATOR").token())
+                .contentType(MediaType.APPLICATION_JSON).content(request))
+                .andExpect(status().isNotFound());
+    }
+
+    /** Picker and exact probe agree on buffering and own-leg replacement. */
+    @Test
+    public void candidateVehicleBufferMatchesExactProbe() throws Exception {
+        currentCase();
+        var input = body("vehicles");
+
+        ((ObjectNode) input.at("/data/window")).put("bufferMinutes", 30);
+        var vehicle = create("vehicles", input);
+        var start = OffsetDateTime.now(ZoneOffset.UTC).plusDays(7)
+                .withNano(0);
+        var end = start.plusHours(2);
+        long ownLeg = leg(plan(), "ROAD", vehicle.get("id").asLong(),
+                start, end, 1);
+
+        assertCandidateParity("VEHICLE", vehicle, start, end, ownLeg,
+                "AVAILABLE");
+        assertCandidateParity("VEHICLE", vehicle, end.plusMinutes(29),
+                end.plusHours(2), null, "UNAVAILABLE");
+        assertCandidateParity("VEHICLE", vehicle, end.plusMinutes(30),
+                end.plusHours(2), null, "AVAILABLE");
+    }
+
+    /** Shared capacity, private intent and replacement use identical rules. */
+    @Test
+    public void candidateSharedStallMatchesExactProbe() throws Exception {
+        currentCase();
+        var stall = create("stalls", body("stalls"));
+        var policy = body("fit-policies");
+
+        ((ObjectNode) policy.get("data")).put("status", "APPROVED");
+        create("fit-policies", policy);
+        var start = OffsetDateTime.now(ZoneOffset.UTC).plusDays(7)
+                .withNano(0);
+        var end = start.plusHours(8);
+        long firstLeg = sharedAirLeg(start, end);
+
+        sharedAssignment(firstLeg, stall.get("id").asLong(), start, end);
+        currentCase();
+        long secondLeg = sharedAirLeg(start, end);
+
+        assertCandidateParity("STALL", stall, start, end, secondLeg,
+                "AVAILABLE");
+        assertCandidateParity("STALL", stall, start, end, null,
+                "UNAVAILABLE");
+        sharedAssignment(secondLeg, stall.get("id").asLong(), start, end);
+        assertCandidateParity("STALL", stall, start, end, secondLeg,
+                "AVAILABLE");
+        currentCase();
+        long overflowLeg = sharedAirLeg(start, end);
+
+        assertCandidateParity("STALL", stall, start, end, overflowLeg,
+                "UNAVAILABLE");
+        currentCase("PRIVATE");
+        var privatePolicy = body("fit-policies");
+
+        ((ObjectNode) privatePolicy.get("data")).put("slotQuantity", 3);
+        ((ObjectNode) privatePolicy.get("data")).put("status", "APPROVED");
+        create("fit-policies", privatePolicy);
+        long privateLeg = sharedAirLeg(start, end);
+
+        assertCandidateParity("STALL", stall, start, end, privateLeg,
+                "UNAVAILABLE");
+    }
+
+    private long sharedAirLeg(OffsetDateTime start, OffsetDateTime end) {
+        long id = leg(plan(), "AIR", null, start, end, 1);
+
+        jdbc.update("UPDATE dbo.TripLeg SET PlannedFlightNumber=? "
+                + "WHERE LegID=?", "TEST-SHARED-101", id);
+        return id;
+    }
+
+    private void sharedAssignment(long legId, long stallId,
+            OffsetDateTime start, OffsetDateTime end) {
+        repository.lock();
+        jdbc.update("INSERT dbo.StallAssignment (LegID,StallID,"
+                + "SlotQuantity,SharingCode,FitStatus,CarrierAcceptanceStatus,"
+                + "AssignedFrom,AssignedTo,Status) VALUES "
+                + "(?,?,1.5,'SHARED','SUITABLE','ACCEPTED',?,?,'CONFIRMED')",
+                legId, stallId, start.toLocalDateTime(), end.toLocalDateTime());
+    }
+
+    private void assertCandidateParity(String kind, JsonNode resource,
+            OffsetDateTime start, OffsetDateTime end, Long ownLeg,
+            String expected) throws Exception {
+        var request = mapper.createObjectNode();
+
+        request.put("orderId", order);
+        request.put("revisionId", revision);
+        request.put("mode", kind.equals("VEHICLE") ? "ROAD" : "AIR");
+        request.put("start", start.toString());
+        request.put("end", end.toString());
+        if (ownLeg != null) {
+            request.put("legId", ownLeg);
+        }
+        String base = "/api/resources/" + kind;
+        String code = resource.at(kind.equals("VEHICLE")
+                ? "/data/vehicleCode" : "/data/stallCode").asText();
+        var exact = read(mvc.perform(post(base + "/"
+                + resource.get("id").asLong() + "/availability")
+                .header("Authorization", actor("COORDINATOR").token())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request.toString()))
+                .andExpect(status().isOk()).andReturn());
+        var page = read(mvc.perform(post(base + "/candidates")
+                .queryParam("search", code)
+                .header("Authorization", actor("COORDINATOR").token())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request.toString()))
+                .andExpect(status().isOk()).andReturn());
+        var candidate = page.at("/items/0");
+
+        assertThat(page.path("totalElements").asLong()).isEqualTo(1);
+        assertThat(candidate.path("id")).isEqualTo(resource.path("id"));
+        assertThat(exact.path("status").asText()).isEqualTo(expected);
+        assertThat(candidate.path("status")).isEqualTo(exact.path("status"));
+        assertThat(candidate.path("recordVersion"))
+                .isEqualTo(exact.path("recordVersion"));
+        assertThat(candidate.path("blockers"))
+                .isEqualTo(exact.path("blockers"));
+    }
+
     /** Fit needs both physical limits and an effective approved policy. */
     @Test
     public void stallFitRemainsPendingUntilPolicyIsApproved() throws Exception {
@@ -713,6 +943,10 @@ public class ResourceIntegrationTest {
     }
 
     private void currentCase() throws Exception {
+        currentCase("WIDE");
+    }
+
+    private void currentCase(String airStall) throws Exception {
         Actor customer = actor("CUSTOMER");
         JsonNode horse = read(mvc.perform(post("/api/horses")
                 .header("Authorization", customer.token())
@@ -735,7 +969,7 @@ public class ResourceIntegrationTest {
         fields.put("importType", "TEMPORARY");
         fields.put("preferredDepartureAt", now.plusDays(7).toString());
         fields.put("deliveryDeadline", now.plusDays(14).toString());
-        fields.put("services", Map.of("airStall", "WIDE"));
+        fields.put("services", Map.of("airStall", airStall));
         var draft = read(mvc.perform(post("/api/transport-orders")
                 .header("Authorization", customer.token())
                 .contentType(MediaType.APPLICATION_JSON)

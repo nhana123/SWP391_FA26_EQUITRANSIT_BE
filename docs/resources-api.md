@@ -119,8 +119,31 @@ dimensions/weight limit, capacity, and a unique approved/effective policy for
 the equipment/carrier context through the proposed end. Missing or ambiguous
 policy stays PENDING. Fit is distinct from carrier acceptance or reservation.
 ROAD capacity is checked for the single horse; vehicle count never enters F05
-price calculations. Physical stall overlap is rejected even if unused slots
-exist. Automatic pooling and shared-stall matching are outside F09.
+price calculations. Overlapping stalls require compatible SHARED intent on
+the same flight and sufficient capacity; otherwise overlap blocks the probe.
+The F10 shared-stall shortlist remains advisory, not an automatic booking.
+
+## Coordinator resource picker
+
+POST `/api/resources/{kind}/candidates?search=STALL&page=0&size=10` uses the
+same body, case authorization and evaluator as the exact availability probe.
+Only VEHICLE/ROAD and STALL/AIR are supported. `search` is an optional literal
+code prefix, 1..50 characters when supplied; blank text is rejected. `page`
+starts at 0 and `size` is 1..10. LIKE wildcard characters are treated literally.
+
+Response: `{items:[{id,code,status,recordVersion,blockers}],page,size,
+totalElements}`. Total counts catalogue matches including PENDING/UNAVAILABLE;
+it does not count free resources. Results are sorted by code then ID. No owner
+contacts, internal notes or other customers' assignment details are returned.
+The endpoint does not create reservations or assignments and needs no
+operationId or expected version. F10 still rechecks under its transaction.
+
+Availability dependencies are fetched per page, without per-item DB calls.
+Policy lookup returns at most two matching policies per stall, preserving an
+ambiguous-policy blocker with at most 20 policy rows per page. This query
+bound is not a measured latency or throughput guarantee.
+
+See [the FE handoff](fe-resource-picker-handoff.md) for combobox behavior.
 
 ## F10 transactional consumer
 

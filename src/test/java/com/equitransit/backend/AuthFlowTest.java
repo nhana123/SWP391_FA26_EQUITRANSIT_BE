@@ -120,6 +120,12 @@ public class AuthFlowTest {
                 || (url.startsWith("jdbc:sqlserver:")
                         && "EquiTransit_AuthTest".equals(database))).isTrue();
         isolatedDatabase = true;
+        if (url.startsWith("jdbc:h2:")) {
+            new org.springframework.jdbc.datasource.init.
+                    ResourceDatabasePopulator(new org.springframework.core.io.
+                            ClassPathResource("refresh-test-schema.sql"))
+                    .execute(dataSource);
+        }
         reset(customers);
         clean();
         if (roles.findByRoleCode("CUSTOMER").isEmpty()) {
@@ -135,6 +141,8 @@ public class AuthFlowTest {
         if (!isolatedDatabase) {
             return;
         }
+        new org.springframework.jdbc.core.JdbcTemplate(dataSource)
+                .execute("DELETE FROM dbo.RefreshTokenSession");
         tokens.deleteAll();
         customers.deleteAll();
         users.deleteAll();

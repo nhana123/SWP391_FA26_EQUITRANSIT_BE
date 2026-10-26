@@ -170,7 +170,8 @@ public class SecurityConfig {
         }
         cors.setAllowedOrigins(origins);
         cors.setAllowedMethods(List.of("GET", "POST", "PUT", "OPTIONS"));
-        cors.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        cors.setAllowedHeaders(List.of("Authorization", "Content-Type",
+                "X-Expected-Role"));
         cors.setAllowCredentials(true);
         source.registerCorsConfiguration("/api/**", cors);
         return source;
@@ -190,6 +191,8 @@ public class SecurityConfig {
             @Qualifier("corsConfigurationSource")
             CorsConfigurationSource corsSource)
             throws Exception {
+        var bearer = new org.springframework.security.oauth2.server.resource.
+                web.DefaultBearerTokenResolver();
         http.cors(cors -> cors.configurationSource(corsSource))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(
@@ -255,6 +258,14 @@ public class SecurityConfig {
                         .hasRole("CUSTOMER")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(resource -> resource
+                        .bearerTokenResolver(request -> {
+                            String path = request.getRequestURI().substring(
+                                    request.getContextPath().length());
+                            return List.of("/api/auth/login",
+                                    "/api/auth/refresh", "/api/auth/logout")
+                                    .contains(path) ? null
+                                            : bearer.resolve(request);
+                        })
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(converter))
                         .authenticationEntryPoint((request, response, error) ->
                                 writeFailure(response,

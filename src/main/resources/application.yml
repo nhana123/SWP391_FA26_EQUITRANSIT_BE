@@ -47,6 +47,9 @@ app:
     secret: ${EQ_JWT_SECRET:dGVzdC1vbmx5LWtleS1mb3ItZXF1aXRyYW5zaXQtYXV0aC10ZXN0cw==}
     issuer: equitransit
     ttl-seconds: 900
+    refresh-ttl-seconds: 28800
+    refresh-cookie-name: eq_refresh_token
+    refresh-cookie-secure: ${EQ_REFRESH_COOKIE_SECURE:false}
   mail:
     mode: ${EQ_MAIL_MODE:file}
     from: ${EQ_MAIL_FROM:no-reply@example.invalid}
