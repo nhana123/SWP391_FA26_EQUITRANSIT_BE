@@ -9,6 +9,7 @@ import com.equitransit.backend.dto.order.response.OrderSnapshot;
 import com.equitransit.backend.entity.assessment.CaseOrder;
 import com.equitransit.backend.entity.assessment.CaseRole;
 import com.equitransit.backend.entity.quote.QuoteCalculationContext;
+import com.equitransit.backend.entity.quote.QuoteRecord;
 import com.equitransit.backend.entity.quote.QuoteSnapshot;
 import com.equitransit.backend.entity.quote.QuoteStatus;
 import com.equitransit.backend.exception.order.OrderException;
@@ -236,7 +237,7 @@ public class BookingFlowService {
         }
         Long id = parent.revisionId() == null || !quotes.schemaReady() ? null
                 : data.quote(parent.revisionId());
-        QuoteSnapshot quote = id == null ? null
+        QuoteRecord quote = id == null ? null
                 : quotes.find(parent.orderId(), id)
                         .orElseThrow(this::missing);
         boolean accepted = quote != null

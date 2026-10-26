@@ -91,7 +91,7 @@ public class QuoteSourceRepository {
     }
 
     /** @return exact current-plan provenance for server-recorded estimates */
-    static String planAirfare() {
+    public static String planAirfare() {
         return "ServiceCode='AIRFARE' AND Status='SELECTED'"
                 + " AND ProviderName='Plan airfare estimate'"
                 + " AND EvidenceFileKey IS NULL AND EXISTS (SELECT 1"
