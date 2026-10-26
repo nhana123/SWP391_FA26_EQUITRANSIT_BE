@@ -11,23 +11,31 @@ import com.equitransit.backend.dto.handover.HandoverCustomerDecision;
 import com.equitransit.backend.dto.handover.HandoverOutcome;
 import com.equitransit.backend.dto.handover.HandoverType;
 import com.equitransit.backend.dto.handover.HorseConditionStatus;
-import com.equitransit.backend.dto.handover.request.CustomerHandoverDecisionRequest;
-import com.equitransit.backend.dto.handover.request.FinalDeliveryHandoverCreateRequest;
-import com.equitransit.backend.dto.handover.request.IntermediateHandoverCreateRequest;
+import com.equitransit.backend.dto.handover.request.
+        CustomerHandoverDecisionRequest;
+import com.equitransit.backend.dto.handover.request.
+        FinalDeliveryHandoverCreateRequest;
+import com.equitransit.backend.dto.handover.request.
+        IntermediateHandoverCreateRequest;
 import com.equitransit.backend.dto.handover.response.CustomerHandoverResponse;
-import com.equitransit.backend.dto.handover.response.OperationalCompletionReceipt;
+import com.equitransit.backend.dto.handover.response.
+        OperationalCompletionReceipt;
 import com.equitransit.backend.dto.handover.response.TripHandoverResponse;
 import com.equitransit.backend.entity.handover.TripHandover;
 import com.equitransit.backend.exception.order.OrderException;
 import com.equitransit.backend.repository.execution.LegExecutionRepository;
-import com.equitransit.backend.repository.execution.LegExecutionRepository.LegRow;
-import com.equitransit.backend.repository.execution.LegExecutionRepository.OrderScopeRow;
-import com.equitransit.backend.repository.execution.LegExecutionRepository.TripAssignmentRow;
+import com.equitransit.backend.repository.execution.LegExecutionRepository.
+        LegRow;
+import com.equitransit.backend.repository.execution.LegExecutionRepository.
+        OrderScopeRow;
+import com.equitransit.backend.repository.execution.LegExecutionRepository.
+        TripAssignmentRow;
 import com.equitransit.backend.repository.handover.TripHandoverRepository;
-import com.equitransit.backend.repository.handover.TripHandoverRepository.OrderReceiverRow;
+import com.equitransit.backend.repository.handover.TripHandoverRepository.
+        OrderReceiverRow;
 import com.equitransit.backend.security.CurrentActor;
 import com.equitransit.backend.security.CurrentActorService;
-import com.equitransit.backend.service.compliance.ComplianceService;
+import com.equitransit.backend.service.QuarantineReleaseGate;
 import com.equitransit.backend.service.handover.FinalDeliveryValidator;
 import com.equitransit.backend.service.handover.TripHandoverService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,10 +47,12 @@ import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.support.StaticListableBeanFactory;
+
 import org.springframework.security.access.AccessDeniedException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -81,7 +91,7 @@ public class TripHandoverCompletionTest {
     private CurrentActorService actorService;
 
     @Mock
-    private ComplianceService complianceService;
+    private QuarantineReleaseGate complianceService;
 
     private FinalDeliveryValidator validator;
     private TripHandoverService service;
@@ -95,11 +105,7 @@ public class TripHandoverCompletionTest {
                 ZoneOffset.UTC);
         mapper = new ObjectMapper();
 
-        var beanFactory = new StaticListableBeanFactory();
-        beanFactory.addBean("complianceService", complianceService);
-        var provider = beanFactory.getBeanProvider(ComplianceService.class);
-
-        validator = new FinalDeliveryValidator(provider);
+        validator = new FinalDeliveryValidator(complianceService);
         service = new TripHandoverService(handoverRepository, legRepository,
                 validator, actorService, mapper, fixedClock);
     }
@@ -156,6 +162,45 @@ public class TripHandoverCompletionTest {
         verify(handoverRepository, never()).completePlan(any(Long.class));
         verify(handoverRepository, never()).deliverOrder(any(Long.class),
                 any(OffsetDateTime.class));
+    }
+
+    /** Handover before actual departure returns the specific 422 error. */
+    @Test
+    public void handoverBeforeActualDepartureIsRejected() {
+        var actor = new CurrentActor(101L, "DRIVER", null, DRIVER_STAFF_ID);
+        when(actorService.current()).thenReturn(actor);
+        when(legRepository.findDriverAssignment(LEG_ID_1, DRIVER_STAFF_ID))
+                .thenReturn(Optional.of(new TripAssignmentRow(11L, LEG_ID_1,
+                        DRIVER_STAFF_ID, "DRIVER", "CONFIRMED",
+                        NOW.minusHours(4), NOW.plusHours(4))));
+        when(legRepository.findLegById(LEG_ID_1)).thenReturn(Optional.of(
+                new LegRow(LEG_ID_1, PLAN_ID, 1, "ROAD", "Stables", "CDG",
+                        BigDecimal.valueOf(85), NOW.minusHours(3),
+                        NOW.minusHours(1), NOW.minusHours(2), null,
+                        "IN_TRANSIT", null, null)));
+        when(legRepository.findOrderByLegId(LEG_ID_1)).thenReturn(Optional.of(
+                new OrderScopeRow(ORDER_ID, CUSTOMER_ID, "IN_TRANSIT",
+                        PLAN_ID, 201L)));
+
+        var request = new IntermediateHandoverCreateRequest(
+                HandoverType.INTERMEDIATE_AIRPORT,
+                NOW.minusHours(3),
+                "Markus Vance",
+                "RAMP_SUPERVISOR",
+                null,
+                HorseConditionStatus.GOOD,
+                HandoverOutcome.SUCCESSFUL,
+                null,
+                null,
+                null,
+                null);
+
+        assertThatThrownBy(() -> service.recordIntermediateByDriver(
+                LEG_ID_1, request))
+                .isInstanceOf(OrderException.class)
+                .extracting(error -> ((OrderException) error).getCode())
+                .isEqualTo("HANDOVER_TIME_BEFORE_DEPARTURE");
+        verify(handoverRepository, never()).insert(any(TripHandover.class));
     }
 
     /** Unassigned driver cannot record intermediate handover. */
@@ -247,7 +292,7 @@ public class TripHandoverCompletionTest {
         when(handoverRepository.findOrderReceiver(ORDER_ID))
                 .thenReturn(Optional.of(receiver));
 
-        when(complianceService.quarantineReleasePassed(ORDER_ID))
+        when(complianceService.passed(ORDER_ID))
                 .thenReturn(true);
 
         when(handoverRepository.insert(any(TripHandover.class)))
@@ -308,7 +353,7 @@ public class TripHandoverCompletionTest {
         when(handoverRepository.findOrderReceiver(ORDER_ID))
                 .thenReturn(Optional.of(receiver));
 
-        when(complianceService.quarantineReleasePassed(ORDER_ID))
+        when(complianceService.passed(ORDER_ID))
                 .thenReturn(false);
 
         var request = new FinalDeliveryHandoverCreateRequest(
@@ -332,6 +377,44 @@ public class TripHandoverCompletionTest {
         verify(handoverRepository, never()).completePlan(any(Long.class));
         verify(handoverRepository, never()).deliverOrder(any(Long.class),
                 any(OffsetDateTime.class));
+    }
+
+    /** Coordinator and manager can complete delivery when the gate passes. */
+    @ParameterizedTest
+    @ValueSource(strings = {"COORDINATOR", "MANAGER"})
+    public void staffCanCompleteFinalDeliveryWhenClearancePasses(String role) {
+        long staffId = "MANAGER".equals(role) ? 104L : 103L;
+        when(actorService.current()).thenReturn(new CurrentActor(101L, role,
+                null, staffId));
+        var leg = new LegRow(LEG_ID_2, PLAN_ID, 2, "ROAD", "Airport",
+                "Deauville Stables", BigDecimal.valueOf(200), NOW.minusHours(4),
+                NOW, NOW.minusHours(4), null, "IN_TRANSIT", null, null);
+        when(legRepository.findLegById(LEG_ID_2)).thenReturn(Optional.of(leg));
+        when(legRepository.findOrderByLegId(LEG_ID_2)).thenReturn(Optional.of(
+                new OrderScopeRow(ORDER_ID, CUSTOMER_ID, "IN_TRANSIT",
+                        PLAN_ID, 201L)));
+        when(handoverRepository.isLastLegOfPlan(LEG_ID_2, PLAN_ID))
+                .thenReturn(true);
+        when(handoverRepository.findOrderReceiver(ORDER_ID)).thenReturn(
+                Optional.of(new OrderReceiverRow("Jean-Pierre Dubois",
+                        "+33612345678", "jp@dubois.fr", "OWNER")));
+        when(complianceService.passed(ORDER_ID))
+                .thenReturn(true);
+        when(handoverRepository.insert(any(TripHandover.class)))
+                .thenReturn(HANDOVER_ID);
+
+        var request = new FinalDeliveryHandoverCreateRequest(
+                NOW, "Jean-Pierre Dubois", "OWNER", "sig/dubois.png",
+                HorseConditionStatus.EXCELLENT, HandoverOutcome.SUCCESSFUL,
+                null, "photo/delivery.jpg", "Ecurie Dubois, Box 14", null);
+
+        var receipt = service.recordFinalDeliveryByCoordinator(LEG_ID_2,
+                request);
+
+        assertThat(receipt.quarantineReleaseVerified()).isTrue();
+        assertThat(receipt.orderStatus()).isEqualTo("DELIVERED");
+        verify(handoverRepository).completePlan(PLAN_ID);
+        verify(handoverRepository).deliverOrder(eq(ORDER_ID), any());
     }
 
     /** Final delivery blocked when recipient name mismatches without proxy. */
@@ -363,7 +446,7 @@ public class TripHandoverCompletionTest {
         when(handoverRepository.findOrderReceiver(ORDER_ID))
                 .thenReturn(Optional.of(receiver));
 
-        when(complianceService.quarantineReleasePassed(ORDER_ID))
+        when(complianceService.passed(ORDER_ID))
                 .thenReturn(true);
 
         var request = new FinalDeliveryHandoverCreateRequest(
@@ -414,7 +497,7 @@ public class TripHandoverCompletionTest {
         when(handoverRepository.findOrderReceiver(ORDER_ID))
                 .thenReturn(Optional.of(receiver));
 
-        when(complianceService.quarantineReleasePassed(ORDER_ID))
+        when(complianceService.passed(ORDER_ID))
                 .thenReturn(true);
 
         when(handoverRepository.insert(any(TripHandover.class)))

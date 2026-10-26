@@ -246,9 +246,9 @@ public class TripHandoverRepository {
      * @param nextSequenceNo next sequence number
      */
     public void activateNextLeg(long planId, int nextSequenceNo) {
-        String sql = "UPDATE dbo.TripLeg SET LegStatus='READY' "
+        String sql = "UPDATE dbo.TripLeg SET LegStatus='CONFIRMED' "
                 + "WHERE PlanID=:planId AND SequenceNo=:seq "
-                + "AND LegStatus IN ('PLANNED', 'SCHEDULED')";
+                + "AND LegStatus='PLANNED'";
         jdbc.update(sql, Map.of("planId", planId, "seq", nextSequenceNo));
     }
 
@@ -305,7 +305,8 @@ public class TripHandoverRepository {
     }
 
     private Timestamp utc(OffsetDateTime odt) {
-        return odt == null ? null : Timestamp.valueOf(odt.toLocalDateTime());
+        return odt == null ? null : Timestamp.valueOf(odt
+                .withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime());
     }
 
     private OffsetDateTime time(Timestamp ts) {

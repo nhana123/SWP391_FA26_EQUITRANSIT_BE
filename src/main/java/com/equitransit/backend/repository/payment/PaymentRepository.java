@@ -268,9 +268,11 @@ public class PaymentRepository {
                     + "datetime2)),'RECONCILED',:source,:proof,:notes)";
             case "allocate" ->
                     "INSERT dbo.PaymentAllocation (TransactionID,"
-                    + "PaymentRequestID,AllocatedAmount) OUTPUT "
+                    + "PaymentRequestID,AllocatedAmount,AllocatedAt) OUTPUT "
                     + "INSERTED.AllocationID VALUES (:transaction,"
-                    + ":request,:amount)";
+                    + ":request,:amount,DATEADD(second,DATEDIFF(second,"
+                    + "'20000101',SYSUTCDATETIME()),CAST('20000101' "
+                    + "AS datetime2)))";
             case "refundRequest" ->
                     "INSERT dbo.Refund (AllocationID,Amount,Reason,"
                     + "Status,RequestedBy,RequestedAt) OUTPUT "
@@ -291,6 +293,10 @@ public class PaymentRepository {
                     "INSERT dbo.AuditEvent (UserID,EntityType,EntityID,"
                     + "ActionCode,ChangeSnapshot) VALUES (:user,"
                     + "'ORDER_PAYMENT',:order,:action,:receipt)";
+            case "prepareOrder" ->
+                    "UPDATE dbo.TransportOrder SET OrderStatus=CASE WHEN "
+                    + "OrderStatus='APPROVED' THEN 'IN_PREPARATION' ELSE "
+                    + "OrderStatus END WHERE OrderID=:order";
             case "bump" ->
                     "UPDATE dbo.TransportOrder SET "
                     + "OrderStatus=OrderStatus WHERE OrderID=:order";
@@ -329,6 +335,9 @@ public class PaymentRepository {
             case "requestDuplicate" ->
                     "SELECT COUNT(*) FROM dbo.PaymentRequest WHERE "
                     + "ScheduleID=:schedule";
+            case "requestBySchedule" ->
+                    "SELECT * FROM dbo.PaymentRequest WHERE "
+                    + "ScheduleID=:schedule AND QuoteID=:quote";
             case "refundDuplicate" ->
                     "SELECT COUNT(*) FROM dbo.Refund WHERE "
                     + "BankRefundReference=:reference";
@@ -369,7 +378,8 @@ public class PaymentRepository {
                     + "WHERE a.TransactionID=t.TransactionID AND "
                     + "r.OrderID=:order))";
             case "balances" ->
-                    "SELECT s.ScheduleID,s.AmountDue,s.Currency,s.DueAt,"
+                    "SELECT s.ScheduleID,s.PaymentStage,s.AmountDue,"
+                    + "s.Currency,s.DueAt,"
                     + "COALESCE(b.PaidAmount,0) PaidAmount FROM "
                     + "dbo.QuotePaymentSchedule s OUTER APPLY (SELECT "
                     + "SUM(a.AllocatedAmount-COALESCE(f.Refunded,0)) "

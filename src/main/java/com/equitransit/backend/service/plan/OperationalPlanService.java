@@ -37,6 +37,7 @@ import com.equitransit.backend.repository.assessment.AssessmentRepository;
 import com.equitransit.backend.repository.order.OrderRepository;
 import com.equitransit.backend.repository.plan.PlanRepository;
 import com.equitransit.backend.repository.resource.ResourceRepository;
+import com.equitransit.backend.service.BookingFlowService;
 import com.equitransit.backend.service.pricing.StallFitEvaluator;
 import com.equitransit.backend.security.CurrentActor;
 import com.equitransit.backend.security.CurrentActorService;
@@ -87,6 +88,7 @@ public class OperationalPlanService {
     private final OrderJsonCodec json;
     private final ObjectMapper mapper;
     private final Clock clock;
+    private BookingFlowService booking;
 
     /**
      * @param plans SQL planning adapter @param cases parent lock and roles
@@ -116,6 +118,12 @@ public class OperationalPlanService {
         this.json = json;
         this.mapper = mapper;
         this.clock = clock;
+    }
+
+    /** @param booking actor-neutral current-revision deposit guard */
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configureBooking(BookingFlowService booking) {
+        this.booking = booking;
     }
 
     /** @param order parent @param page zero-based @param size bounded
@@ -153,8 +161,21 @@ public class OperationalPlanService {
      * @return created versioned draft plan */
     public PlanDetailResponse createDraft(@Positive long order,
             @Valid PlanDraftRequest req) {
+        return createDraft(order, req, fingerprint("CREATE_DRAFT", req));
+    }
+
+    /** Atomic graph compilation reuses all existing draft guards/receipts.
+     * @param order parent @param req validated draft @param graph full input
+     * @return created or replayed plan */
+    public PlanDetailResponse createGraphDraft(@Positive long order,
+            @Valid PlanDraftRequest req, Object graph) {
+        return createDraft(order, req,
+                fingerprint("CREATE_GRAPH_DRAFT", graph));
+    }
+
+    private PlanDetailResponse createDraft(long order, PlanDraftRequest req,
+            String hash) {
         var ctx = access(order, true);
-        String hash = fingerprint("CREATE_DRAFT", req);
         var replay = replay(order, ctx.actor(), req.command(), hash);
 
         if (replay.isPresent()) {
@@ -162,18 +183,13 @@ public class OperationalPlanService {
         }
         requireVersion(ctx.parent(), req.command(), req.revisionId());
         OperationalPlanPolicy.validateLegs(req.legs());
-        Long confirmer = distanceConfirmer(order, ctx.actor());
+        Long confirmer = ctx.actor().staffId();
 
         for (PlanLegInput leg : req.legs()) {
             if (leg.supplierId() != null
                     && !resources.activeSupplier(leg.supplierId())) {
                 throw conflict("SUPPLIER_INACTIVE",
                         "Leg supplier is inactive or missing.");
-            }
-            if (leg.distanceSource() != null && confirmer == null) {
-                throw conflict("COORDINATOR_REQUIRED_FOR_DISTANCE",
-                        "An active assigned Coordinator is required to "
-                                + "confirm sourced leg distances.");
             }
         }
         var now = now();
@@ -203,6 +219,7 @@ public class OperationalPlanService {
         } else {
             plans.touchOrder(order);
         }
+        plans.recordAirfareEstimate(req, planId, ctx.actor().staffId(), now);
         return finish(order, planId, ctx.actor(), req.command(),
                 "CREATE_DRAFT", hash);
     }
@@ -221,6 +238,9 @@ public class OperationalPlanService {
         }
         var summary = editablePlan(ctx.parent(), plan, req.command());
         var targetLeg = findLeg(plan, leg, PlanLegMode.ROAD);
+
+        OperationalPlanPolicy.requireDeposit(
+                booking.internal(order).canAssignDriver(), true);
 
         availability.requireAvailable(ResourceKind.VEHICLE, req.vehicleId(),
                 new ResourceAvailabilityRequest(order, summary.revisionId(),
@@ -263,6 +283,9 @@ public class OperationalPlanService {
         var summary = editablePlan(ctx.parent(), plan, req.command());
         var targetLeg = findLeg(plan, leg, PlanLegMode.AIR);
 
+        OperationalPlanPolicy.requireDeposit(
+                booking.internal(order).canAssignDriver(), false);
+
         OperationalPlanPolicy.validateStallRequest(req);
         availability.requireAvailable(ResourceKind.STALL, req.stallId(),
                 new ResourceAvailabilityRequest(order, summary.revisionId(),
@@ -302,6 +325,8 @@ public class OperationalPlanService {
         }
         var summary = editablePlan(ctx.parent(), plan, req.command());
         findLeg(plan, leg, PlanLegMode.AIR);
+        OperationalPlanPolicy.requireDeposit(
+                booking.internal(order).canAssignDriver(), false);
         var now = now();
         var snapshot = json.snapshot(orders.revision(order,
                 summary.revisionId()).orElseThrow(this::missing).snapshot());
@@ -449,13 +474,13 @@ public class OperationalPlanService {
                     "Plan has unresolved blockers: "
                             + String.join(", ", blockers));
         }
+        resources.lock();
         if (plans.lockHorseAndCheckOverlap(order, summary.plannedStartTime(),
                 summary.plannedEndTime())) {
             throw conflict("HORSE_SCHEDULE_OVERLAP",
                     "Horse has an overlapping active operational plan on "
                             + "another order.");
         }
-        resources.lock();
         try {
             plans.confirmPlan(order, plan, req.acceptedQuoteId(), now);
         } catch (DataAccessException error) {
@@ -555,16 +580,6 @@ public class OperationalPlanService {
             throw conflict("PLAN_REVISION_CONFLICT",
                     "Plan must target the current approved order revision.");
         }
-    }
-
-    private Long distanceConfirmer(long order, CurrentActor actor) {
-        if ("COORDINATOR".equals(actor.roleCode())) {
-            return actor.staffId();
-        }
-        return cases.assignments(order, true, 0, 20).stream()
-                .filter(a -> "COORDINATOR".equals(a.role())
-                        && cases.activeStaff(a.staffId(), "COORDINATOR"))
-                .map(a -> a.staffId()).findFirst().orElse(null);
     }
 
     private AccessContext access(long order, boolean write) {

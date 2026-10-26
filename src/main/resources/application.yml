@@ -28,6 +28,10 @@ spring:
   jackson:
     deserialization:
       fail-on-unknown-properties: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
   mail:
     host: ${EQ_SMTP_HOST:localhost}
     port: ${EQ_SMTP_PORT:587}
@@ -43,6 +47,11 @@ server:
   address: ${EQ_BIND_ADDRESS:127.0.0.1}
   port: ${EQ_PORT:8080}
 app:
+  geocoding:
+    search-url: ${EQ_NOMINATIM_SEARCH_URL:https://nominatim.openstreetmap.org/search}
+    user-agent: ${EQ_NOMINATIM_USER_AGENT:EquiTransit-Address/1.0}
+  storage:
+    directory: ${EQ_STORAGE_DIRECTORY:storage/uploads/documents}
   jwt:
     secret: ${EQ_JWT_SECRET:dGVzdC1vbmx5LWtleS1mb3ItZXF1aXRyYW5zaXQtYXV0aC10ZXN0cw==}
     issuer: equitransit

@@ -3,7 +3,7 @@
  * Author: EquiTransit development team
  * Date: 2026-10-18
  * Copyright: EquiTransit project contributors.
- * Purpose: Entity mapping for dbo.TripHandover table (F14 custody transfer).
+ * Purpose: JDBC model for dbo.TripHandover table (F14 custody transfer).
  */
 package com.equitransit.backend.entity.handover;
 
@@ -34,7 +34,7 @@ public class TripHandover {
     private Long respondedByCustomerId;
     private String evidenceFilesJson;
 
-    /** Default constructor. */
+    /** Default constructor for JDBC row mapping. */
     public TripHandover() { }
 
     /** @return primary key */

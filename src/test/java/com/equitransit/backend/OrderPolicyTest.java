@@ -10,6 +10,7 @@ package com.equitransit.backend;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -19,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
+import com.equitransit.backend.dto.request.HealthDeclaration;
 import com.equitransit.backend.dto.order.request.OrderDraftRequest;
 import com.equitransit.backend.entity.order.ImportType;
 import com.equitransit.backend.dto.order.request.OrderServicePreferences;
@@ -197,6 +199,47 @@ public class OrderPolicyTest {
 
         assertThatThrownBy(() -> policy.requireComplete(missingImport, true))
                 .isInstanceOf(OrderException.class);
+    }
+
+    /** The health statement is trimmed and kept with the request. */
+    @Test
+    public void healthDeclarationIsNormalizedAndStored() {
+        OrderDraftRequest input = complete();
+        OrderDraftRequest normalized;
+
+        input.setHealthDeclaration(new HealthDeclaration(true,
+                LocalDate.parse("2026-08-20"), "  FEI passport p.12 ", " ",
+                true));
+        normalized = policy.normalize(input);
+        assertThat(normalized.getHealthDeclaration()).isEqualTo(
+                new HealthDeclaration(true, LocalDate.parse("2026-08-20"),
+                        "FEI passport p.12", null, true));
+        assertThat(json.readDraft(json.draft(normalized))
+                .getHealthDeclaration()).isEqualTo(
+                        normalized.getHealthDeclaration());
+    }
+
+    /** A dose date without a vaccinated answer is contradictory. */
+    @Test
+    public void vaccinationDateNeedsVaccinatedAnswer() {
+        OrderDraftRequest input = complete();
+
+        input.setHealthDeclaration(new HealthDeclaration(false,
+                LocalDate.parse("2026-08-20"), null, null, true));
+        assertThatThrownBy(() -> policy.normalize(input))
+                .isInstanceOf(OrderException.class);
+    }
+
+    /** Future doses and oversized references fail bean validation. */
+    @Test
+    public void healthDeclarationBoundsAreValidated() {
+        OrderDraftRequest input = complete();
+
+        input.setHealthDeclaration(new HealthDeclaration(true,
+                LocalDate.now().plusDays(2), "x".repeat(101), null, true));
+        try (var factory = Validation.buildDefaultValidatorFactory()) {
+            assertThat(factory.getValidator().validate(input)).hasSize(2);
+        }
     }
 
     private OrderDraftRequest complete() {

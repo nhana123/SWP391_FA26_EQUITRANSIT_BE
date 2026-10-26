@@ -9,6 +9,7 @@ package com.equitransit.backend.repository.quote;
 
 
 import com.equitransit.backend.dto.quote.QuoteSchedule;
+import com.equitransit.backend.dto.quote.QuoteScheduleView;
 import com.equitransit.backend.dto.quote.QuoteSummary;
 import com.equitransit.backend.dto.quote.SupplierOfferRequest;
 import com.equitransit.backend.entity.quote.QuoteRecord;
@@ -156,7 +157,7 @@ public class QuoteRepository {
      * @param snapshot typed, validated captured prices
      * @return generated quote identity
      */
-    public long prepare(long order, long staff, QuoteSnapshot snapshot) {
+    public long prepare(long order, Long staff, QuoteSnapshot snapshot) {
         var request = snapshot.request();
         Integer version = jdbc.queryForObject("SELECT COALESCE(MAX("
                 + "q.VersionNo),0)+1 FROM dbo.Quote q"
@@ -199,6 +200,13 @@ public class QuoteRepository {
                     && (s.code().equals(line.code())
                             || line.code().startsWith(s.code() + "_"))
                     && s.unit().equals(line.unit())).findFirst().orElse(null);
+            var offer = snapshot.sources().stream().filter(s -> s.offer()
+                    && "AIRFARE".equals(line.code())
+                    && s.code().equals(line.code())
+                    && s.unit().equals(line.unit())
+                    && s.rate().compareTo(new BigDecimal(line.unitRate())) == 0
+                    && s.quantity().compareTo(new BigDecimal(line.quantity()))
+                            == 0).findFirst().orElse(null);
 
             values.add(new MapSqlParameterSource("quote", id)
                     .addValue("code", line.code())
@@ -211,8 +219,9 @@ public class QuoteRepository {
                     .addValue("tariff", evidence == null
                             ? tariff == null ? null : tariff.id()
                             : evidence.tariffId())
-                    .addValue("offer", evidence == null ? null
-                            : evidence.offerId())
+                    .addValue("offer", evidence != null
+                            && evidence.offerId() != null ? evidence.offerId()
+                                    : offer == null ? null : offer.id())
                     .addValue("inputs", json.write(java.util.Map.of(
                             "schemaVersion", 1, "line", line,
                             "revisionId", request.revisionId(),
@@ -352,6 +361,22 @@ public class QuoteRepository {
                                 row.getString("PaymentStage"),
                                 row.getBigDecimal("AmountDue").toPlainString(),
                                 time(row.getTimestamp("DueAt"))));
+    }
+
+    /**
+     * @param quote parent-authorized persisted quotation
+     * @return schedule keys required for exact payment request commands
+     */
+    public List<QuoteScheduleView> scheduleViews(long quote) {
+        return jdbc.query("SELECT ScheduleID,SequenceNo,PaymentStage,"
+                + "AmountDue,DueAt FROM dbo.QuotePaymentSchedule"
+                + " WHERE QuoteID=:id ORDER BY SequenceNo",
+                new MapSqlParameterSource("id", quote), (row, index) ->
+                new QuoteScheduleView(row.getLong("ScheduleID"),
+                        row.getInt("SequenceNo"),
+                        row.getString("PaymentStage"),
+                        row.getBigDecimal("AmountDue").toPlainString(),
+                        time(row.getTimestamp("DueAt"))));
     }
 
     /**

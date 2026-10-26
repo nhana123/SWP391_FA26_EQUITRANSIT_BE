@@ -37,6 +37,19 @@ public final class OperationalPlanPolicy {
 
     private OperationalPlanPolicy() { }
 
+    /** @param satisfied fully reconciled current-revision deposit
+     * @param road true for road assignment, false for air equipment/flight */
+    public static void requireDeposit(boolean satisfied, boolean road) {
+        if (!satisfied) {
+            throw new OrderException(HttpStatus.CONFLICT, road
+                    ? "DEPOSIT_REQUIRED_BEFORE_ROAD_ASSIGNMENT"
+                    : "DEPOSIT_REQUIRED_BEFORE_AIR_ASSIGNMENT",
+                    "Đơn vận chuyển chưa hoàn tất thanh toán tiền cọc "
+                            + "(Deposit). Vui lòng chờ khách hàng đặt cọc "
+                            + "trước khi điều phối tài xế và phương tiện.");
+        }
+    }
+
     /** @param status plan state @return whether mutations are permitted */
     public static boolean editable(PlanState status) {
         return status == PlanState.DRAFT || status == PlanState.PROPOSED
@@ -52,6 +65,15 @@ public final class OperationalPlanPolicy {
         OffsetDateTime previousArrival = null;
 
         for (PlanLegInput leg : legs) {
+            if (leg.estimatedAirfare() != null
+                    && (leg.transportMode() != PlanLegMode.AIR
+                        || leg.estimatedAirfare().signum() <= 0
+                        || leg.estimatedAirfare().scale() > 2
+                        || leg.estimatedAirfare().setScale(4)
+                                .precision() > 18)) {
+                throw badRequest("PLAN_AIRFARE_INVALID",
+                        "Provide a positive AIR-only monetary estimate.");
+            }
             if (leg.sequenceNo() != expectedSeq++) {
                 throw badRequest("PLAN_SEQUENCE_INVALID",
                         "Leg sequence numbers must be consecutive from 1.");
@@ -98,7 +120,8 @@ public final class OperationalPlanPolicy {
     /** @param req stall assignment command */
     public static void validateStallRequest(PlanStallAssignmentRequest req) {
         if (req.status() == AssignmentState.CANCELLED
-                || req.status() == AssignmentState.INACTIVE) {
+                || req.status() == AssignmentState.INACTIVE
+                || req.status() == AssignmentState.COMPLETED) {
             throw badRequest("STALL_ASSIGNMENT_STATUS_INVALID",
                     "Use HELD or CONFIRMED when assigning a stall.");
         }

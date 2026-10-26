@@ -41,6 +41,8 @@ import com.equitransit.backend.repository.assessment.AssessmentRepository;
 import com.equitransit.backend.security.CurrentActor;
 import com.equitransit.backend.security.CurrentActorService;
 import com.equitransit.backend.security.TokenTools;
+import com.equitransit.backend.service.BookingFlowService;
+import com.equitransit.backend.service.ComplianceApprovalProvisioner;
 import com.equitransit.backend.service.order.OrderCommitmentPolicy;
 
 
@@ -57,6 +59,9 @@ public class OrderAssessmentService {
     private final OrderCommitmentPolicy commitments;
     private final OrderJsonCodec json;
     private final ObjectMapper mapper;
+    private org.springframework.context.ApplicationEventPublisher events;
+    private BookingFlowService booking;
+
 
     /**
      * Creates the Manager assessment facade.
@@ -79,6 +84,19 @@ public class OrderAssessmentService {
         this.commitments = commitments;
         this.json = json;
         this.mapper = mapper;
+    }
+
+    /** @param booking initial fixed-road approval boundary */
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configureBooking(BookingFlowService booking) {
+        this.booking = booking;
+    }
+
+    /** @param publisher same-transaction domain notifications */
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configureEvents(
+            org.springframework.context.ApplicationEventPublisher publisher) {
+        events = publisher;
     }
 
     /**
@@ -108,7 +126,13 @@ public class OrderAssessmentService {
         }
         policy.version(order, request.recordVersion());
         policy.decision(order, request);
-        requireUncommitted(id);
+        boolean initialRoad = booking != null && order.revisionId() != null
+                && "SUBMITTED".equals(order.status())
+                && request.decision() == DecisionCode.APPROVED
+                && booking.automaticRoad(id, order.revisionId());
+        if (!initialRoad) {
+            requireUncommitted(id);
+        }
         policy.requireFuture(request.dueAt());
         before = active(id);
         if (request.decision() == DecisionCode.APPROVED) {
@@ -124,6 +148,17 @@ public class OrderAssessmentService {
                     actor.staffId(), request.dueAt(), request.assignmentNote());
         }
         transition(order, request.decision().name());
+        if (booking != null
+                && request.decision() == DecisionCode.APPROVED) {
+            booking.approved(id, request.revisionId());
+        }
+        if (initialRoad && booking.internal(id).isDepositSatisfied()) {
+            transition(parent(id), "IN_PREPARATION");
+        }
+        if (events != null && request.decision() == DecisionCode.APPROVED) {
+            events.publishEvent(new ComplianceApprovalProvisioner.Approved(
+                    id, request.revisionId(), actor.userId()));
+        }
         return finish(id, actor, request.operationId(), "DECIDE", hash,
                 request, before);
     }

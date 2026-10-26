@@ -42,6 +42,13 @@ public class LegalFilePolicy {
      * @return unchanged inspected bytes for immutable legal evidence
      */
     public byte[] inspect(String name, String mime, String encoded) {
+        return inspect(name, mime, encoded, MAX_BYTES);
+    }
+
+    /** @param name original name @param mime media type @param encoded bytes
+     * @param maxBytes endpoint limit @return parsed immutable content */
+    public byte[] inspect(String name, String mime, String encoded,
+            int maxBytes) {
         LegalEvidencePolicy.require(name.matches(
                 "[A-Za-z0-9][A-Za-z0-9_. -]{0,250}\\.(pdf|png|jpg|jpeg)")
                 && !name.contains(".."), "FILE_NAME_INVALID");
@@ -57,7 +64,7 @@ public class LegalFilePolicy {
             byte[] bytes = Base64.getDecoder().decode(encoded);
 
             LegalEvidencePolicy.require(bytes.length > 0
-                    && bytes.length <= MAX_BYTES, "FILE_SIZE_INVALID");
+                    && bytes.length <= maxBytes, "FILE_SIZE_INVALID");
             if (pdf) {
                 pdf(bytes);
             } else {

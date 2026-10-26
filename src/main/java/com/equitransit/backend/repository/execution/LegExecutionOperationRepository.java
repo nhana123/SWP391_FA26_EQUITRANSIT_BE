@@ -75,7 +75,9 @@ public class LegExecutionOperationRepository {
 
     /** @param time timezone-aware instant @return SQL datetime2 UTC */
     public static Timestamp utc(OffsetDateTime time) {
-        return time == null ? null : Timestamp.from(time.toInstant());
+        return time == null ? null : Timestamp.valueOf(time
+                .withOffsetSameInstant(java.time.ZoneOffset.UTC)
+                .toLocalDateTime());
     }
 
     private String sql(String key) {
@@ -158,6 +160,8 @@ public class LegExecutionOperationRepository {
                 + "(:leg,:staff,'WELFARE','CRITICAL',:at,"
                 + "'Urgent welfare observation; staff response required.',"
                 + "'OPEN'); SELECT ID FROM @ids;";
+            case "receiver" -> "SELECT ReceiverName, ReceiverAuthority "
+                + "FROM dbo.TransportOrder WHERE OrderID=:order";
             case "legCount" -> "SELECT COUNT_BIG(*) FROM dbo.TripLeg "
                 + "WHERE PlanID=:plan AND (:driver=0 OR LegID IN "
                 + "(SELECT LegID FROM dbo.TripAssignment WHERE "

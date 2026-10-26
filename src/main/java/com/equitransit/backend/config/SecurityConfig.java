@@ -18,6 +18,7 @@ import javax.crypto.spec.SecretKeySpec;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpMethod;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -204,10 +205,32 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/api/health", "/api/auth/**")
                         .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/routes/match")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/routes/address/search").permitAll()
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/routes/address/validate").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/lookups/countries",
+                                "/api/lookups/locations",
+                                "/api/lookups/hubs",
+                                "/api/lookups/document-templates",
+                                "/api/lookups/document-templates/**")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/manager/resources/**")
+                        .hasAnyRole("MANAGER", "COORDINATOR")
+                        .requestMatchers("/api/manager/locations",
+                                "/api/manager/locations/**")
+                         .hasAnyRole("MANAGER", "COORDINATOR")
                         .requestMatchers("/api/manager/**")
                         .hasRole("MANAGER")
                         .requestMatchers("/api/staff/**")
                         .hasAnyRole("SPECIALIST", "COORDINATOR")
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/transport-orders/*/booking-flow-status")
+                        .hasAnyRole("CUSTOMER", "MANAGER", "COORDINATOR")
                         .requestMatchers("/api/transport-orders/*/quotes",
                                 "/api/transport-orders/*/quotes/**")
                         .hasAnyRole("CUSTOMER", "MANAGER", "COORDINATOR")
@@ -221,6 +244,10 @@ public class SecurityConfig {
                                 "/api/transport-orders/*/compliance",
                                 "/api/transport-orders/*/compliance/**")
                         .hasAnyRole("CUSTOMER", "SPECIALIST")
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/transport-orders/*/plans/*/graph")
+                        .hasAnyRole("CUSTOMER", "MANAGER", "COORDINATOR",
+                                "DRIVER")
                         .requestMatchers(
                                 "/api/transport-orders/*/plans",
                                 "/api/transport-orders/*/plans/**")
@@ -238,6 +265,16 @@ public class SecurityConfig {
                                 "/api/transport-orders/*/legs/*/welfare-logs")
                         .hasAnyRole("CUSTOMER", "MANAGER",
                                 "COORDINATOR", "DRIVER")
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/transport-orders/*/handover-files/*")
+                        .hasAnyRole("CUSTOMER", "DRIVER", "COORDINATOR",
+                                "MANAGER")
+                        .requestMatchers(HttpMethod.POST,
+                                "/api/transport-orders/*/handover-files")
+                        .hasAnyRole("DRIVER", "COORDINATOR", "MANAGER")
+                        .requestMatchers(
+                                "/api/transport-orders/*/handovers/close-order")
+                        .hasRole("MANAGER")
                         .requestMatchers("/api/driver/**")
                         .hasRole("DRIVER")
                         .requestMatchers("/api/coordinator/**")

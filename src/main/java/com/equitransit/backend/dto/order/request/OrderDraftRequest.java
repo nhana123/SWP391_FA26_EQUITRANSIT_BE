@@ -21,11 +21,19 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import com.equitransit.backend.entity.order.ImportType;
+import com.equitransit.backend.dto.request.HealthDeclaration;
 
 
 /** Editable journey draft; complete submission is checked by the service. */
 @Schema(example = ApiExamples.DRAFT)
 public class OrderDraftRequest {
+
+    @Valid
+    @Schema(example = "{}", nullable = true,
+            description = "Optional city/airport/mode selection for routing")
+    @com.fasterxml.jackson.annotation.JsonInclude(
+            com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+    private com.equitransit.backend.dto.route.RouteMatchRequest route;
 
     @Positive
     @Schema(
@@ -189,6 +197,12 @@ public class OrderDraftRequest {
     @Schema(
             example = ApiExamples.SERVICES)
     private OrderServicePreferences services;
+
+    @Valid
+    @Schema(
+            example = ApiExamples.HEALTH_DECLARATION,
+            nullable = true)
+    private HealthDeclaration healthDeclaration;
 
 
     /**
@@ -541,5 +555,32 @@ public class OrderDraftRequest {
      */
     public void setServices(OrderServicePreferences services) {
         this.services = services;
+    }
+
+    /**
+     * Returns healthDeclaration.
+     * @return the healthDeclaration
+     */
+    public HealthDeclaration getHealthDeclaration() {
+        return healthDeclaration;
+    }
+
+    /**
+     * Sets healthDeclaration.
+     * @param healthDeclaration the value to store
+     */
+    public void setHealthDeclaration(HealthDeclaration healthDeclaration) {
+        this.healthDeclaration = healthDeclaration;
+    }
+
+    /** @return selected endpoints, never a client-supplied estimate */
+    public com.equitransit.backend.dto.route.RouteMatchRequest getRoute() {
+        return route;
+    }
+
+    /** @param route optional route selection */
+    public void setRoute(
+            com.equitransit.backend.dto.route.RouteMatchRequest route) {
+        this.route = route;
     }
 }

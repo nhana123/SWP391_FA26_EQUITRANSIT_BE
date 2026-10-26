@@ -32,7 +32,7 @@ public final class PlanModels {
     /** Plan version lifecycle state. */
     public enum PlanState {
         DRAFT, PROPOSED, PLANNED, CONFIRMED, ACTIVE, IN_TRANSIT,
-        SUPERSEDED, CANCELLED, REJECTED
+        COMPLETED, SUPERSEDED, CANCELLED, REJECTED
     }
 
     /** Gate readiness status on a transport plan. */
@@ -50,7 +50,9 @@ public final class PlanModels {
     public enum TripRole { DRIVER, GROOM, ATTENDANT, VETERINARIAN, ESCORT }
 
     /** Assignment status for staff or physical stall equipment. */
-    public enum AssignmentState { HELD, CONFIRMED, ACTIVE, CANCELLED, INACTIVE }
+    public enum AssignmentState {
+        HELD, CONFIRMED, ACTIVE, COMPLETED, CANCELLED, INACTIVE
+    }
 
     /** Reservation or policy confirmation status; HELD is never CONFIRMED. */
     public enum ReservationState { HELD, CONFIRMED, CANCELLED, EXPIRED }
@@ -98,7 +100,25 @@ public final class PlanModels {
             @Schema(example = "0", minimum = "0", maximum = "525600")
             @Min(0) @Max(525600) Integer restDurationMinutes,
             @Schema(example = "Provide water before boarding.")
-            @Size(min = 1, max = 2000) String careInstructions) { }
+            @Size(min = 1, max = 2000) String careInstructions,
+            @Schema(example = "1500.00", nullable = true)
+            @DecimalMin("0.01") @Digits(integer = 14, fraction = 2)
+            BigDecimal estimatedAirfare) {
+        /** Legacy callers may omit the optional airfare estimate. */
+        public PlanLegInput(int sequenceNo, PlanLegMode transportMode,
+                String startPoint, String endPoint, BigDecimal distanceKm,
+                String distanceSource, OffsetDateTime plannedDeparture,
+                OffsetDateTime plannedArrival, String startTimezone,
+                String endTimezone, Long supplierId,
+                String plannedFlightNumber, Integer connectionBufferMinutes,
+                Integer restDurationMinutes, String careInstructions) {
+            this(sequenceNo, transportMode, startPoint, endPoint, distanceKm,
+                    distanceSource, plannedDeparture, plannedArrival,
+                    startTimezone, endTimezone, supplierId,
+                    plannedFlightNumber, connectionBufferMinutes,
+                    restDurationMinutes, careInstructions, null);
+        }
+    }
 
     /** Command to create a new immutable version of a transport plan. */
     public record PlanDraftRequest(

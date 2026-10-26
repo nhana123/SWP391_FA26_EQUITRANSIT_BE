@@ -74,6 +74,7 @@ public class AssessmentRepository {
                 + " JOIN dbo.[User] u WITH (UPDLOCK,HOLDLOCK)"
                 + " ON u.UserID=s.UserID JOIN dbo.[Role] r WITH (HOLDLOCK)"
                 + " ON r.RoleID=u.RoleID WHERE s.StaffID=:staff"
+                + " AND s.StaffStatus='ACTIVE'"
                 + " AND u.Status='ACTIVE' AND r.RoleCode=:role",
                 new MapSqlParameterSource("staff", staff)
                         .addValue("role", role), Integer.class);

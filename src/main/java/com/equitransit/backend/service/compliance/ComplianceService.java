@@ -15,6 +15,7 @@ import com.equitransit.backend.dto.compliance.ComplianceAuthorityView;
 import com.equitransit.backend.dto.compliance.ComplianceChecklistRequest;
 import com.equitransit.backend.dto.compliance.request.ComplianceClearanceRequest;
 import com.equitransit.backend.dto.compliance.ComplianceDocumentView;
+import com.equitransit.backend.dto.compliance.ComplianceDocumentsView;
 import com.equitransit.backend.dto.compliance.ComplianceFileRequest;
 import com.equitransit.backend.dto.compliance.ComplianceFileView;
 import com.equitransit.backend.dto.compliance.ComplianceRequirementView;
@@ -24,6 +25,9 @@ import com.equitransit.backend.dto.compliance.ComplianceRuleRequest;
 import com.equitransit.backend.dto.compliance.ComplianceRuleView;
 import com.equitransit.backend.dto.compliance.ComplianceSubmissionRequest;
 import com.equitransit.backend.dto.compliance.ComplianceUploadRequest;
+import com.equitransit.backend.dto.compliance.ComplianceUploadSubmitRequest;
+import com.equitransit.backend.dto.compliance.ComplianceAttachmentView;
+import com.equitransit.backend.entity.compliance.RequirementStatus;
 import com.equitransit.backend.dto.quote.QuoteCommand;
 import com.equitransit.backend.dto.compliance.ComplianceReceipt;
 import com.equitransit.backend.dto.compliance.ComplianceOverview;
@@ -35,6 +39,8 @@ import com.equitransit.backend.entity.activity.ActivityCode;
 import com.equitransit.backend.exception.order.OrderException;
 import com.equitransit.backend.json.order.OrderJsonCodec;
 import com.equitransit.backend.repository.compliance.ComplianceRepository;
+import com.equitransit.backend.service.ComplianceAutomation;
+import com.equitransit.backend.service.FileStorageService;
 import com.equitransit.backend.repository.assessment.AssessmentRepository;
 import com.equitransit.backend.repository.order.OrderRepository;
 import com.equitransit.backend.security.CurrentActorService;
@@ -83,6 +89,9 @@ public class ComplianceService {
     private final OrderJsonCodec json;
     private final ObjectMapper mapper;
     private final Clock clock;
+    private final ComplianceAutomation automation;
+    private FileStorageService localFiles;
+
 
     /**
      * @param data legal persistence @param cases parent locks
@@ -91,6 +100,7 @@ public class ComplianceService {
      * @param commitments estimate invalidation @param audit append-only events
      * @param files inspected private files @param json receipt encoding
      * @param mapper receipt decoding @param clock UTC clock
+     * @param automation route and default checklist provisioning
      */
     public ComplianceService(ComplianceRepository data,
             AssessmentRepository cases, OrderRepository orders,
@@ -98,7 +108,7 @@ public class ComplianceService {
             ComplianceReadinessFacade readiness,
             OrderCommitmentPolicy commitments, AuditWriter audit,
             LegalFilePolicy files, OrderJsonCodec json, ObjectMapper mapper,
-            Clock clock) {
+            Clock clock, ComplianceAutomation automation) {
         this.data = data;
         this.cases = cases;
         this.orders = orders;
@@ -111,6 +121,7 @@ public class ComplianceService {
         this.json = json;
         this.mapper = mapper;
         this.clock = clock;
+        this.automation = automation;
     }
 
     /** @param order owned case @param body sourced rule @return new version */
@@ -167,36 +178,22 @@ public class ComplianceService {
             require(body.validUntil().isAfter(now()), "CHECKLIST_DATES");
             var route = data.rows("route", args).getFirst();
             String airports = String.valueOf(route.get("TransitAirportsJSON"));
-
+            var transits = automation.transits(args,
+                    body.transitCountryCodes());
             require(airports.equals("null") || airports.equals("[]")
-                    || !body.transitCountryCodes().isEmpty(),
+                    || !transits.isEmpty(),
                     "TRANSIT_COUNTRIES_PENDING");
-            require(body.transitCountryCodes().stream().distinct().count()
-                    == body.transitCountryCodes().size(), "TRANSIT_DUPLICATE");
-            args.put("phase", body.phase().name());
-            args.put("transits", json.write(body.transitCountryCodes()));
-            var rules = data.rows("rules", args);
-
-            require(rules.size() <= 100, "RULE_LIMIT_EXCEEDED");
-            args.put("rules", json.write(rules.stream().map(r ->
-                    number(r, "RuleID")).toList()));
-            args.put("source", body.sourceReference());
-            args.put("until", time(body.validUntil()));
-            args.put("checklistSnapshot", json.write(Map.of(
-                    "schemaVersion", 1, "transitCountryCodes",
-                    body.transitCountryCodes(), "ruleIds", rules.stream()
-                            .map(r -> number(r, "RuleID")).toList(),
-                    "sourceReference", body.sourceReference(),
-                    "validUntil", body.validUntil())));
-            data.update("checklistHistory", args);
-            data.update("checklistDelete", args);
-            data.update("checklistInsert", args);
-            data.update("oldRequirements", args);
-            data.update("requirementInsert", args);
-            data.update("requirementReactivate", args);
+            automation.save(args, body.phase(), transits,
+                    body.sourceReference(), body.validUntil());
             data.update("invalidate", args);
             return ((Number) args.get("revision")).longValue();
         });
+    }
+
+    /** @param storage private storage shared by multipart and submission */
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configureLocalStorage(FileStorageService storage) {
+        localFiles = storage;
     }
 
     /** @param order owned case @param body immutable version 
@@ -223,9 +220,107 @@ public class ComplianceService {
             args.put("number", body.documentNumber());
             args.put("issued", java.sql.Date.valueOf(body.issuedDate()));
             args.put("expiry", java.sql.Date.valueOf(body.expiryDate()));
+            args.put("expires", null);
             data.update("invalidate", args);
             return data.insert("versionInsert", args);
         });
+    }
+
+    /** @param order owned or assigned case @param id requirement
+     * @param body file and concurrency command @return atomic submission */
+    public ComplianceReceipt uploadAndSubmit(long order, long id,
+            @Valid ComplianceUploadSubmitRequest body) {
+        var command = new QuoteCommand(body.recordVersion(),
+                body.operationId());
+        return mutate(order, command, "UPLOAD_SUBMIT:" + id,
+                submissionFingerprint(body), false,
+                args -> {
+                    args.put("id", id);
+                    var requirement = one("requirement", args);
+                    args.put("type", requirement.get("DocumentType"));
+                    int choices = (body.fileKey() == null ? 0 : 1)
+                            + (body.existingDocumentVersionId() == null ? 0 : 1)
+                            + (body.contentBase64() == null ? 0 : 1);
+                    require(choices == 1, "DOCUMENT_SOURCE_REQUIRED");
+                    if (body.existingDocumentVersionId() != null) {
+                        args.put("id", body.existingDocumentVersionId());
+                        var version = one("version", args);
+                        require(version.get("DocumentType").equals(
+                                requirement.get("DocumentType")),
+                                "DOCUMENT_TYPE_MISMATCH");
+                        require(version.get("RevokedAt") == null
+                                && date(version, "IssuedDate") != null
+                                && !date(version, "IssuedDate").isAfter(
+                                        now().toLocalDate())
+                                && documentExpiry(version) != null
+                                && documentExpiry(version).isAfter(now()),
+                                "DOCUMENT_EXPIRED_OR_REVOKED");
+                        checkPolicyAge(args, date(version, "IssuedDate"));
+                        require(data.rows("latestVersion", args).stream()
+                                .anyMatch(v -> number(v, "DocumentVersionID")
+                                == body.existingDocumentVersionId()),
+                                "DOCUMENT_VERSION_SUPERSEDED");
+                        args.put("requirement", id);
+                        args.put("version", body.existingDocumentVersionId());
+                        data.update("invalidate", args);
+                        return data.insert("submissionInsert", args);
+                    }
+                    var issued = body.issuedDate() == null
+                            ? now().toLocalDate() : body.issuedDate();
+                    require(body.fileKey() == null
+                            || body.issuedDate() != null
+                            && body.expiryDate() != null,
+                            "DOCUMENT_DATES_REQUIRED");
+                    require(body.expiryDate() == null
+                            || body.expiryDate().getYear() <= 9997
+                            && !body.expiryDate().isBefore(issued),
+                            "DOCUMENT_DATES_INVALID");
+                    var expires = body.expiresAt() != null ? body.expiresAt()
+                            : body.expiryDate() == null ? null
+                            : body.expiryDate().plusDays(1).atStartOfDay()
+                                    .atOffset(ZoneOffset.UTC);
+                    require(expires != null && expires.isAfter(now())
+                            && expires.getYear() <= 9997
+                            && !issued.isAfter(now().toLocalDate())
+                            && !issued.isAfter(expires.toLocalDate()),
+                            "DOCUMENT_DATES_INVALID");
+                    checkPolicyAge(args, issued);
+                    var types = data.rows("catalog", args);
+                    require(!types.isEmpty() && Boolean.TRUE.equals(
+                            types.getFirst().get("IsActive")),
+                            "DOCUMENT_TYPE_UNKNOWN");
+                    if (body.fileKey() == null) {
+                        require(body.fileName() != null
+                                && body.contentType() != null,
+                                "FILE_TYPE_INVALID");
+                        storeFile(args, body.fileName(), body.contentType(),
+                                body.contentBase64());
+                    } else {
+                        var meta = localFiles.metadata(body.fileKey());
+                        args.put("key", meta.fileKey().toString());
+                        args.put("name", meta.fileName());
+                        args.put("mime", meta.contentType());
+                        args.put("length", meta.fileSizeBytes());
+                        args.put("fileHash", localHash(meta.fileKey()));
+                    }
+                    var documents = data.rows("document", args);
+                    args.put("document", documents.isEmpty()
+                            ? data.insert("documentInsert", args)
+                            : number(documents.getFirst(), "DocumentID"));
+                    args.put("number", body.documentNumber() == null
+                            ? body.referenceNumber() : body.documentNumber());
+                    args.put("issued", java.sql.Date.valueOf(issued));
+                    args.put("expiry", java.sql.Date.valueOf(
+                            body.expiryDate() == null ? expires
+                                    .withOffsetSameInstant(ZoneOffset.UTC)
+                                    .toLocalDate() : body.expiryDate()));
+                    args.put("expires", time(expires));
+                    long version = data.insert("versionInsert", args);
+                    args.put("requirement", id);
+                    args.put("version", version);
+                    data.update("invalidate", args);
+                    return data.insert("submissionInsert", args);
+                });
     }
 
     /** @param order assigned case @param body authority file @return key */
@@ -268,6 +363,11 @@ public class ComplianceService {
                 args -> {
                     args.put("id", id);
                     one("submission", args);
+                    require(body.decision() != com.equitransit.backend.entity
+                            .compliance.LegalDecision.REJECTED
+                            || body.feedback() != null
+                                    && !body.feedback().isBlank(),
+                            "REJECTION_REASON_REQUIRED");
                     args.put("decision", body.decision().name());
                     args.put("feedback", body.feedback());
                     data.update("invalidate", args);
@@ -285,6 +385,7 @@ public class ComplianceService {
 
             require(!rules.isEmpty(), "RULE_NOT_IN_CHECKLIST");
             args.put("phase", rules.getFirst().get("PhaseCode"));
+            args.put("procedure", "LEGAL_APPROVAL");
             args.put("rule", body.ruleId());
             args.put("decision", body.decision().name());
             args.put("authorityName", body.authorityName());
@@ -353,13 +454,17 @@ public class ComplianceService {
             long revision = (long) args.get("revision");
             var assessment = readiness.evaluate(order, revision, body.phase(),
                     now(), false);
-
-            require(assessment.blockers().isEmpty(), "CLEARANCE_BLOCKED");
+            require(assessment.blockers().stream().allMatch(b ->
+                    b.equals("AUTHORITY_EVIDENCE_PENDING")),
+                    "CLEARANCE_BLOCKED");
             require(body.expiresAt().isAfter(now())
                     && assessment.expiresAt() != null
                     && !body.expiresAt().isAfter(assessment.expiresAt()),
                     "CLEARANCE_EXPIRY_INVALID");
             args.put("phase", body.phase().name());
+            completeProcedures(args, body.expiresAt());
+            require(readiness.evaluate(order, revision, body.phase(), now(),
+                    false).blockers().isEmpty(), "CLEARANCE_BLOCKED");
             args.put("until", time(body.expiresAt()));
             return data.insert("clearanceInsert", args);
         });
@@ -385,8 +490,24 @@ public class ComplianceService {
      * @param size bounded limit @return safe checklist and fresh gate */
     public ComplianceOverview overview(long order, CompliancePhase phase,
             int page, int size) {
-        var args = access(order, false);
+        return overview(order, phase, page, size, false);
+    }
 
+    /** @param order owned/assigned @param phase phase @param page page
+     * @param size limit @param bootstrap provision absent phase checklists
+     * @return requirements, latest attachments and review feedback */
+    public ComplianceOverview overview(long order, CompliancePhase phase,
+            int page, int size, boolean bootstrap) {
+        var args = access(order, false);
+        var parent = cases.order(order, false).orElseThrow();
+        if (bootstrap && java.util.Set.of("APPROVED", "IN_PREPARATION",
+                "CONFIRMED", "IN_TRANSIT").contains(parent.status())
+                && automation.bootstrap(args)) {
+            data.update("bump", args);
+            audit.append(order, ActivityCode.UPDATED, UUID.randomUUID(),
+                    mapper.valueToTree(Map.of("action",
+                            "COMPLIANCE_AUTO_BOOTSTRAP")));
+        }
         args.put("phase", phase.name());
         var rows = data.rows("requirements", args);
 
@@ -395,9 +516,7 @@ public class ComplianceService {
                 .map(r -> new ComplianceRequirementView(
                         number(r, "RequirementID"), number(r, "RuleID"),
                         r.get("DocumentType").toString(), phase,
-                        com.equitransit.backend.entity.compliance.
-                                RequirementStatus
-                                .valueOf(r.get("Status").toString()),
+                        requirementStatus(r),
                         nullableId(r,
                                 "SubmissionID"), nullableId(r,
                                         "DocumentVersionID"),
@@ -405,7 +524,8 @@ public class ComplianceService {
                                 : com.equitransit.backend.entity.compliance.
                                         LegalDecision.valueOf(r.get(
                                                 "Decision").toString()),
-                        (String) r.get("Instructions")))
+                        (String) r.get("Instructions"),
+                        (String) r.get("Feedback"), attachment(r)))
                 .toList();
         long revision = (long) args.get("revision");
 
@@ -432,13 +552,61 @@ public class ComplianceService {
                         at(r, "RevokedAt"))).toList();
     }
 
+    /** @param order owned/assigned @param phase optional phase @param page page
+     * @param size limit @return required documents and reusable horse papers */
+    public ComplianceDocumentsView documentChecklist(long order,
+                    CompliancePhase phase, int page,
+                    int size) {
+        var args = access(order, false);
+        var entries = new java.util.ArrayList<
+                ComplianceDocumentsView.Requirement>();
+        var phases = phase == null ? List.of(CompliancePhase.values())
+                : List.of(phase);
+        for (var item : phases) {
+            for (var r : overview(order, item, 0, 100, true).requirements()) {
+                entries.add(new ComplianceDocumentsView.Requirement(
+                                r.requirementId(),
+                                number(args, "horse"), r.documentType(),
+                                r.phase(), r.status()
+                                        == RequirementStatus.PENDING
+                                        ? "PENDING_SUBMISSION"
+                                        : r.status().name(), r.submissionId(),
+                                r.documentVersionId(), r.instructions(),
+                                r.feedback(), r.attachment()));
+            }
+        }
+        return new ComplianceDocumentsView(cases.order(order, false)
+                        .orElseThrow().version(), entries.stream()
+                                .skip((long) page * size).limit(size).toList(),
+                        documents(order, page, size), entries.size(),
+                        page, size);
+    }
+
     /** @param order owned/assigned @param key opaque identity 
      * @return content */
     public ComplianceFileView file(long order, UUID key) {
         var args = access(order, false);
 
         args.put("key", key);
-        var row = one("fileRead", args);
+        var saved = data.rows("fileRead", args);
+        if (saved.isEmpty() && localFiles != null) {
+            args.put("key", key.toString());
+            require(!data.rows("fileVersion", args).isEmpty(),
+                    "LEGAL_EVIDENCE_NOT_FOUND");
+            var meta = localFiles.metadata(key);
+            try (var stream = localFiles.loadAsResource(key.toString())
+                    .getInputStream()) {
+                return new ComplianceFileView(key, meta.contentType(),
+                        meta.fileName(), Base64.getEncoder().encodeToString(
+                                stream.readAllBytes()));
+            } catch (java.io.IOException error) {
+                throw missing();
+            }
+        }
+        if (saved.isEmpty()) {
+            throw missing();
+        }
+        var row = saved.getFirst();
 
         return new ComplianceFileView(key, row.get("ContentType").toString(),
                 row.get("OriginalFileName").toString(), Base64.getEncoder()
@@ -451,9 +619,18 @@ public class ComplianceService {
 
         args.put("phase", phase.name());
         var checklist = data.rows("checklist", args);
-
-        args.put("transits", checklist.isEmpty() ? "[]"
-                : checklist.getFirst().get("TransitCountriesJSON"));
+        var transits = automation.transits(args, null);
+        if (!checklist.isEmpty()) {
+            try {
+                transits = automation.transits(args, java.util.Arrays.asList(
+                        mapper.readValue(checklist.getFirst().get(
+                                "TransitCountriesJSON").toString(),
+                                String[].class)));
+            } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+                throw new IllegalStateException("Invalid transit snapshot.", e);
+            }
+        }
+        automation.ensureRules(args, transits);
         return data.rows("rules", args).stream().map(r ->
                 new ComplianceRuleView(number(r, "RuleID"),
                         (String) r.get("RuleCode"), (int) r.get("VersionNo"),
@@ -528,20 +705,91 @@ public class ComplianceService {
      * @return true when quarantine release clearance passed
      */
     public boolean quarantineReleasePassed(long order) {
-        var args = access(order, false);
-        args.put("phase", "QUARANTINE_RELEASE");
-        var rows = data.rows("clearance", args);
-        if (rows.isEmpty()) {
-            return false;
+        return data.quarantineReleasePassed(order);
+    }
+
+    private void completeProcedures(Map<String, Object> args,
+            OffsetDateTime expires) {
+        var checklist = data.rows("checklist", args).getFirst();
+        args.put("transits", checklist.get("TransitCountriesJSON"));
+        var requirements = data.rows("requirements", args);
+        var procedures = data.rows("procedures", args);
+        for (var rule : data.rows("rules", args)) {
+            long ruleId = number(rule, "RuleID");
+            var existing = procedures.stream().filter(p ->
+                    number(p, "RuleID") == ruleId).findFirst().orElse(null);
+            if (!Boolean.TRUE.equals(rule.get("AuthorityRequired"))
+                    || existing != null && (!"APPROVED".equals(existing.get(
+                            "ApprovalStatus")) || !"SPECIALIST_DOC_CLEARANCE"
+                                    .equals(existing.get("ProcedureCode")))) {
+                continue;
+            }
+            var document = requirements.stream().filter(r ->
+                    number(r, "RuleID") == ruleId
+                            && "APPROVED".equals(r.get("Decision")))
+                    .findFirst().orElseThrow(this::missing);
+            var write = new HashMap<>(args);
+            write.put("rule", ruleId);
+            write.put("procedure", "SPECIALIST_DOC_CLEARANCE");
+            write.put("authorityName", "Specialist document clearance");
+            write.put("reference", "SUBMISSION:"
+                    + number(document, "SubmissionID"));
+            write.put("source", "SPECIALIST_DOCUMENT_REVIEW:"
+                    + number(document, "ReviewID"));
+            write.put("decision", "APPROVED");
+            write.put("key", document.get("FileKey"));
+            write.put("decided", time(now()));
+            write.put("until", time(expires));
+            write.put("hold", null);
+            data.insert("procedureInsert", write);
         }
-        var row = rows.getFirst();
-        String decision = String.valueOf(row.get("Decision"));
-        if (!"PASS".equalsIgnoreCase(decision)
-                && !"CLEARED".equalsIgnoreCase(decision)) {
-            return false;
+    }
+
+    private RequirementStatus requirementStatus(Map<String, Object> row) {
+        if (row.get("SubmissionID") == null) {
+            return RequirementStatus.PENDING;
         }
-        var expires = at(row, "ExpiresAt");
-        return expires == null || expires.isAfter(now());
+        if (row.get("RevokedAt") != null) {
+            return RequirementStatus.REVOKED;
+        }
+        if (row.get("MaxAgeDays") != null) {
+            var issued = date(row, "IssuedDate");
+            if (issued == null || issued.plusDays(Integer.parseInt(
+                    row.get("MaxAgeDays").toString()))
+                    .isBefore(now().toLocalDate())) {
+                return RequirementStatus.EXPIRED;
+            }
+        }
+        var expiry = documentExpiry(row);
+        if (expiry != null && !expiry.isAfter(now())) {
+            return RequirementStatus.EXPIRED;
+        }
+        if (!java.util.Objects.equals(row.get("DocumentVersionID"),
+                row.get("LatestVersionID"))) {
+            return RequirementStatus.PENDING;
+        }
+        return row.get("Decision") == null ? RequirementStatus.SUBMITTED
+                : RequirementStatus.valueOf(row.get("Decision").toString());
+    }
+
+    private OffsetDateTime documentExpiry(Map<String, Object> row) {
+        var exact = at(row, "ExpiresAt");
+        var date = date(row, "ExpiryDate");
+        var endOfDay = date == null ? null : date.plusDays(1)
+                .atStartOfDay().atOffset(ZoneOffset.UTC);
+        return exact != null && (endOfDay == null || exact.isBefore(endOfDay))
+                ? exact : endOfDay;
+    }
+
+    private ComplianceAttachmentView attachment(Map<String, Object> row) {
+        if (row.get("DocumentVersionID") == null) {
+            return null;
+        }
+        return new ComplianceAttachmentView(number(row, "PrivateFilePresent")
+                == 1 ? opaqueKey((String) row.get("FileKey")) : null,
+                (String) row.get("OriginalFileName"),
+                (String) row.get("ContentType"), number(row, "FileSizeBytes"),
+                (String) row.get("DocumentNumber"), documentExpiry(row));
     }
 
     private ComplianceReceipt mutate(long order, QuoteCommand command,
@@ -602,7 +850,8 @@ public class ComplianceService {
         }
         if (!data.ready()) {
             throw new OrderException(HttpStatus.SERVICE_UNAVAILABLE,
-                    "COMPLIANCE_SCHEMA_PENDING", "Deploy migration009.");
+                    "COMPLIANCE_SCHEMA_PENDING",
+                    "Deploy through migration020.");
         }
         var args = new HashMap<String, Object>();
 
@@ -638,6 +887,46 @@ public class ComplianceService {
             throw new IllegalStateException("SHA-256 unavailable.", error);
         }
         return data.insert("fileInsert", args);
+    }
+
+    private String localHash(UUID key) {
+        try (var stream = localFiles.loadAsResource(key.toString())
+                .getInputStream()) {
+            return java.util.HexFormat.of().formatHex(java.security
+                    .MessageDigest.getInstance("SHA-256")
+                    .digest(stream.readAllBytes()));
+        } catch (java.io.IOException
+                | java.security.NoSuchAlgorithmException error) {
+            throw new IllegalStateException("Private file unavailable.", error);
+        }
+    }
+
+    private Object submissionFingerprint(ComplianceUploadSubmitRequest body) {
+        if (body.fileKey() == null && body.existingDocumentVersionId() == null
+                && body.documentNumber() == null && body.issuedDate() == null
+                && body.expiryDate() == null) {
+            com.fasterxml.jackson.databind.node.ObjectNode tree = mapper
+                    .valueToTree(body);
+            tree.remove(List.of("fileKey", "existingDocumentVersionId",
+                    "documentNumber", "issuedDate", "expiryDate"));
+            return tree;
+        }
+        return body;
+    }
+
+    private void checkPolicyAge(Map<String, Object> args,
+            java.time.LocalDate issued) {
+        if (data.localFilesReady()) {
+            for (var policy : data.rows("documentPolicies", args)) {
+                if (args.get("type").equals(policy.get("DocumentType"))
+                        && policy.get("ValidityDays") instanceof Number days) {
+                    require(issued != null && !issued.isAfter(now()
+                            .toLocalDate()) && !issued.plusDays(days.intValue())
+                                    .isBefore(now().toLocalDate()),
+                            "DOCUMENT_VALIDITY_EXCEEDED");
+                }
+            }
+        }
     }
 
     private List<Map<String, Object>> routeRules(Map<String, Object> args,

@@ -14,9 +14,11 @@ import com.equitransit.backend.dto.common.ApiExamples;
 import java.util.UUID;
 import java.util.List;
 import java.time.OffsetDateTime;
-import com.equitransit.backend.dto.order.request.OrderDraftRequest;
-import com.equitransit.backend.entity.order.OrderServiceIntent;
 import com.equitransit.backend.dto.horse.response.HorseResponse;
+import com.equitransit.backend.dto.order.request.OrderDraftRequest;
+import com.equitransit.backend.dto.route.RouteMatchResponse;
+import com.equitransit.backend.entity.order.OrderServiceIntent;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 
 /**
@@ -32,6 +34,7 @@ import com.equitransit.backend.dto.horse.response.HorseResponse;
  * @param request the request
  * @param horse the horse
  * @param services the services
+ * @param routeMatch frozen server-side template/custom-routing decision
  */
 @Schema(example = ApiExamples.SNAPSHOT)
 public record OrderSnapshot(
@@ -76,5 +79,25 @@ public record OrderSnapshot(
         HorseResponse horse,
         @Schema(
                 example = ApiExamples.INTENTS)
-        List<OrderServiceIntent> services) {
+        List<OrderServiceIntent> services,
+        @Schema(example = "{}", nullable = true)
+        @JsonInclude(JsonInclude.Include.NON_NULL)
+        RouteMatchResponse routeMatch) {
+
+    /** Legacy constructor retained for prior snapshot producers and tests.
+     * @param schemaVersion schema @param operationId retry key
+     * @param operationType action @param requestHash fingerprint
+     * @param sourceOrderVersion version @param orderId order
+     * @param revisionNo revision @param submittedAt UTC submission
+     * @param request draft @param horse horse @param services intents
+     */
+    public OrderSnapshot(int schemaVersion, UUID operationId,
+            String operationType, String requestHash, String sourceOrderVersion,
+            long orderId, int revisionNo, OffsetDateTime submittedAt,
+            OrderDraftRequest request, HorseResponse horse,
+            List<OrderServiceIntent> services) {
+        this(schemaVersion, operationId, operationType, requestHash,
+                sourceOrderVersion, orderId, revisionNo, submittedAt, request,
+                horse, services, null);
+    }
 }

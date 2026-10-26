@@ -47,6 +47,34 @@ public class OperationalPlanPolicyTest {
     private static final OffsetDateTime NOW = OffsetDateTime.of(
             2027, 1, 20, 10, 0, 0, 0, ZoneOffset.UTC);
 
+    /** Airfare is optional, positive, AIR-only and fits SQL money columns. */
+    @Test
+    public void validatesOptionalAirfareWithoutChangingLegacyLegs() {
+        var legacy = new PlanLegInput(1, PlanLegMode.AIR, "A", "B",
+                BigDecimal.TEN, null, NOW.plusDays(1), NOW.plusDays(2),
+                "UTC", "UTC", null, null, 0, 0, null);
+        assertThat(legacy.estimatedAirfare()).isNull();
+        OperationalPlanPolicy.validateLegs(List.of(legacy));
+        for (String value : List.of("1200.00", "0", "-1", "1.001",
+                "100000000000000.00")) {
+            var leg = new PlanLegInput(1, PlanLegMode.AIR, "A", "B",
+                    BigDecimal.TEN, null, NOW.plusDays(1), NOW.plusDays(2),
+                    "UTC", "UTC", null, null, 0, 0, null,
+                    new BigDecimal(value));
+            if (value.equals("1200.00")) {
+                OperationalPlanPolicy.validateLegs(List.of(leg));
+            } else {
+                assertThatThrownBy(() -> OperationalPlanPolicy.validateLegs(
+                        List.of(leg))).isInstanceOf(OrderException.class);
+            }
+        }
+        var road = new PlanLegInput(1, PlanLegMode.ROAD, "A", "B",
+                BigDecimal.TEN, null, NOW.plusDays(1), NOW.plusDays(2),
+                "UTC", "UTC", null, null, 0, 0, null, BigDecimal.TEN);
+        assertThatThrownBy(() -> OperationalPlanPolicy.validateLegs(
+                List.of(road))).isInstanceOf(OrderException.class);
+    }
+
     /** Verifies sequence, distance, mode and connection buffer checks. */
     @Test
     public void legValidationEnforcesSequenceAndConnectionBuffer() {
@@ -108,6 +136,23 @@ public class OperationalPlanPolicyTest {
                         ReservationState.CONFIRMED, null),
                 NOW.plusDays(5), NOW.plusDays(10)))
                 .isInstanceOf(OrderException.class);
+    }
+
+    /** COMPLETED is a read state, never a manual F10 assignment command. */
+    @Test
+    public void stallAssignmentCannotClaimExecutionCompletion() {
+        var cmd = new PlanCommand(UUID.randomUUID(), "000000000001A2B3");
+
+        for (var acceptance : CarrierAcceptanceState.values()) {
+            assertThatThrownBy(() -> OperationalPlanPolicy
+                    .validateStallRequest(new PlanStallAssignmentRequest(
+                            cmd, 12L, "000000000001A2B3", acceptance,
+                            AssignmentState.COMPLETED, null, "proof.pdf",
+                            null)))
+                    .isInstanceOf(OrderException.class)
+                    .extracting("code")
+                    .isEqualTo("STALL_ASSIGNMENT_STATUS_INVALID");
+        }
     }
 
     /** Confirmation blockers detect HELD reservations and missing resources. */

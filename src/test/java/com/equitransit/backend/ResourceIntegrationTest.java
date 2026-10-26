@@ -131,8 +131,9 @@ public class ResourceIntegrationTest {
     @BeforeEach
     public void setup() throws Exception {
         try (var connection = source.getConnection()) {
-            assertThat(connection.getCatalog()).isEqualTo(
-                    "EquiTransit_FigmaMigrationTest_20261013_143729");
+            assertThat(connection.getCatalog()).isIn(
+                    "EquiTransit_FigmaMigrationTest_20261013_143729",
+                    "EquiTransit_FigmaMigrationTest_BE01_20261023");
         }
         assertThat(repository.ready()).isTrue();
         passwordHash = passwords.encode("TestPassword123!");
@@ -238,15 +239,22 @@ public class ResourceIntegrationTest {
         }
     }
 
-    /** Ordinary actors cannot enumerate or modify the Manager catalogue. */
+    /** Coordinators can read catalogues; only Managers can modify them. */
     @Test
     public void rolesAndInputBoundsAreEnforced() throws Exception {
-        for (String role : List.of("CUSTOMER", "COORDINATOR", "SPECIALIST",
+        for (String role : List.of("CUSTOMER", "SPECIALIST",
                 "DRIVER")) {
             mvc.perform(get(BASE + "vehicles")
                     .header("Authorization", actor(role).token()))
                     .andExpect(status().isForbidden());
             send("vehicles", body("vehicles"), actor(role).token(), 403);
+        }
+        for (String kind : List.of("suppliers", "vehicles", "stalls",
+                "fit-policies")) {
+            mvc.perform(get(BASE + kind)
+                    .header("Authorization", actor("COORDINATOR").token()))
+                    .andExpect(status().isOk());
+            send(kind, body(kind), actor("COORDINATOR").token(), 403);
         }
         mvc.perform(get(BASE + "vehicles?page=-1&size=101")
                 .header("Authorization", actor("MANAGER").token()))

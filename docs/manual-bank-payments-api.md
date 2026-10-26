@@ -45,6 +45,24 @@ Business writes return PaymentMutationReceipt `{entityId,recordVersion}`;
 refresh GET after success or replay (a receipt is historical). Same UUID, user,
 order, exact body and target path retries return the original result. Reusing a
 UUID with changed body/target returns409. No silent refresh-and-retry on conflict.
+
+### Selecting an installment
+
+Read the accepted quotation with
+`GET /api/transport-orders/{orderId}/quotes/{quoteId}`. Each current
+`paymentSchedule` item includes its persisted `scheduleId`, together with
+`sequenceNo`, `paymentStage`, `amountDue` and `dueAt`. Use that identity in
+`POST /payments/requests`; a display sequence is not a schedule identity.
+The read projection is separate from quotation input, which does not accept
+schedule identities. Existing authorization and parent-order version checks
+remain in force.
+
+Historical idempotency receipts created before this response addition may
+have a null/missing `scheduleId`. Reload the quotation before creating a
+payment request; do not invent an identity or reuse an old receipt version.
+After a successful request, refresh the ledger and quotation before choosing
+another installment. This response change requires no database migration.
+
 Proof upload returns PaymentProofReceipt; uploading does not change money or the
 order version, but stores an immutable idempotent receipt. UUIDs are scoped to
 order + authenticated UserID; both proof and money share the receipt namespace.

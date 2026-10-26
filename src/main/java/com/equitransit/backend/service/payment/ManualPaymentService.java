@@ -96,6 +96,13 @@ public class ManualPaymentService {
             var quote = context.quote();
 
             check(id(quote, "QuoteID") == body.quoteId(), "PAYMENT_QUOTE");
+            var existing = ledger.rows("requestBySchedule", Map.of("schedule",
+                    body.scheduleId(), "quote", body.quoteId()));
+            if (!existing.isEmpty()) {
+                long id = id(existing.getFirst(), "PaymentRequestID");
+                obligation(order, id, context);
+                return id;
+            }
             check(ledger.number("requestDuplicate", Map.of("schedule",
                     body.scheduleId())) == 0, "PAYMENT_REQUEST_EXISTS");
             return ledger.number("newRequest", Map.of("schedule",
@@ -332,7 +339,8 @@ public class ManualPaymentService {
         long id = write.apply(context);
 
         check(id > 0, "PAYMENT_SOURCE_MISMATCH");
-        ledger.update("bump", args);
+        ledger.update(input instanceof AllocationCommand
+                ? "prepareOrder" : "bump", args);
         var receipt = new PaymentMutationReceipt(id,
                 cases.order(order, false).orElseThrow().version());
 
@@ -374,6 +382,8 @@ public class ManualPaymentService {
             throw new OrderException(HttpStatus.FORBIDDEN,
                     "MANAGER_REQUIRED", "An active Manager is required.");
         }
+        check(!"SUBMITTED".equals(parent.status()),
+                "AWAITING_MANAGER_APPROVAL");
         var quote = one("quote", Map.of("order", order));
 
         check(parent.revisionId() != null

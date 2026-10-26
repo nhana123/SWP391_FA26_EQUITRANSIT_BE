@@ -27,6 +27,7 @@ import com.equitransit.backend.json.order.OrderJsonCodec;
 import com.equitransit.backend.repository.assessment.AssessmentRepository;
 import com.equitransit.backend.repository.order.OrderRepository;
 import com.equitransit.backend.repository.quote.QuoteRepository;
+import com.equitransit.backend.service.BookingFlowService;
 import com.equitransit.backend.security.CurrentActor;
 import com.equitransit.backend.security.CurrentActorService;
 import com.equitransit.backend.security.TokenTools;
@@ -68,6 +69,7 @@ public class QuotationService {
     private final OrderJsonCodec json;
     private final ObjectMapper mapper;
     private final Clock clock;
+    private BookingFlowService booking;
 
     /**
      * @param cases shared parent lock and live assignment access
@@ -93,6 +95,12 @@ public class QuotationService {
         this.json = json;
         this.mapper = mapper;
         this.clock = clock;
+    }
+
+    /** @param booking accepted quote deposit automation */
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configureBooking(BookingFlowService booking) {
+        this.booking = booking;
     }
 
     /**
@@ -232,11 +240,14 @@ public class QuotationService {
         CurrentActor actor = access(order, false);
         boolean customer = "CUSTOMER".equals(actor.roleCode());
         boolean manager = "MANAGER".equals(actor.roleCode());
+        boolean coordinator = "COORDINATOR".equals(actor.roleCode())
+                && request.action() == QuoteAction.ISSUE;
 
-        if ((!customer && !manager)
+        if ((!customer && !manager && !coordinator)
                 || (request.action() == QuoteAction.ACCEPT && !customer)
                 || (!List.of(QuoteAction.ACCEPT, QuoteAction.REJECT)
-                        .contains(request.action()) && !manager)) {
+                        .contains(request.action())
+                        && !manager && !coordinator)) {
             throw new AccessDeniedException("Access is denied.");
         }
         String hash = fingerprint("ACTION_" + quote, request);
@@ -249,7 +260,8 @@ public class QuotationService {
         QuoteRecord record = record(id, quote);
 
         version(order, request.command());
-        if (!"APPROVED".equals(order.status())
+        if (!List.of("APPROVED", "IN_PREPARATION")
+                .contains(order.status())
                 || !java.util.Objects.equals(order.revisionId(),
                         record.revision())) {
             throw conflict("QUOTE_REVISION_CONFLICT",
@@ -259,7 +271,13 @@ public class QuotationService {
             throw conflict("QUOTE_STATE_CONFLICT",
                     "Only an issued quotation can receive your response.");
         }
-        QuoteStatus target = transition(record, request.action(), customer);
+        QuoteStatus target;
+        if (coordinator && record.status() == QuoteStatus.DRAFT) {
+            future(record.validUntil());
+            target = QuoteStatus.ISSUED;
+        } else {
+            target = transition(record, request.action(), customer);
+        }
 
         if (target == QuoteStatus.ACCEPTED
                 && commitments.protectedOrder(id)) {
@@ -269,7 +287,14 @@ public class QuotationService {
         if (target == QuoteStatus.APPROVED || target == QuoteStatus.ISSUED) {
             requirePublishable(id, order, record);
         }
+        if (booking != null && (target == QuoteStatus.ISSUED
+                || target == QuoteStatus.ACCEPTED)) {
+            booking.requireSchedule(id, quote);
+        }
         quotes.transition(quote, target, actor.staffId(), actor.customerId());
+        if (booking != null && target == QuoteStatus.ACCEPTED) {
+            booking.accepted(id, quote);
+        }
         touch(order);
         QuoteResponse receipt = response(parent(id), record(id, quote));
 
@@ -388,7 +413,8 @@ public class QuotationService {
     private void editable(CaseOrder order, QuoteCommand command,
             long revision) {
         version(order, command);
-        if (!"APPROVED".equals(order.status())
+        if (!List.of("APPROVED", "IN_PREPARATION")
+                .contains(order.status())
                 || order.revisionId() == null || order.revisionId() != revision
                 || commitments.protectedOrder(order.orderId())) {
             throw conflict("QUOTE_ORDER_PROTECTED",
@@ -418,7 +444,8 @@ public class QuotationService {
             return actor;
         }
         if ("COORDINATOR".equals(role)
-                && "APPROVED".equals(order.status())
+                && List.of("APPROVED", "IN_PREPARATION")
+                        .contains(order.status())
                 && cases.assigned(order.orderId(), actor.staffId(),
                         CaseRole.COORDINATOR)) {
             return actor;
@@ -468,7 +495,8 @@ public class QuotationService {
         return new QuoteResponse(summary, order.version(), "USD",
                 request.termsVersion(), request.terms(),
                 request.cancellationTerms(), record.issuedAt(),
-                record.acceptedAt(), saved.lines(), request.paymentSchedule(),
+                record.acceptedAt(), saved.lines(),
+                quotes.scheduleViews(record.id()),
                 saved.blockers());
     }
 

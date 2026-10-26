@@ -154,6 +154,17 @@ public class ComplianceReadinessFacade {
                                         .equals(requirement.get(
                                                 "LatestVersionID")),
                         "APPROVED".equals(requirement.get("Decision")), asOf);
+                var exactExpiry = at(requirement, "ExpiresAt");
+                valid = valid && (exactExpiry == null
+                        || exactExpiry.isAfter(asOf));
+                if (requirement.get("MaxAgeDays") != null) {
+                    var maximum = issued == null ? asOf : issued.toLocalDate()
+                            .plusDays(Integer.parseInt(requirement.get(
+                                    "MaxAgeDays").toString()) + 1L)
+                            .atStartOfDay().atOffset(ZoneOffset.UTC);
+                    valid = valid && maximum.isAfter(asOf);
+                    expires = earlier(expires, maximum);
+                }
 
                 if (valid && at(requirement, "ReviewedAt") != null
                         && !at(requirement, "ReviewedAt").isAfter(asOf)
@@ -166,6 +177,7 @@ public class ComplianceReadinessFacade {
                                 .plusDays(1).atStartOfDay()
                                 .atOffset(ZoneOffset.UTC));
                     }
+                    expires = earlier(expires, exactExpiry);
                 }
             }
             if (!satisfied) {

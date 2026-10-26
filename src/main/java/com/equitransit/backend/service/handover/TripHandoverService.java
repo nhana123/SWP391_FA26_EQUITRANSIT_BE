@@ -8,19 +8,26 @@
 package com.equitransit.backend.service.handover;
 
 import com.equitransit.backend.dto.handover.HandoverType;
-import com.equitransit.backend.dto.handover.request.CustomerHandoverDecisionRequest;
-import com.equitransit.backend.dto.handover.request.FinalDeliveryHandoverCreateRequest;
-import com.equitransit.backend.dto.handover.request.IntermediateHandoverCreateRequest;
+import com.equitransit.backend.dto.handover.request.
+        CustomerHandoverDecisionRequest;
+import com.equitransit.backend.dto.handover.request.
+        FinalDeliveryHandoverCreateRequest;
+import com.equitransit.backend.dto.handover.request.
+        IntermediateHandoverCreateRequest;
 import com.equitransit.backend.dto.handover.response.CustomerHandoverResponse;
-import com.equitransit.backend.dto.handover.response.OperationalCompletionReceipt;
+import com.equitransit.backend.dto.handover.response.
+        OperationalCompletionReceipt;
 import com.equitransit.backend.dto.handover.response.TripHandoverResponse;
 import com.equitransit.backend.entity.handover.TripHandover;
 import com.equitransit.backend.exception.order.OrderException;
 import com.equitransit.backend.repository.execution.LegExecutionRepository;
-import com.equitransit.backend.repository.execution.LegExecutionRepository.LegRow;
-import com.equitransit.backend.repository.execution.LegExecutionRepository.OrderScopeRow;
+import com.equitransit.backend.repository.execution.LegExecutionRepository.
+        LegRow;
+import com.equitransit.backend.repository.execution.LegExecutionRepository.
+        OrderScopeRow;
 import com.equitransit.backend.repository.handover.TripHandoverRepository;
-import com.equitransit.backend.repository.handover.TripHandoverRepository.OrderReceiverRow;
+import com.equitransit.backend.repository.handover.TripHandoverRepository.
+        OrderReceiverRow;
 import com.equitransit.backend.security.CurrentActor;
 import com.equitransit.backend.security.CurrentActorService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -248,6 +255,8 @@ public class TripHandoverService {
 
         LegRow leg = findLegOrThrow(legId);
         OrderScopeRow order = findOrderScopeOrThrow(legId);
+        validateAfterDeparture(request.handoverTime(),
+                leg.actualDeparture());
 
         var h = new TripHandover();
         h.setLegId(legId);
@@ -288,6 +297,8 @@ public class TripHandoverService {
                     "Final delivery can only be executed on the final "
                             + "destination leg of the plan.");
         }
+        validateAfterDeparture(request.handoverTime(),
+                leg.actualDeparture());
 
         OrderReceiverRow expectedReceiver = handovers.findOrderReceiver(
                 order.orderId()).orElse(null);
@@ -336,7 +347,9 @@ public class TripHandoverService {
         if (actor.staffId() == null) {
             throw new AccessDeniedException("Driver staff profile required.");
         }
-        var assignment = legs.findDriverAssignment(legId, actor.staffId());
+        var assignment = legs.findDriverAssignment(legId, actor.staffId())
+                .or(() -> legs.findCompletedDriverAssignment(legId,
+                        actor.staffId()));
         if (assignment.isEmpty()) {
             throw new AccessDeniedException("Driver is not actively assigned "
                     + "to leg: " + legId);
@@ -386,6 +399,15 @@ public class TripHandoverService {
             throw new OrderException(HttpStatus.BAD_REQUEST,
                     "FUTURE_TIMESTAMP_NOT_PERMITTED",
                     "HandoverTime cannot be in the future: " + time);
+        }
+    }
+
+    private void validateAfterDeparture(OffsetDateTime occurredAt,
+            OffsetDateTime actualDeparture) {
+        if (actualDeparture != null && occurredAt.isBefore(actualDeparture)) {
+            throw new OrderException(HttpStatus.UNPROCESSABLE_ENTITY,
+                    "HANDOVER_TIME_BEFORE_DEPARTURE",
+                    "Handover time cannot precede the actual leg departure.");
         }
     }
 

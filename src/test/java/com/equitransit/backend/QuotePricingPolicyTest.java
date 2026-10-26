@@ -163,6 +163,57 @@ public class QuotePricingPolicyTest {
         assertThat(result.blockers()).isEmpty();
     }
 
+    /** Repeated source reads must not make a single plan offer ambiguous. */
+    @Test
+    public void selectedPlanAirfarePricesWithoutManualOfferId() {
+        airfareRows();
+        var offer = airfare(5, "2026-11-01T00:00:00Z");
+        when(sources.read(anyLong(), anyList(), anyList(), any()))
+                .thenReturn(List.of(offer));
+        var result = policy.prepare(1, snapshot, request(List.of()));
+        assertThat(result.lines().getFirst().amount()).isEqualTo("1200.00");
+        assertThat(result.sources()).containsExactly(offer);
+        assertThat(result.blockers()).doesNotContain("AIRFARE_PENDING",
+                "ITINERARY_PENDING");
+
+        var evidence = new QuoteEvidence(QuoteChargeCode.AIRFARE,
+                QuoteEvidenceStatus.PRICED, null, null, null,
+                "Plan estimate", offer.validUntil(), "Automatic source");
+        assertThat(policy.prepare(1, snapshot, request(List.of(evidence)))
+                .lines().getFirst().amount()).isEqualTo("1200.00");
+    }
+
+    /** Missing, ambiguous or expiring prices must remain unresolved. */
+    @Test
+    public void automaticAirfareDoesNotGuessMissingOrExpiredPrices() {
+        airfareRows();
+        for (var offers : List.<List<QuotePriceSource>>of(List.of(),
+                List.of(airfare(5, "2026-11-01T00:00:00Z"),
+                        airfare(6, "2026-11-01T00:00:00Z")),
+                List.of(airfare(5, "2026-10-17T00:00:00Z")))) {
+            when(sources.read(anyLong(), anyList(), anyList(), any()))
+                    .thenReturn(offers);
+            var result = policy.prepare(1, snapshot, request(List.of()));
+            assertThat(result.lines().getFirst().amount()).isNull();
+            assertThat(result.blockers()).contains("AIRFARE_PENDING");
+        }
+    }
+
+    private QuotePriceSource airfare(long id, String expiry) {
+        return new QuotePriceSource(id, true, "AIRFARE", "SHIPMENT", null,
+                new BigDecimal("1200.00"), BigDecimal.ONE,
+                OffsetDateTime.parse(expiry), null, false, null);
+    }
+
+    private void airfareRows() {
+        var row = new ServiceChargeResponse("AIRFARE", "TRANSPORTATION",
+                "TRANSPORTATION", "Air freight", true, true, "SHIPMENT",
+                null, null, null, "AIRFARE_PENDING", null, null,
+                "Plan estimate", List.of("AIRFARE_PENDING"));
+        when(builder.build(any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(List.of(row));
+    }
+
     private void rows(String quantity, String rate, String status) {
         var row = new ServiceChargeResponse("ROAD_TRANSPORT", "TRANSPORTATION",
                 "TRANSPORTATION", "Road transport", true, true, "KM",

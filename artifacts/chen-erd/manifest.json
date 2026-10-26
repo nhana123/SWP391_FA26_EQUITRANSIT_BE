@@ -1,0 +1,4285 @@
+{
+  "catalog": "EquiTransit_Demo",
+  "tableCount": 73,
+  "columnCount": 775,
+  "foreignKeyConstraints": 156,
+  "relationshipCount": 152,
+  "pages": [
+    {
+      "id": "00-overview",
+      "title": "EQUITRANSIT — CORE CHEN ERD",
+      "names": 16,
+      "relationships": 18
+    },
+    {
+      "id": "full-schema",
+      "title": "EQUITRANSIT — COMPLETE CHEN SCHEMA",
+      "names": 73,
+      "relationships": 152
+    },
+    {
+      "id": "01-identity",
+      "title": "Identity and ownership",
+      "names": 7,
+      "relationships": 7
+    },
+    {
+      "id": "02-orders",
+      "title": "Requests, revisions and case responsibility",
+      "names": 11,
+      "relationships": 15
+    },
+    {
+      "id": "03-commercial",
+      "title": "Service selection and quotations",
+      "names": 13,
+      "relationships": 18
+    },
+    {
+      "id": "04-payments",
+      "title": "Payments, allocations and refunds",
+      "names": 12,
+      "relationships": 14
+    },
+    {
+      "id": "05-compliance",
+      "title": "Legal documents and clearance",
+      "names": 20,
+      "relationships": 32
+    },
+    {
+      "id": "06-resources",
+      "title": "Suppliers, fleet and stall resources",
+      "names": 7,
+      "relationships": 6
+    },
+    {
+      "id": "07-planning",
+      "title": "Transport planning and reservations",
+      "names": 21,
+      "relationships": 29
+    },
+    {
+      "id": "08-execution",
+      "title": "Execution, custody and actual costs",
+      "names": 15,
+      "relationships": 25
+    },
+    {
+      "id": "09-support",
+      "title": "Audit, notifications and technical support",
+      "names": 8,
+      "relationships": 6
+    }
+  ],
+  "qa": [
+    {
+      "id": "00-overview",
+      "shapes": 84,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "full-schema",
+      "shapes": 857,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "01-identity",
+      "shapes": 35,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "02-orders",
+      "shapes": 59,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "03-commercial",
+      "shapes": 72,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "04-payments",
+      "shapes": 65,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "05-compliance",
+      "shapes": 113,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "06-resources",
+      "shapes": 34,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "07-planning",
+      "shapes": 116,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "08-execution",
+      "shapes": 87,
+      "overlappingShapePairs": 0
+    },
+    {
+      "id": "09-support",
+      "shapes": 38,
+      "overlappingShapePairs": 0
+    }
+  ],
+  "relationships": [
+    {
+      "id": "R1",
+      "child": "ActualCost",
+      "parent": "TripLeg",
+      "role": "LegID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_ActualCost_LegID",
+        "FK_Figma_ActualCost_LegID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_ActualCost_LegID",
+            "childTable": "ActualCost",
+            "childColumn": "LegID",
+            "parentTable": "TripLeg",
+            "parentColumn": "LegID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ],
+        [
+          {
+            "constraintName": "FK_Figma_ActualCost_LegID",
+            "childTable": "ActualCost",
+            "childColumn": "LegID",
+            "parentTable": "TripLeg",
+            "parentColumn": "LegID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          },
+          {
+            "constraintName": "FK_Figma_ActualCost_LegID",
+            "childTable": "ActualCost",
+            "childColumn": "PlanID",
+            "parentTable": "TripLeg",
+            "parentColumn": "PlanID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R2",
+      "child": "ActualCost",
+      "parent": "TransportPlan",
+      "role": "PlanID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_ActualCost_PlanID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_ActualCost_PlanID",
+            "childTable": "ActualCost",
+            "childColumn": "PlanID",
+            "parentTable": "TransportPlan",
+            "parentColumn": "PlanID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R3",
+      "child": "ActualCost",
+      "parent": "StaffProfile",
+      "role": "RecordedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_ActualCost_RecordedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_ActualCost_RecordedBy",
+            "childTable": "ActualCost",
+            "childColumn": "RecordedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R4",
+      "child": "AuditEvent",
+      "parent": "User",
+      "role": "UserID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_AuditEvent_UserID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_AuditEvent_UserID",
+            "childTable": "AuditEvent",
+            "childColumn": "UserID",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R5",
+      "child": "AuthenticationToken",
+      "parent": "User",
+      "role": "UserID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_AuthenticationToken_User"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_AuthenticationToken_User",
+            "childTable": "AuthenticationToken",
+            "childColumn": "UserID",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R6",
+      "child": "AuthorityProcedure",
+      "parent": "OrderRevision",
+      "role": "RevisionID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_AuthorityProcedure_RevisionID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_AuthorityProcedure_RevisionID",
+            "childTable": "AuthorityProcedure",
+            "childColumn": "RevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R7",
+      "child": "AuthorityProcedure",
+      "parent": "ComplianceRuleVersion",
+      "role": "RuleID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_AuthorityProcedure_Rule"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_AuthorityProcedure_Rule",
+            "childTable": "AuthorityProcedure",
+            "childColumn": "RuleID",
+            "parentTable": "ComplianceRuleVersion",
+            "parentColumn": "RuleID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R8",
+      "child": "AuthorityProcedure",
+      "parent": "StaffProfile",
+      "role": "RecordedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_AuthorityProcedure_RecordedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_AuthorityProcedure_RecordedBy",
+            "childTable": "AuthorityProcedure",
+            "childColumn": "RecordedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R9",
+      "child": "ComplianceChecklist",
+      "parent": "OrderRevision",
+      "role": "RevisionID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__Complianc__Revis__66B53B20"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__Complianc__Revis__66B53B20",
+            "childTable": "ComplianceChecklist",
+            "childColumn": "RevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R10",
+      "child": "ComplianceChecklist",
+      "parent": "StaffProfile",
+      "role": "SpecialistID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__Complianc__Speci__67A95F59"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__Complianc__Speci__67A95F59",
+            "childTable": "ComplianceChecklist",
+            "childColumn": "SpecialistID",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R11",
+      "child": "ComplianceChecklistHistory",
+      "parent": "OrderRevision",
+      "role": "RevisionID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__Complianc__Revis__6C6E1476"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__Complianc__Revis__6C6E1476",
+            "childTable": "ComplianceChecklistHistory",
+            "childColumn": "RevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R12",
+      "child": "ComplianceChecklistHistory",
+      "parent": "StaffProfile",
+      "role": "SpecialistID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__Complianc__Speci__6D6238AF"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__Complianc__Speci__6D6238AF",
+            "childTable": "ComplianceChecklistHistory",
+            "childColumn": "SpecialistID",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R13",
+      "child": "ComplianceClearance",
+      "parent": "OrderRevision",
+      "role": "RevisionID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_ComplianceClearance_RevisionID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_ComplianceClearance_RevisionID",
+            "childTable": "ComplianceClearance",
+            "childColumn": "RevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R14",
+      "child": "ComplianceClearance",
+      "parent": "StaffProfile",
+      "role": "SpecialistID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_ComplianceClearance_SpecialistID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_ComplianceClearance_SpecialistID",
+            "childTable": "ComplianceClearance",
+            "childColumn": "SpecialistID",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R15",
+      "child": "ComplianceFile",
+      "parent": "TransportOrder",
+      "role": "OrderID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__Complianc__Order__5A4F643B"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__Complianc__Order__5A4F643B",
+            "childTable": "ComplianceFile",
+            "childColumn": "OrderID",
+            "parentTable": "TransportOrder",
+            "parentColumn": "OrderID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R16",
+      "child": "ComplianceFile",
+      "parent": "OrderRevision",
+      "role": "RevisionID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__Complianc__Revis__5B438874"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__Complianc__Revis__5B438874",
+            "childTable": "ComplianceFile",
+            "childColumn": "RevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R17",
+      "child": "ComplianceFile",
+      "parent": "User",
+      "role": "UserID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__Complianc__UserI__5C37ACAD"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__Complianc__UserI__5C37ACAD",
+            "childTable": "ComplianceFile",
+            "childColumn": "UserID",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R18",
+      "child": "ComplianceOperation",
+      "parent": "TransportOrder",
+      "role": "OrderID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__Complianc__Order__61F08603"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__Complianc__Order__61F08603",
+            "childTable": "ComplianceOperation",
+            "childColumn": "OrderID",
+            "parentTable": "TransportOrder",
+            "parentColumn": "OrderID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R19",
+      "child": "ComplianceOperation",
+      "parent": "User",
+      "role": "UserID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__Complianc__UserI__62E4AA3C"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__Complianc__UserI__62E4AA3C",
+            "childTable": "ComplianceOperation",
+            "childColumn": "UserID",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R20",
+      "child": "ComplianceRuleVersion",
+      "parent": "DocumentTypeCatalog",
+      "role": "DocumentType",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_ComplianceRuleVersion_DocumentType"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_ComplianceRuleVersion_DocumentType",
+            "childTable": "ComplianceRuleVersion",
+            "childColumn": "DocumentType",
+            "parentTable": "DocumentTypeCatalog",
+            "parentColumn": "TypeCode",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R21",
+      "child": "Customer",
+      "parent": "User",
+      "role": "UserID",
+      "nullable": false,
+      "unique": true,
+      "constraints": [
+        "FK_Customer_User"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Customer_User",
+            "childTable": "Customer",
+            "childColumn": "UserID",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": false,
+            "uniqueChild": 1,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R22",
+      "child": "DocumentRequirement",
+      "parent": "OrderRevision",
+      "role": "RevisionID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_DocumentRequirement_RevisionID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_DocumentRequirement_RevisionID",
+            "childTable": "DocumentRequirement",
+            "childColumn": "RevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R23",
+      "child": "DocumentRequirement",
+      "parent": "ComplianceRuleVersion",
+      "role": "RuleID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_DocumentRequirement_RuleID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_DocumentRequirement_RuleID",
+            "childTable": "DocumentRequirement",
+            "childColumn": "RuleID",
+            "parentTable": "ComplianceRuleVersion",
+            "parentColumn": "RuleID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R24",
+      "child": "DocumentRequirement",
+      "parent": "DocumentTypeCatalog",
+      "role": "DocumentType",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_DocumentRequirement_DocumentType"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_DocumentRequirement_DocumentType",
+            "childTable": "DocumentRequirement",
+            "childColumn": "DocumentType",
+            "parentTable": "DocumentTypeCatalog",
+            "parentColumn": "TypeCode",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R25",
+      "child": "DocumentRequirement",
+      "parent": "Horse",
+      "role": "HorseID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_DocumentRequirement_HorseID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_DocumentRequirement_HorseID",
+            "childTable": "DocumentRequirement",
+            "childColumn": "HorseID",
+            "parentTable": "Horse",
+            "parentColumn": "HorseID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R26",
+      "child": "DocumentReview",
+      "parent": "StaffProfile",
+      "role": "ReviewedBy",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_DocumentReview_ReviewedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_DocumentReview_ReviewedBy",
+            "childTable": "DocumentReview",
+            "childColumn": "ReviewedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R27",
+      "child": "DocumentReview",
+      "parent": "DocumentSubmission",
+      "role": "SubmissionID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_DocumentReview_SubmissionID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_DocumentReview_SubmissionID",
+            "childTable": "DocumentReview",
+            "childColumn": "SubmissionID",
+            "parentTable": "DocumentSubmission",
+            "parentColumn": "SubmissionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R28",
+      "child": "DocumentSubmission",
+      "parent": "DocumentVersion",
+      "role": "DocumentVersionID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_DocumentSubmission_DocumentVersionID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_DocumentSubmission_DocumentVersionID",
+            "childTable": "DocumentSubmission",
+            "childColumn": "DocumentVersionID",
+            "parentTable": "DocumentVersion",
+            "parentColumn": "DocumentVersionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R29",
+      "child": "DocumentSubmission",
+      "parent": "DocumentRequirement",
+      "role": "RequirementID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_DocumentSubmission_RequirementID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_DocumentSubmission_RequirementID",
+            "childTable": "DocumentSubmission",
+            "childColumn": "RequirementID",
+            "parentTable": "DocumentRequirement",
+            "parentColumn": "RequirementID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R30",
+      "child": "DocumentVersion",
+      "parent": "StaffProfile",
+      "role": "RevokedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK__DocumentV__Revok__567ED357"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__DocumentV__Revok__567ED357",
+            "childTable": "DocumentVersion",
+            "childColumn": "RevokedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R31",
+      "child": "DocumentVersion",
+      "parent": "HorseDocument",
+      "role": "DocumentID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_DocumentVersion_DocumentID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_DocumentVersion_DocumentID",
+            "childTable": "DocumentVersion",
+            "childColumn": "DocumentID",
+            "parentTable": "HorseDocument",
+            "parentColumn": "DocumentID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R32",
+      "child": "DocumentVersion",
+      "parent": "User",
+      "role": "UploadedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_DocumentVersion_UploadedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_DocumentVersion_UploadedBy",
+            "childTable": "DocumentVersion",
+            "childColumn": "UploadedBy",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R33",
+      "child": "FleetVehicle",
+      "parent": "Supplier",
+      "role": "OwnerSupplierID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_FleetVehicle_OwnerSupplierID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_FleetVehicle_OwnerSupplierID",
+            "childTable": "FleetVehicle",
+            "childColumn": "OwnerSupplierID",
+            "parentTable": "Supplier",
+            "parentColumn": "SupplierID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R34",
+      "child": "FlightReservation",
+      "parent": "StaffProfile",
+      "role": "ConfirmedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_FlightReservation_ConfirmedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_FlightReservation_ConfirmedBy",
+            "childTable": "FlightReservation",
+            "childColumn": "ConfirmedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R35",
+      "child": "FlightReservation",
+      "parent": "TripLeg",
+      "role": "LegID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_FlightReservation_LegID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_FlightReservation_LegID",
+            "childTable": "FlightReservation",
+            "childColumn": "LegID",
+            "parentTable": "TripLeg",
+            "parentColumn": "LegID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R36",
+      "child": "FlightReservation",
+      "parent": "SupplierOffer",
+      "role": "OfferID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_FlightReservation_OfferID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_FlightReservation_OfferID",
+            "childTable": "FlightReservation",
+            "childColumn": "OfferID",
+            "parentTable": "SupplierOffer",
+            "parentColumn": "OfferID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R37",
+      "child": "HandoverFile",
+      "parent": "TransportOrder",
+      "role": "OrderID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_HandoverFile_Order"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_HandoverFile_Order",
+            "childTable": "HandoverFile",
+            "childColumn": "OrderID",
+            "parentTable": "TransportOrder",
+            "parentColumn": "OrderID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R38",
+      "child": "HandoverFile",
+      "parent": "User",
+      "role": "UploadedBy",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_HandoverFile_UploadedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_HandoverFile_UploadedBy",
+            "childTable": "HandoverFile",
+            "childColumn": "UploadedBy",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R39",
+      "child": "Horse",
+      "parent": "Customer",
+      "role": "CustomerID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_Horse_Customer"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Horse_Customer",
+            "childTable": "Horse",
+            "childColumn": "CustomerID",
+            "parentTable": "Customer",
+            "parentColumn": "CustomerID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R40",
+      "child": "HorseDocument",
+      "parent": "DocumentTypeCatalog",
+      "role": "DocumentType",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_HorseDocument_DocumentType"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_HorseDocument_DocumentType",
+            "childTable": "HorseDocument",
+            "childColumn": "DocumentType",
+            "parentTable": "DocumentTypeCatalog",
+            "parentColumn": "TypeCode",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R41",
+      "child": "HorseDocument",
+      "parent": "Horse",
+      "role": "HorseID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_HorseDocument_HorseID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_HorseDocument_HorseID",
+            "childTable": "HorseDocument",
+            "childColumn": "HorseID",
+            "parentTable": "Horse",
+            "parentColumn": "HorseID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R42",
+      "child": "HorseReceipt",
+      "parent": "TripLeg",
+      "role": "LegID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_HorseReceipt_LegID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_HorseReceipt_LegID",
+            "childTable": "HorseReceipt",
+            "childColumn": "LegID",
+            "parentTable": "TripLeg",
+            "parentColumn": "LegID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          },
+          {
+            "constraintName": "FK_Figma_HorseReceipt_LegID",
+            "childTable": "HorseReceipt",
+            "childColumn": "PlanID",
+            "parentTable": "TripLeg",
+            "parentColumn": "PlanID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R43",
+      "child": "HorseReceipt",
+      "parent": "TransportPlan",
+      "role": "PlanID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_HorseReceipt_PlanID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_HorseReceipt_PlanID",
+            "childTable": "HorseReceipt",
+            "childColumn": "PlanID",
+            "parentTable": "TransportPlan",
+            "parentColumn": "PlanID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R44",
+      "child": "HorseReceipt",
+      "parent": "StaffProfile",
+      "role": "ReceivedBy",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_HorseReceipt_ReceivedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_HorseReceipt_ReceivedBy",
+            "childTable": "HorseReceipt",
+            "childColumn": "ReceivedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R45",
+      "child": "HorseWelfareLog",
+      "parent": "TripLeg",
+      "role": "LegID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_HorseWelfareLog_LegID",
+        "FK_HorseWelfareLog_LegID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_HorseWelfareLog_LegID",
+            "childTable": "HorseWelfareLog",
+            "childColumn": "LegID",
+            "parentTable": "TripLeg",
+            "parentColumn": "LegID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          },
+          {
+            "constraintName": "FK_Figma_HorseWelfareLog_LegID",
+            "childTable": "HorseWelfareLog",
+            "childColumn": "PlanID",
+            "parentTable": "TripLeg",
+            "parentColumn": "PlanID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ],
+        [
+          {
+            "constraintName": "FK_HorseWelfareLog_LegID",
+            "childTable": "HorseWelfareLog",
+            "childColumn": "LegID",
+            "parentTable": "TripLeg",
+            "parentColumn": "LegID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R46",
+      "child": "HorseWelfareLog",
+      "parent": "HorseWelfareLog",
+      "role": "SupersedesLogID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_HorseWelfareLog_SupersedesLogID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_HorseWelfareLog_SupersedesLogID",
+            "childTable": "HorseWelfareLog",
+            "childColumn": "SupersedesLogID",
+            "parentTable": "HorseWelfareLog",
+            "parentColumn": "WelfareLogID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          },
+          {
+            "constraintName": "FK_Figma_HorseWelfareLog_SupersedesLogID",
+            "childTable": "HorseWelfareLog",
+            "childColumn": "LegID",
+            "parentTable": "HorseWelfareLog",
+            "parentColumn": "LegID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R47",
+      "child": "HorseWelfareLog",
+      "parent": "StaffProfile",
+      "role": "RecordedBy",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_HorseWelfareLog_RecordedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_HorseWelfareLog_RecordedBy",
+            "childTable": "HorseWelfareLog",
+            "childColumn": "RecordedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R48",
+      "child": "IncidentReport",
+      "parent": "StaffProfile",
+      "role": "AcknowledgedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_IncidentReport_AcknowledgedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_IncidentReport_AcknowledgedBy",
+            "childTable": "IncidentReport",
+            "childColumn": "AcknowledgedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R49",
+      "child": "IncidentReport",
+      "parent": "StaffProfile",
+      "role": "ResolvedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_IncidentReport_ResolvedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_IncidentReport_ResolvedBy",
+            "childTable": "IncidentReport",
+            "childColumn": "ResolvedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R50",
+      "child": "IncidentReport",
+      "parent": "TripLeg",
+      "role": "LegID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_IncidentReport_LegID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_IncidentReport_LegID",
+            "childTable": "IncidentReport",
+            "childColumn": "LegID",
+            "parentTable": "TripLeg",
+            "parentColumn": "LegID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R51",
+      "child": "IncidentReport",
+      "parent": "StaffProfile",
+      "role": "ReportedBy",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_IncidentReport_ReportedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_IncidentReport_ReportedBy",
+            "childTable": "IncidentReport",
+            "childColumn": "ReportedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R52",
+      "child": "InsuranceChoice",
+      "parent": "OrderServiceChoice",
+      "role": "ChoiceID",
+      "nullable": false,
+      "unique": true,
+      "constraints": [
+        "FK_InsuranceChoice_ServiceChoice"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_InsuranceChoice_ServiceChoice",
+            "childTable": "InsuranceChoice",
+            "childColumn": "ChoiceID",
+            "parentTable": "OrderServiceChoice",
+            "parentColumn": "ChoiceID",
+            "nullable": false,
+            "uniqueChild": 1,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R53",
+      "child": "InsurancePolicy",
+      "parent": "StaffProfile",
+      "role": "VerifiedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_InsurancePolicy_VerifiedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_InsurancePolicy_VerifiedBy",
+            "childTable": "InsurancePolicy",
+            "childColumn": "VerifiedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R54",
+      "child": "InsurancePolicy",
+      "parent": "InsuranceChoice",
+      "role": "InsuranceChoiceID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_InsurancePolicy_InsuranceChoiceID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_InsurancePolicy_InsuranceChoiceID",
+            "childTable": "InsurancePolicy",
+            "childColumn": "InsuranceChoiceID",
+            "parentTable": "InsuranceChoice",
+            "parentColumn": "InsuranceChoiceID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R55",
+      "child": "LegExecutionOperation",
+      "parent": "TransportOrder",
+      "role": "OrderID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__LegExecut__Order__0DCF0841"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__LegExecut__Order__0DCF0841",
+            "childTable": "LegExecutionOperation",
+            "childColumn": "OrderID",
+            "parentTable": "TransportOrder",
+            "parentColumn": "OrderID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R56",
+      "child": "LegExecutionOperation",
+      "parent": "User",
+      "role": "UserID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__LegExecut__UserI__0EC32C7A"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__LegExecut__UserI__0EC32C7A",
+            "childTable": "LegExecutionOperation",
+            "childColumn": "UserID",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R57",
+      "child": "LegMilestoneLog",
+      "parent": "TripLeg",
+      "role": "LegID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_LegMilestoneLog_LegID",
+        "FK_LegMilestoneLog_LegID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_LegMilestoneLog_LegID",
+            "childTable": "LegMilestoneLog",
+            "childColumn": "LegID",
+            "parentTable": "TripLeg",
+            "parentColumn": "LegID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          },
+          {
+            "constraintName": "FK_Figma_LegMilestoneLog_LegID",
+            "childTable": "LegMilestoneLog",
+            "childColumn": "PlanID",
+            "parentTable": "TripLeg",
+            "parentColumn": "PlanID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ],
+        [
+          {
+            "constraintName": "FK_LegMilestoneLog_LegID",
+            "childTable": "LegMilestoneLog",
+            "childColumn": "LegID",
+            "parentTable": "TripLeg",
+            "parentColumn": "LegID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R58",
+      "child": "LegMilestoneLog",
+      "parent": "StaffProfile",
+      "role": "ReportedBy",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_LegMilestoneLog_ReportedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_LegMilestoneLog_ReportedBy",
+            "childTable": "LegMilestoneLog",
+            "childColumn": "ReportedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R59",
+      "child": "Notification",
+      "parent": "AuditEvent",
+      "role": "SourceEventID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK__Notificat__Sourc__4FD1D5C8"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__Notificat__Sourc__4FD1D5C8",
+            "childTable": "Notification",
+            "childColumn": "SourceEventID",
+            "parentTable": "AuditEvent",
+            "parentColumn": "EventID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R60",
+      "child": "Notification",
+      "parent": "TransportOrder",
+      "role": "OrderID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Notification_OrderID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Notification_OrderID",
+            "childTable": "Notification",
+            "childColumn": "OrderID",
+            "parentTable": "TransportOrder",
+            "parentColumn": "OrderID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R61",
+      "child": "Notification",
+      "parent": "User",
+      "role": "UserID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_Notification_UserID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Notification_UserID",
+            "childTable": "Notification",
+            "childColumn": "UserID",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R62",
+      "child": "NotificationProjection",
+      "parent": "AuditEvent",
+      "role": "EventID",
+      "nullable": false,
+      "unique": true,
+      "constraints": [
+        "FK__Notificat__Event__52AE4273"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__Notificat__Event__52AE4273",
+            "childTable": "NotificationProjection",
+            "childColumn": "EventID",
+            "parentTable": "AuditEvent",
+            "parentColumn": "EventID",
+            "nullable": false,
+            "uniqueChild": 1,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R63",
+      "child": "OperationalAdjustment",
+      "parent": "OrderChangeRequest",
+      "role": "ChangeRequestID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_OperationalAdjustment_ChangeRequestID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_OperationalAdjustment_ChangeRequestID",
+            "childTable": "OperationalAdjustment",
+            "childColumn": "ChangeRequestID",
+            "parentTable": "OrderChangeRequest",
+            "parentColumn": "ChangeRequestID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R64",
+      "child": "OperationalAdjustment",
+      "parent": "Customer",
+      "role": "RespondedByCustomerID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_OperationalAdjustment_RespondedByCustomerID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_OperationalAdjustment_RespondedByCustomerID",
+            "childTable": "OperationalAdjustment",
+            "childColumn": "RespondedByCustomerID",
+            "parentTable": "Customer",
+            "parentColumn": "CustomerID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R65",
+      "child": "OperationalAdjustment",
+      "parent": "StaffProfile",
+      "role": "ApprovedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_OperationalAdjustment_ApprovedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_OperationalAdjustment_ApprovedBy",
+            "childTable": "OperationalAdjustment",
+            "childColumn": "ApprovedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R66",
+      "child": "OperationalAdjustment",
+      "parent": "IncidentReport",
+      "role": "IncidentID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_OperationalAdjustment_IncidentID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_OperationalAdjustment_IncidentID",
+            "childTable": "OperationalAdjustment",
+            "childColumn": "IncidentID",
+            "parentTable": "IncidentReport",
+            "parentColumn": "IncidentID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R67",
+      "child": "OperationalAdjustment",
+      "parent": "TransportPlan",
+      "role": "PlanID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_OperationalAdjustment_PlanID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_OperationalAdjustment_PlanID",
+            "childTable": "OperationalAdjustment",
+            "childColumn": "PlanID",
+            "parentTable": "TransportPlan",
+            "parentColumn": "PlanID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R68",
+      "child": "OperationalAdjustment",
+      "parent": "StaffProfile",
+      "role": "ProposedBy",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_OperationalAdjustment_ProposedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_OperationalAdjustment_ProposedBy",
+            "childTable": "OperationalAdjustment",
+            "childColumn": "ProposedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R69",
+      "child": "OrderAssignment",
+      "parent": "StaffProfile",
+      "role": "AssignedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_OrderAssignment_AssignedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_OrderAssignment_AssignedBy",
+            "childTable": "OrderAssignment",
+            "childColumn": "AssignedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R70",
+      "child": "OrderAssignment",
+      "parent": "TransportOrder",
+      "role": "OrderID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_OrderAssignment_Order"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_OrderAssignment_Order",
+            "childTable": "OrderAssignment",
+            "childColumn": "OrderID",
+            "parentTable": "TransportOrder",
+            "parentColumn": "OrderID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R71",
+      "child": "OrderAssignment",
+      "parent": "StaffProfile",
+      "role": "StaffID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_OrderAssignment_Staff"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_OrderAssignment_Staff",
+            "childTable": "OrderAssignment",
+            "childColumn": "StaffID",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R72",
+      "child": "OrderChangeRequest",
+      "parent": "OrderRevision",
+      "role": "BaseRevisionID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_OrderChangeRequest_BaseRevisionID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_OrderChangeRequest_BaseRevisionID",
+            "childTable": "OrderChangeRequest",
+            "childColumn": "BaseRevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          },
+          {
+            "constraintName": "FK_Figma_OrderChangeRequest_BaseRevisionID",
+            "childTable": "OrderChangeRequest",
+            "childColumn": "OrderID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "OrderID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R73",
+      "child": "OrderChangeRequest",
+      "parent": "TransportOrder",
+      "role": "OrderID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_OrderChangeRequest_OrderID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_OrderChangeRequest_OrderID",
+            "childTable": "OrderChangeRequest",
+            "childColumn": "OrderID",
+            "parentTable": "TransportOrder",
+            "parentColumn": "OrderID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R74",
+      "child": "OrderChangeRequest",
+      "parent": "User",
+      "role": "RequestedBy",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_OrderChangeRequest_RequestedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_OrderChangeRequest_RequestedBy",
+            "childTable": "OrderChangeRequest",
+            "childColumn": "RequestedBy",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R75",
+      "child": "OrderChangeRequest",
+      "parent": "StaffProfile",
+      "role": "RespondedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_OrderChangeRequest_RespondedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_OrderChangeRequest_RespondedBy",
+            "childTable": "OrderChangeRequest",
+            "childColumn": "RespondedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R76",
+      "child": "OrderDecision",
+      "parent": "StaffProfile",
+      "role": "ManagerID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_OrderDecision_Manager"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_OrderDecision_Manager",
+            "childTable": "OrderDecision",
+            "childColumn": "ManagerID",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R77",
+      "child": "OrderDecision",
+      "parent": "OrderRevision",
+      "role": "RevisionID",
+      "nullable": false,
+      "unique": true,
+      "constraints": [
+        "FK_OrderDecision_Revision"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_OrderDecision_Revision",
+            "childTable": "OrderDecision",
+            "childColumn": "RevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": false,
+            "uniqueChild": 1,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R78",
+      "child": "OrderRevision",
+      "parent": "TransportOrder",
+      "role": "OrderID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_OrderRevision_Order"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_OrderRevision_Order",
+            "childTable": "OrderRevision",
+            "childColumn": "OrderID",
+            "parentTable": "TransportOrder",
+            "parentColumn": "OrderID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R79",
+      "child": "OrderServiceChoice",
+      "parent": "OrderRevision",
+      "role": "RevisionID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_OrderServiceChoice_Revision"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_OrderServiceChoice_Revision",
+            "childTable": "OrderServiceChoice",
+            "childColumn": "RevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R80",
+      "child": "PaymentAllocation",
+      "parent": "PaymentRequest",
+      "role": "PaymentRequestID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_PaymentAllocation_PaymentRequestID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_PaymentAllocation_PaymentRequestID",
+            "childTable": "PaymentAllocation",
+            "childColumn": "PaymentRequestID",
+            "parentTable": "PaymentRequest",
+            "parentColumn": "PaymentRequestID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R81",
+      "child": "PaymentAllocation",
+      "parent": "PaymentTransaction",
+      "role": "TransactionID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_PaymentAllocation_TransactionID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_PaymentAllocation_TransactionID",
+            "childTable": "PaymentAllocation",
+            "childColumn": "TransactionID",
+            "parentTable": "PaymentTransaction",
+            "parentColumn": "TransactionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R82",
+      "child": "PaymentOperation",
+      "parent": "TransportOrder",
+      "role": "OrderID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__PaymentOp__Order__4460231C"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__PaymentOp__Order__4460231C",
+            "childTable": "PaymentOperation",
+            "childColumn": "OrderID",
+            "parentTable": "TransportOrder",
+            "parentColumn": "OrderID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R83",
+      "child": "PaymentOperation",
+      "parent": "User",
+      "role": "UserID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__PaymentOp__UserI__45544755"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__PaymentOp__UserI__45544755",
+            "childTable": "PaymentOperation",
+            "childColumn": "UserID",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R84",
+      "child": "PaymentProof",
+      "parent": "TransportOrder",
+      "role": "OrderID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__PaymentPr__Order__4924D839"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__PaymentPr__Order__4924D839",
+            "childTable": "PaymentProof",
+            "childColumn": "OrderID",
+            "parentTable": "TransportOrder",
+            "parentColumn": "OrderID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R85",
+      "child": "PaymentProof",
+      "parent": "User",
+      "role": "UserID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__PaymentPr__UserI__4A18FC72"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__PaymentPr__UserI__4A18FC72",
+            "childTable": "PaymentProof",
+            "childColumn": "UserID",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R86",
+      "child": "PaymentReport",
+      "parent": "PaymentRequest",
+      "role": "PaymentRequestID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_PaymentReport_PaymentRequestID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_PaymentReport_PaymentRequestID",
+            "childTable": "PaymentReport",
+            "childColumn": "PaymentRequestID",
+            "parentTable": "PaymentRequest",
+            "parentColumn": "PaymentRequestID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R87",
+      "child": "PaymentRequest",
+      "parent": "QuotePaymentSchedule",
+      "role": "ScheduleID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_PaymentRequest_ScheduleID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_PaymentRequest_ScheduleID",
+            "childTable": "PaymentRequest",
+            "childColumn": "ScheduleID",
+            "parentTable": "QuotePaymentSchedule",
+            "parentColumn": "ScheduleID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          },
+          {
+            "constraintName": "FK_Figma_PaymentRequest_ScheduleID",
+            "childTable": "PaymentRequest",
+            "childColumn": "QuoteID",
+            "parentTable": "QuotePaymentSchedule",
+            "parentColumn": "QuoteID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R88",
+      "child": "PaymentRequest",
+      "parent": "Quote",
+      "role": "QuoteID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_PaymentRequest_QuoteID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_PaymentRequest_QuoteID",
+            "childTable": "PaymentRequest",
+            "childColumn": "QuoteID",
+            "parentTable": "Quote",
+            "parentColumn": "QuoteID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R89",
+      "child": "PaymentTransaction",
+      "parent": "StaffProfile",
+      "role": "ReversedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK__PaymentTr__Rever__4DE98D56"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__PaymentTr__Rever__4DE98D56",
+            "childTable": "PaymentTransaction",
+            "childColumn": "ReversedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R90",
+      "child": "PaymentTransaction",
+      "parent": "StaffProfile",
+      "role": "ReconciledBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_PaymentTransaction_ReconciledBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_PaymentTransaction_ReconciledBy",
+            "childTable": "PaymentTransaction",
+            "childColumn": "ReconciledBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R91",
+      "child": "PlanCheckpointNode",
+      "parent": "TransportPlan",
+      "role": "PlanID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_PlanCheckpointNode_Plan"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_PlanCheckpointNode_Plan",
+            "childTable": "PlanCheckpointNode",
+            "childColumn": "PlanID",
+            "parentTable": "TransportPlan",
+            "parentColumn": "PlanID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R92",
+      "child": "PlanCheckpointNode",
+      "parent": "QuarantineReservation",
+      "role": "QuarantineReservationID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_PlanCheckpointNode_Quarantine"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_PlanCheckpointNode_Quarantine",
+            "childTable": "PlanCheckpointNode",
+            "childColumn": "QuarantineReservationID",
+            "parentTable": "QuarantineReservation",
+            "parentColumn": "ReservationID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R93",
+      "child": "PlanOperation",
+      "parent": "TransportOrder",
+      "role": "OrderID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_PlanOperation_Order"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_PlanOperation_Order",
+            "childTable": "PlanOperation",
+            "childColumn": "OrderID",
+            "parentTable": "TransportOrder",
+            "parentColumn": "OrderID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R94",
+      "child": "PlanOperation",
+      "parent": "User",
+      "role": "UserID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_PlanOperation_User"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_PlanOperation_User",
+            "childTable": "PlanOperation",
+            "childColumn": "UserID",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R95",
+      "child": "QuarantineChoice",
+      "parent": "OrderServiceChoice",
+      "role": "ChoiceID",
+      "nullable": false,
+      "unique": true,
+      "constraints": [
+        "FK_QuarantineChoice_ServiceChoice"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_QuarantineChoice_ServiceChoice",
+            "childTable": "QuarantineChoice",
+            "childColumn": "ChoiceID",
+            "parentTable": "OrderServiceChoice",
+            "parentColumn": "ChoiceID",
+            "nullable": false,
+            "uniqueChild": 1,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R96",
+      "child": "QuarantineChoice",
+      "parent": "StaffProfile",
+      "role": "ConfirmedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_QuarantineChoice_Staff"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_QuarantineChoice_Staff",
+            "childTable": "QuarantineChoice",
+            "childColumn": "ConfirmedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R97",
+      "child": "QuarantineReservation",
+      "parent": "StaffProfile",
+      "role": "ConfirmedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_QuarantineReservation_ConfirmedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_QuarantineReservation_ConfirmedBy",
+            "childTable": "QuarantineReservation",
+            "childColumn": "ConfirmedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R98",
+      "child": "QuarantineReservation",
+      "parent": "Supplier",
+      "role": "SupplierID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_QuarantineReservation_SupplierID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_QuarantineReservation_SupplierID",
+            "childTable": "QuarantineReservation",
+            "childColumn": "SupplierID",
+            "parentTable": "Supplier",
+            "parentColumn": "SupplierID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R99",
+      "child": "QuarantineReservation",
+      "parent": "QuarantineChoice",
+      "role": "QuarantineChoiceID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_QuarantineReservation_QuarantineChoiceID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_QuarantineReservation_QuarantineChoiceID",
+            "childTable": "QuarantineReservation",
+            "childColumn": "QuarantineChoiceID",
+            "parentTable": "QuarantineChoice",
+            "parentColumn": "QuarantineChoiceID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R100",
+      "child": "Quote",
+      "parent": "Customer",
+      "role": "AcceptedByCustomerID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_Quote_AcceptedByCustomerID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_Quote_AcceptedByCustomerID",
+            "childTable": "Quote",
+            "childColumn": "AcceptedByCustomerID",
+            "parentTable": "Customer",
+            "parentColumn": "CustomerID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R101",
+      "child": "Quote",
+      "parent": "StaffProfile",
+      "role": "IssuedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_Quote_IssuedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_Quote_IssuedBy",
+            "childTable": "Quote",
+            "childColumn": "IssuedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R102",
+      "child": "Quote",
+      "parent": "StaffProfile",
+      "role": "PreparedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_Quote_PreparedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_Quote_PreparedBy",
+            "childTable": "Quote",
+            "childColumn": "PreparedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R103",
+      "child": "Quote",
+      "parent": "StaffProfile",
+      "role": "ApprovedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Quote_ApprovedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Quote_ApprovedBy",
+            "childTable": "Quote",
+            "childColumn": "ApprovedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R104",
+      "child": "Quote",
+      "parent": "OrderRevision",
+      "role": "RevisionID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_Quote_Revision"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Quote_Revision",
+            "childTable": "Quote",
+            "childColumn": "RevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R105",
+      "child": "QuoteItem",
+      "parent": "SupplierOffer",
+      "role": "OfferID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_QuoteItem_OfferID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_QuoteItem_OfferID",
+            "childTable": "QuoteItem",
+            "childColumn": "OfferID",
+            "parentTable": "SupplierOffer",
+            "parentColumn": "OfferID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R106",
+      "child": "QuoteItem",
+      "parent": "Quote",
+      "role": "QuoteID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_QuoteItem_QuoteID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_QuoteItem_QuoteID",
+            "childTable": "QuoteItem",
+            "childColumn": "QuoteID",
+            "parentTable": "Quote",
+            "parentColumn": "QuoteID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R107",
+      "child": "QuoteItem",
+      "parent": "ServiceTariff",
+      "role": "TariffID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_QuoteItem_TariffID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_QuoteItem_TariffID",
+            "childTable": "QuoteItem",
+            "childColumn": "TariffID",
+            "parentTable": "ServiceTariff",
+            "parentColumn": "TariffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R108",
+      "child": "QuotePaymentSchedule",
+      "parent": "Quote",
+      "role": "QuoteID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_QuotePaymentSchedule_QuoteID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_QuotePaymentSchedule_QuoteID",
+            "childTable": "QuotePaymentSchedule",
+            "childColumn": "QuoteID",
+            "parentTable": "Quote",
+            "parentColumn": "QuoteID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R109",
+      "child": "RefreshTokenSession",
+      "parent": "RefreshTokenSession",
+      "role": "ReplacedByTokenID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_RefreshTokenSession_Replacement"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_RefreshTokenSession_Replacement",
+            "childTable": "RefreshTokenSession",
+            "childColumn": "ReplacedByTokenID",
+            "parentTable": "RefreshTokenSession",
+            "parentColumn": "TokenID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R110",
+      "child": "RefreshTokenSession",
+      "parent": "User",
+      "role": "UserID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_RefreshTokenSession_User"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_RefreshTokenSession_User",
+            "childTable": "RefreshTokenSession",
+            "childColumn": "UserID",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R111",
+      "child": "Refund",
+      "parent": "StaffProfile",
+      "role": "ApprovedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_Refund_ApprovedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_Refund_ApprovedBy",
+            "childTable": "Refund",
+            "childColumn": "ApprovedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R112",
+      "child": "Refund",
+      "parent": "User",
+      "role": "RequestedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_Refund_RequestedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_Refund_RequestedBy",
+            "childTable": "Refund",
+            "childColumn": "RequestedBy",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R113",
+      "child": "Refund",
+      "parent": "PaymentAllocation",
+      "role": "AllocationID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_Refund_AllocationID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Refund_AllocationID",
+            "childTable": "Refund",
+            "childColumn": "AllocationID",
+            "parentTable": "PaymentAllocation",
+            "parentColumn": "AllocationID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R114",
+      "child": "ResourceOperation",
+      "parent": "User",
+      "role": "UserID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_ResourceOperation_User"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_ResourceOperation_User",
+            "childTable": "ResourceOperation",
+            "childColumn": "UserID",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R115",
+      "child": "RevisionQuarantineAssessment",
+      "parent": "OrderRevision",
+      "role": "RevisionID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__RevisionQ__Revis__473C8FC7"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__RevisionQ__Revis__473C8FC7",
+            "childTable": "RevisionQuarantineAssessment",
+            "childColumn": "RevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R116",
+      "child": "RevisionQuarantineAssessment",
+      "parent": "StaffProfile",
+      "role": "SpecialistID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__RevisionQ__Speci__4830B400"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__RevisionQ__Speci__4830B400",
+            "childTable": "RevisionQuarantineAssessment",
+            "childColumn": "SpecialistID",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R117",
+      "child": "RevisionVeterinaryAssessment",
+      "parent": "OrderRevision",
+      "role": "RevisionID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__RevisionV__Revis__4EDDB18F"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__RevisionV__Revis__4EDDB18F",
+            "childTable": "RevisionVeterinaryAssessment",
+            "childColumn": "RevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R118",
+      "child": "RevisionVeterinaryAssessment",
+      "parent": "StaffProfile",
+      "role": "SpecialistID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK__RevisionV__Speci__4FD1D5C8"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK__RevisionV__Speci__4FD1D5C8",
+            "childTable": "RevisionVeterinaryAssessment",
+            "childColumn": "SpecialistID",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R119",
+      "child": "ServiceTariff",
+      "parent": "StaffProfile",
+      "role": "PublishedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_ServiceTariff_PublishedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_ServiceTariff_PublishedBy",
+            "childTable": "ServiceTariff",
+            "childColumn": "PublishedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R120",
+      "child": "StaffAdminOperation",
+      "parent": "User",
+      "role": "UserID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_StaffAdminOperation_User"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_StaffAdminOperation_User",
+            "childTable": "StaffAdminOperation",
+            "childColumn": "UserID",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R121",
+      "child": "StaffProfile",
+      "parent": "User",
+      "role": "UserID",
+      "nullable": false,
+      "unique": true,
+      "constraints": [
+        "FK_StaffProfile_User"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_StaffProfile_User",
+            "childTable": "StaffProfile",
+            "childColumn": "UserID",
+            "parentTable": "User",
+            "parentColumn": "UserID",
+            "nullable": false,
+            "uniqueChild": 1,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R122",
+      "child": "StallAssignment",
+      "parent": "TripLeg",
+      "role": "LegID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_StallAssignment_LegID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_StallAssignment_LegID",
+            "childTable": "StallAssignment",
+            "childColumn": "LegID",
+            "parentTable": "TripLeg",
+            "parentColumn": "LegID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R123",
+      "child": "StallAssignment",
+      "parent": "StallEquipment",
+      "role": "StallID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_StallAssignment_StallID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_StallAssignment_StallID",
+            "childTable": "StallAssignment",
+            "childColumn": "StallID",
+            "parentTable": "StallEquipment",
+            "parentColumn": "StallID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R124",
+      "child": "StallChoice",
+      "parent": "OrderServiceChoice",
+      "role": "ChoiceID",
+      "nullable": false,
+      "unique": true,
+      "constraints": [
+        "FK_StallChoice_ServiceChoice"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_StallChoice_ServiceChoice",
+            "childTable": "StallChoice",
+            "childColumn": "ChoiceID",
+            "parentTable": "OrderServiceChoice",
+            "parentColumn": "ChoiceID",
+            "nullable": false,
+            "uniqueChild": 1,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R125",
+      "child": "StallEquipment",
+      "parent": "Supplier",
+      "role": "OwnerSupplierID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_StallEquipment_OwnerSupplierID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_StallEquipment_OwnerSupplierID",
+            "childTable": "StallEquipment",
+            "childColumn": "OwnerSupplierID",
+            "parentTable": "Supplier",
+            "parentColumn": "SupplierID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R126",
+      "child": "StallFitPolicy",
+      "parent": "Supplier",
+      "role": "CarrierSupplierID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_StallFitPolicy_CarrierSupplierID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_StallFitPolicy_CarrierSupplierID",
+            "childTable": "StallFitPolicy",
+            "childColumn": "CarrierSupplierID",
+            "parentTable": "Supplier",
+            "parentColumn": "SupplierID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R127",
+      "child": "StallFitPolicy",
+      "parent": "StaffProfile",
+      "role": "ReviewedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_StallFitPolicy_ReviewedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_StallFitPolicy_ReviewedBy",
+            "childTable": "StallFitPolicy",
+            "childColumn": "ReviewedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R128",
+      "child": "StallFitPolicy",
+      "parent": "StallEquipment",
+      "role": "StallID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_StallFitPolicy_StallID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_StallFitPolicy_StallID",
+            "childTable": "StallFitPolicy",
+            "childColumn": "StallID",
+            "parentTable": "StallEquipment",
+            "parentColumn": "StallID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R129",
+      "child": "SupplierOffer",
+      "parent": "Supplier",
+      "role": "SupplierID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_SupplierOffer_SupplierID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_SupplierOffer_SupplierID",
+            "childTable": "SupplierOffer",
+            "childColumn": "SupplierID",
+            "parentTable": "Supplier",
+            "parentColumn": "SupplierID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R130",
+      "child": "SupplierOffer",
+      "parent": "StaffProfile",
+      "role": "RecordedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_SupplierOffer_RecordedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_SupplierOffer_RecordedBy",
+            "childTable": "SupplierOffer",
+            "childColumn": "RecordedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R131",
+      "child": "SupplierOffer",
+      "parent": "OrderRevision",
+      "role": "RevisionID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_SupplierOffer_Revision"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_SupplierOffer_Revision",
+            "childTable": "SupplierOffer",
+            "childColumn": "RevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R132",
+      "child": "TransportOrder",
+      "parent": "TransportPlan",
+      "role": "CurrentPlanID",
+      "nullable": true,
+      "unique": true,
+      "constraints": [
+        "FK_Figma_TransportOrder_CurrentPlanID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_TransportOrder_CurrentPlanID",
+            "childTable": "TransportOrder",
+            "childColumn": "CurrentPlanID",
+            "parentTable": "TransportPlan",
+            "parentColumn": "PlanID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          },
+          {
+            "constraintName": "FK_Figma_TransportOrder_CurrentPlanID",
+            "childTable": "TransportOrder",
+            "childColumn": "OrderID",
+            "parentTable": "TransportPlan",
+            "parentColumn": "OrderID",
+            "nullable": false,
+            "uniqueChild": 1,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R133",
+      "child": "TransportOrder",
+      "parent": "OrderRevision",
+      "role": "CurrentRevisionID",
+      "nullable": true,
+      "unique": true,
+      "constraints": [
+        "FK_Figma_TransportOrder_CurrentRevisionID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_TransportOrder_CurrentRevisionID",
+            "childTable": "TransportOrder",
+            "childColumn": "CurrentRevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          },
+          {
+            "constraintName": "FK_Figma_TransportOrder_CurrentRevisionID",
+            "childTable": "TransportOrder",
+            "childColumn": "OrderID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "OrderID",
+            "nullable": false,
+            "uniqueChild": 1,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R134",
+      "child": "TransportOrder",
+      "parent": "Customer",
+      "role": "CustomerID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_TransportOrder_Customer"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_TransportOrder_Customer",
+            "childTable": "TransportOrder",
+            "childColumn": "CustomerID",
+            "parentTable": "Customer",
+            "parentColumn": "CustomerID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R135",
+      "child": "TransportOrderDetail",
+      "parent": "Horse",
+      "role": "HorseID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_TransportOrderDetail_Horse"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_TransportOrderDetail_Horse",
+            "childTable": "TransportOrderDetail",
+            "childColumn": "HorseID",
+            "parentTable": "Horse",
+            "parentColumn": "HorseID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R136",
+      "child": "TransportOrderDetail",
+      "parent": "TransportOrder",
+      "role": "OrderID",
+      "nullable": false,
+      "unique": true,
+      "constraints": [
+        "FK_TransportOrderDetail_Order"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_TransportOrderDetail_Order",
+            "childTable": "TransportOrderDetail",
+            "childColumn": "OrderID",
+            "parentTable": "TransportOrder",
+            "parentColumn": "OrderID",
+            "nullable": false,
+            "uniqueChild": 1,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R137",
+      "child": "TransportPlan",
+      "parent": "Quote",
+      "role": "AcceptedQuoteID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_TransportPlan_AcceptedQuoteID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_TransportPlan_AcceptedQuoteID",
+            "childTable": "TransportPlan",
+            "childColumn": "AcceptedQuoteID",
+            "parentTable": "Quote",
+            "parentColumn": "QuoteID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          },
+          {
+            "constraintName": "FK_Figma_TransportPlan_AcceptedQuoteID",
+            "childTable": "TransportPlan",
+            "childColumn": "RevisionID",
+            "parentTable": "Quote",
+            "parentColumn": "RevisionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R138",
+      "child": "TransportPlan",
+      "parent": "OrderRevision",
+      "role": "RevisionID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_TransportPlan_RevisionID",
+        "FK_TransportPlan_RevisionID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_TransportPlan_RevisionID",
+            "childTable": "TransportPlan",
+            "childColumn": "RevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          },
+          {
+            "constraintName": "FK_Figma_TransportPlan_RevisionID",
+            "childTable": "TransportPlan",
+            "childColumn": "OrderID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "OrderID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ],
+        [
+          {
+            "constraintName": "FK_TransportPlan_RevisionID",
+            "childTable": "TransportPlan",
+            "childColumn": "RevisionID",
+            "parentTable": "OrderRevision",
+            "parentColumn": "RevisionID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R139",
+      "child": "TransportPlan",
+      "parent": "StaffProfile",
+      "role": "CreatedBy",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_TransportPlan_CreatedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_TransportPlan_CreatedBy",
+            "childTable": "TransportPlan",
+            "childColumn": "CreatedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R140",
+      "child": "TransportPlan",
+      "parent": "StaffProfile",
+      "role": "DepartureAuthorizedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_TransportPlan_DepartureAuthorizedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_TransportPlan_DepartureAuthorizedBy",
+            "childTable": "TransportPlan",
+            "childColumn": "DepartureAuthorizedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R141",
+      "child": "TripAssignment",
+      "parent": "TripLeg",
+      "role": "LegID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_TripAssignment_LegID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_TripAssignment_LegID",
+            "childTable": "TripAssignment",
+            "childColumn": "LegID",
+            "parentTable": "TripLeg",
+            "parentColumn": "LegID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R142",
+      "child": "TripAssignment",
+      "parent": "StaffProfile",
+      "role": "StaffID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_TripAssignment_StaffID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_TripAssignment_StaffID",
+            "childTable": "TripAssignment",
+            "childColumn": "StaffID",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R143",
+      "child": "TripHandover",
+      "parent": "Customer",
+      "role": "RespondedByCustomerID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_TripHandover_RespondedByCustomerID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_TripHandover_RespondedByCustomerID",
+            "childTable": "TripHandover",
+            "childColumn": "RespondedByCustomerID",
+            "parentTable": "Customer",
+            "parentColumn": "CustomerID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R144",
+      "child": "TripHandover",
+      "parent": "TripLeg",
+      "role": "LegID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_TripHandover_LegID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_TripHandover_LegID",
+            "childTable": "TripHandover",
+            "childColumn": "LegID",
+            "parentTable": "TripLeg",
+            "parentColumn": "LegID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R145",
+      "child": "TripHandover",
+      "parent": "StaffProfile",
+      "role": "RecordedBy",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_TripHandover_RecordedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_TripHandover_RecordedBy",
+            "childTable": "TripHandover",
+            "childColumn": "RecordedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R146",
+      "child": "TripLeg",
+      "parent": "Supplier",
+      "role": "SupplierID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_Figma_TripLeg_SupplierID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_Figma_TripLeg_SupplierID",
+            "childTable": "TripLeg",
+            "childColumn": "SupplierID",
+            "parentTable": "Supplier",
+            "parentColumn": "SupplierID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R147",
+      "child": "TripLeg",
+      "parent": "StaffProfile",
+      "role": "DistanceConfirmedBy",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_TripLeg_DistanceConfirmedBy"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_TripLeg_DistanceConfirmedBy",
+            "childTable": "TripLeg",
+            "childColumn": "DistanceConfirmedBy",
+            "parentTable": "StaffProfile",
+            "parentColumn": "StaffID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R148",
+      "child": "TripLeg",
+      "parent": "PlanCheckpointNode",
+      "role": "FromNodeKey",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_TripLeg_FromCheckpoint"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_TripLeg_FromCheckpoint",
+            "childTable": "TripLeg",
+            "childColumn": "PlanID",
+            "parentTable": "PlanCheckpointNode",
+            "parentColumn": "PlanID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          },
+          {
+            "constraintName": "FK_TripLeg_FromCheckpoint",
+            "childTable": "TripLeg",
+            "childColumn": "FromNodeKey",
+            "parentTable": "PlanCheckpointNode",
+            "parentColumn": "NodeKey",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R149",
+      "child": "TripLeg",
+      "parent": "TransportPlan",
+      "role": "PlanID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_TripLeg_PlanID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_TripLeg_PlanID",
+            "childTable": "TripLeg",
+            "childColumn": "PlanID",
+            "parentTable": "TransportPlan",
+            "parentColumn": "PlanID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R150",
+      "child": "TripLeg",
+      "parent": "PlanCheckpointNode",
+      "role": "ToNodeKey",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_TripLeg_ToCheckpoint"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_TripLeg_ToCheckpoint",
+            "childTable": "TripLeg",
+            "childColumn": "PlanID",
+            "parentTable": "PlanCheckpointNode",
+            "parentColumn": "PlanID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          },
+          {
+            "constraintName": "FK_TripLeg_ToCheckpoint",
+            "childTable": "TripLeg",
+            "childColumn": "ToNodeKey",
+            "parentTable": "PlanCheckpointNode",
+            "parentColumn": "NodeKey",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R151",
+      "child": "TripLeg",
+      "parent": "FleetVehicle",
+      "role": "VehicleID",
+      "nullable": true,
+      "unique": false,
+      "constraints": [
+        "FK_TripLeg_VehicleID"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_TripLeg_VehicleID",
+            "childTable": "TripLeg",
+            "childColumn": "VehicleID",
+            "parentTable": "FleetVehicle",
+            "parentColumn": "VehicleID",
+            "nullable": true,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    },
+    {
+      "id": "R152",
+      "child": "User",
+      "parent": "Role",
+      "role": "RoleID",
+      "nullable": false,
+      "unique": false,
+      "constraints": [
+        "FK_User_Role"
+      ],
+      "mappings": [
+        [
+          {
+            "constraintName": "FK_User_Role",
+            "childTable": "User",
+            "childColumn": "RoleID",
+            "parentTable": "Role",
+            "parentColumn": "RoleID",
+            "nullable": false,
+            "uniqueChild": 0,
+            "is_disabled": false,
+            "is_not_trusted": false
+          }
+        ]
+      ]
+    }
+  ]
+}

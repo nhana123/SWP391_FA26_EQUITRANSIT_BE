@@ -29,6 +29,7 @@ public class AuditRedactor {
             "operationId", "orderId", "revisionId", "quoteId", "entityId",
             "status", "decision", "milestone", "recordVersion", "count",
             "metadata", "staffId", "userId", "role", "previousRole",
+            "previousRecordVersion",
             "accountStatus", "staffStatus");
 
     private final ObjectMapper mapper;

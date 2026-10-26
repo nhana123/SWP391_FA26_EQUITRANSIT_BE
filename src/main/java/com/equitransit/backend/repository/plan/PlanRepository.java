@@ -8,6 +8,7 @@
 package com.equitransit.backend.repository.plan;
 
 import com.equitransit.backend.dto.plan.PlanModels.AssignmentState;
+import com.equitransit.backend.dto.plan.PlanModels.PlanDraftRequest;
 import com.equitransit.backend.dto.plan.PlanModels.CarrierAcceptanceState;
 import com.equitransit.backend.dto.plan.PlanModels.GateState;
 import com.equitransit.backend.dto.plan.PlanModels.LegState;
@@ -143,7 +144,7 @@ public class PlanRepository {
      * @param now server UTC @return generated LegID */
     public long insertLeg(long plan, PlanLegInput leg, Long staff,
             OffsetDateTime now) {
-        boolean sourced = leg.distanceSource() != null;
+        boolean sourced = staff != null;
         var args = new MapSqlParameterSource("plan", plan)
                 .addValue("seq", leg.sequenceNo())
                 .addValue("mode", leg.transportMode().name())
@@ -160,7 +161,9 @@ public class PlanRepository {
                 .addValue("conn", leg.connectionBufferMinutes())
                 .addValue("rest", leg.restDurationMinutes())
                 .addValue("care", leg.careInstructions())
-                .addValue("src", sourced ? leg.distanceSource().trim() : null)
+                .addValue("src", sourced ? (leg.distanceSource() == null
+                        ? "Staff plan distance estimate"
+                        : leg.distanceSource().trim()) : null)
                 .addValue("by", sourced ? staff : null)
                 .addValue("at", sourced ? utc(now) : null);
 
@@ -177,6 +180,50 @@ public class PlanRepository {
                 + "SELECT ID FROM @ids", args, Long.class);
 
         return id == null ? 0L : id;
+    }
+
+    /** Save a retail estimate, not carrier acceptance or purchase evidence.
+     * @param draft validated draft @param plan new plan
+     * @param staff recording actor @param now server time */
+    public void recordAirfareEstimate(PlanDraftRequest draft, long plan,
+            long staff, OffsetDateTime now) {
+        var total = draft.legs().stream()
+                .filter(l -> l.transportMode() == PlanLegMode.AIR)
+                .map(PlanLegInput::estimatedAirfare)
+                .filter(java.util.Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (total.signum() == 0) {
+            return;
+        }
+        if (total.setScale(4).precision() > 18) {
+            throw new OrderException(HttpStatus.BAD_REQUEST,
+                    "PLAN_AIRFARE_INVALID", "Airfare total exceeds limits.");
+        }
+        var expiry = draft.legs().getFirst().plannedDeparture();
+        if (!expiry.isAfter(now)) {
+            throw new OrderException(HttpStatus.BAD_REQUEST,
+                    "PLAN_AIRFARE_EXPIRED", "Estimate departure is past.");
+        }
+        var args = new MapSqlParameterSource("revision", draft.revisionId())
+                .addValue("reference", "PLAN-AIRFARE:" + plan)
+                .addValue("amount", total).addValue("staff", staff)
+                .addValue("now", utc(now)).addValue("expiry", utc(expiry));
+        if (draft.setAsCurrentDraft()) {
+            jdbc.update("UPDATE dbo.SupplierOffer SET Status='EXPIRED'"
+                    + " WHERE RevisionID=:revision AND ServiceCode='AIRFARE'"
+                    + " AND OfferReference LIKE 'PLAN-AIRFARE:%'"
+                    + " AND ProviderName='Plan airfare estimate'"
+                    + " AND EvidenceFileKey IS NULL"
+                    + " AND Status='SELECTED'", args);
+        }
+        // Purchase cost is unknown; only RetailUnitPrice is an estimate.
+        jdbc.update("INSERT dbo.SupplierOffer (RevisionID,ProviderName,"
+                + "OfferReference,ServiceCode,UnitCode,Quantity,UnitPrice,"
+                + "RetailUnitPrice,Currency,IncludesStall,IncludedCharges,"
+                + "ValidUntil,Status,RecordedBy,RecordedAt) VALUES"
+                + " (:revision,'Plan airfare estimate',:reference,'AIRFARE',"
+                + "'SHIPMENT',1,0,:amount,'USD',0,NULL,:expiry,"
+                + "'SELECTED',:staff,:now)", args);
     }
 
     /** @param order parent @param plan current plan ID */
@@ -334,6 +381,9 @@ public class PlanRepository {
      * @return true if driver has an overlapping active assignment */
     public boolean driverOverlaps(long staff, OffsetDateTime start,
             OffsetDateTime end, int buffer, long excludeLeg) {
+        if (journeyBusy("DRIVER", staff, start, end.plusMinutes(buffer))) {
+            return true;
+        }
         Integer count = jdbc.queryForObject(
                 "SELECT COUNT(*) FROM dbo.TripAssignment a "
                 + "WITH (UPDLOCK,HOLDLOCK) JOIN dbo.TripLeg l "
@@ -685,6 +735,9 @@ public class PlanRepository {
         jdbc.queryForObject("SELECT HorseID FROM dbo.Horse WITH (UPDLOCK,"
                 + "HOLDLOCK) WHERE HorseID=:horse", Map.of("horse", horse),
                 Long.class);
+        if (journeyBusy("HORSE", horse, start, end)) {
+            return true;
+        }
         Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM "
                 + "dbo.TransportOrderDetail d JOIN dbo.TransportOrder o "
                 + "ON o.OrderID=d.OrderID JOIN dbo.TransportPlan p "
@@ -719,7 +772,8 @@ public class PlanRepository {
                 Map.of("quote", quote, "now", utc(now), "plan", plan,
                         "order", order));
         jdbc.update("UPDATE dbo.TransportOrder SET CurrentPlanID=:plan,"
-                + "OrderStatus=CASE WHEN OrderStatus='APPROVED' "
+                + "OrderStatus=CASE WHEN OrderStatus IN "
+                + "('APPROVED','IN_PREPARATION') "
                 + "THEN 'CONFIRMED' ELSE OrderStatus END,"
                 + "UpdatedAt=SYSUTCDATETIME() WHERE OrderID=:order",
                 Map.of("plan", plan, "order", order));
@@ -730,6 +784,27 @@ public class PlanRepository {
         return jdbc.queryForList("SELECT ServiceCode,OptionCode,ArrangedBy "
                 + "FROM dbo.OrderServiceChoice WHERE RevisionID=:rev",
                 Map.of("rev", revision));
+    }
+
+    private boolean journeyBusy(String kind, long key, OffsetDateTime start,
+            OffsetDateTime end) {
+        Long exists = jdbc.queryForObject(
+                "SELECT OBJECT_ID('journey.Trip','U')", Map.of(), Long.class);
+        if (exists == null) {
+            return false;
+        }
+        boolean driver = "DRIVER".equals(kind);
+        String joins = driver ? "" : " JOIN journey.Manifest m"
+                + " ON m.TripID=t.TripID JOIN journey.BookingHorse h"
+                + " ON h.BookingHorseID=m.BookingHorseID";
+        String match = driver ? "t.DriverID=:key"
+                : "h.HorseID=:key AND m.Active=1";
+        return jdbc.queryForObject("SELECT COUNT(*) FROM journey.Trip t"
+                + joins + " WHERE " + match + " AND t.Status IN"
+                + " ('PENDING_APPROVAL','SCHEDULED','IN_TRANSIT','ARRIVED')"
+                + " AND t.StartsAt<:end AND t.EndsAt>:start",
+                Map.of("key", key, "start", utc(start), "end", utc(end)),
+                Integer.class) > 0;
     }
 
     private PlanSummaryView summary(ResultSet r, Long current)

@@ -1,0 +1,454 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1759" height="1233" viewBox="0 0 1759 1233"><rect width="100%" height="100%" fill="white"/><g font-family="Arial" text-anchor="middle"><text x="879.5" y="30" font-size="24" font-weight="bold" fill="#263445">Identity and ownership</text><text x="879.5" y="53" font-size="12" fill="#64748b">EquiTransit_Demo · 7 entities · 7 relationships · selected attributes; complete dictionary in the atlas</text><text x="879.5" y="77" font-size="11" fill="#64748b">Rectangle: entity · Diamond: relationship · Ellipse: attribute · Underlined: primary key</text><text x="879.5" y="97" font-size="11" fill="#64748b">1/N = maximum cardinality · Double line = mandatory child participation · No arrows / no crow's feet</text></g><g transform="translate(0,115)">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(21.6 1061.6)">
+<title>G</title>
+<polygon fill="white" stroke="none" points="-21.6,21.6 -21.6,-1061.6 1737.31,-1061.6 1737.31,21.6 -21.6,21.6"/>
+<g id="clust1" class="cluster">
+<title>cluster_Role</title>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_User</title>
+</g>
+<g id="clust5" class="cluster">
+<title>cluster_Customer</title>
+</g>
+<g id="clust7" class="cluster">
+<title>cluster_StaffProfile</title>
+</g>
+<g id="clust9" class="cluster">
+<title>cluster_Horse</title>
+</g>
+<g id="clust11" class="cluster">
+<title>cluster_AuthenticationToken</title>
+</g>
+<g id="clust13" class="cluster">
+<title>cluster_RefreshTokenSession</title>
+</g>
+<!-- E_Role&#45;&gt;A_Role_0 -->
+<g id="edge1" class="edge">
+<title>E_Role&#45;&gt;A_Role_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M159,-524.52C159,-518.79 159,-508 159,-508 159,-508 151.6,-505.58 141.95,-502.43"/>
+</g>
+<!-- E_Role&#45;&gt;A_Role_1 -->
+<g id="edge2" class="edge">
+<title>E_Role&#45;&gt;A_Role_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M171.6,-571.48C171.6,-577.21 171.6,-588 171.6,-588 171.6,-588 159.88,-591.18 145.79,-595"/>
+</g>
+<!-- E_Role&#45;&gt;A_Role_1 -->
+<!-- E_Role&#45;&gt;R152 -->
+<g id="edge55" class="edge">
+<title>E_Role&#45;&gt;R152</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M172.03,-548C196.19,-548 222.91,-548 246.49,-548"/>
+<text xml:space="preserve" text-anchor="middle" x="187.92" y="-552.85" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_Role_0&#45;&gt;E_Role -->
+<!-- E_User&#45;&gt;A_User_0 -->
+<g id="edge5" class="edge">
+<title>E_User&#45;&gt;A_User_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M458.05,-524.57C432.26,-516.06 409.33,-508.5 409.33,-508.5 409.33,-508.5 409.33,-467.5 409.33,-467.5 409.33,-467.5 450.18,-454.71 484.18,-444.07"/>
+</g>
+<!-- E_User&#45;&gt;A_User_1 -->
+<g id="edge6" class="edge">
+<title>E_User&#45;&gt;A_User_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M590.33,-524.52C590.33,-518.79 590.33,-508 590.33,-508 590.33,-508 582.93,-505.58 573.28,-502.43"/>
+</g>
+<!-- E_User&#45;&gt;A_User_2 -->
+<g id="edge7" class="edge">
+<title>E_User&#45;&gt;A_User_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M602.93,-571.48C602.93,-577.21 602.93,-588 602.93,-588 602.93,-588 591.21,-591.18 577.11,-595"/>
+</g>
+<!-- E_User&#45;&gt;A_User_2 -->
+<!-- E_User&#45;&gt;R5 -->
+<g id="edge43" class="edge">
+<title>E_User&#45;&gt;R5</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M597.43,-571.5C609.81,-575.82 618.93,-579 618.93,-579 618.93,-579 725.94,-756.47 763.14,-818.16"/>
+<text xml:space="preserve" text-anchor="middle" x="609.65" y="-581.11" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- E_User&#45;&gt;R21 -->
+<g id="edge45" class="edge">
+<title>E_User&#45;&gt;R21</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M601.49,-571.54C646.52,-586.39 702.82,-604.96 739.02,-616.9"/>
+<text xml:space="preserve" text-anchor="middle" x="613.93" y="-580.94" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- E_User&#45;&gt;R110 -->
+<g id="edge51" class="edge">
+<title>E_User&#45;&gt;R110</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M602.15,-524.54C644.75,-510.66 697.24,-493.56 733.28,-481.82"/>
+<text xml:space="preserve" text-anchor="middle" x="619.88" y="-524.05" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- E_User&#45;&gt;R121 -->
+<g id="edge53" class="edge">
+<title>E_User&#45;&gt;R121</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M597.43,-524.5C609.81,-520.18 618.93,-517 618.93,-517 618.93,-517 678.93,-435 678.93,-435 678.93,-435 733.93,-362.25 761.01,-326.44"/>
+<text xml:space="preserve" text-anchor="middle" x="615.22" y="-523.64" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_User_0&#45;&gt;A_User_1 -->
+<!-- A_User_1&#45;&gt;E_User -->
+<!-- E_Customer&#45;&gt;A_Customer_0 -->
+<g id="edge11" class="edge">
+<title>E_Customer&#45;&gt;A_Customer_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M985.8,-659.7C958.68,-652.99 934.49,-647 934.49,-647 934.49,-647 904.49,-638.5 904.49,-638.5 904.49,-638.5 904.49,-597.5 904.49,-597.5 904.49,-597.5 934.49,-589 934.49,-589 934.49,-589 974.4,-579.76 1009.16,-571.71"/>
+</g>
+<!-- E_Customer&#45;&gt;A_Customer_1 -->
+<g id="edge12" class="edge">
+<title>E_Customer&#45;&gt;A_Customer_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1120.95,-654.52C1120.95,-648.79 1120.95,-638 1120.95,-638 1120.95,-638 1113.55,-635.58 1103.9,-632.43"/>
+</g>
+<!-- E_Customer&#45;&gt;A_Customer_2 -->
+<g id="edge13" class="edge">
+<title>E_Customer&#45;&gt;A_Customer_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1133.55,-701.48C1133.55,-707.21 1133.55,-718 1133.55,-718 1133.55,-718 1121.83,-721.18 1107.74,-725"/>
+</g>
+<!-- E_Customer&#45;&gt;A_Customer_2 -->
+<!-- E_Customer&#45;&gt;R39 -->
+<g id="edge47" class="edge">
+<title>E_Customer&#45;&gt;R39</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M1133.73,-678C1188.72,-678 1262.28,-678 1308.25,-678"/>
+<text xml:space="preserve" text-anchor="middle" x="1149.62" y="-682.85" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_Customer_0&#45;&gt;A_Customer_1 -->
+<!-- A_Customer_1&#45;&gt;E_Customer -->
+<!-- E_StaffProfile&#45;&gt;A_StaffProfile_0 -->
+<g id="edge17" class="edge">
+<title>E_StaffProfile&#45;&gt;A_StaffProfile_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M985.8,-143.7C958.68,-136.99 934.49,-131 934.49,-131 934.49,-131 904.49,-122.5 904.49,-122.5 904.49,-122.5 904.49,-81.5 904.49,-81.5 904.49,-81.5 934.49,-73 934.49,-73 934.49,-73 974.4,-63.76 1009.16,-55.71"/>
+</g>
+<!-- E_StaffProfile&#45;&gt;A_StaffProfile_1 -->
+<g id="edge18" class="edge">
+<title>E_StaffProfile&#45;&gt;A_StaffProfile_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1120.95,-138.52C1120.95,-132.79 1120.95,-122 1120.95,-122 1120.95,-122 1113.55,-119.58 1103.9,-116.43"/>
+</g>
+<!-- E_StaffProfile&#45;&gt;A_StaffProfile_2 -->
+<g id="edge19" class="edge">
+<title>E_StaffProfile&#45;&gt;A_StaffProfile_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1133.55,-185.48C1133.55,-191.21 1133.55,-202 1133.55,-202 1133.55,-202 1121.83,-205.18 1107.74,-209"/>
+</g>
+<!-- E_StaffProfile&#45;&gt;A_StaffProfile_2 -->
+<!-- A_StaffProfile_0&#45;&gt;A_StaffProfile_1 -->
+<!-- A_StaffProfile_1&#45;&gt;E_StaffProfile -->
+<!-- E_Horse&#45;&gt;A_Horse_0 -->
+<g id="edge23" class="edge">
+<title>E_Horse&#45;&gt;A_Horse_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1540.28,-654.57C1513.59,-646.06 1489.88,-638.5 1489.88,-638.5 1489.88,-638.5 1489.88,-597.5 1489.88,-597.5 1489.88,-597.5 1532.7,-584.54 1568,-573.86"/>
+</g>
+<!-- E_Horse&#45;&gt;A_Horse_1 -->
+<g id="edge24" class="edge">
+<title>E_Horse&#45;&gt;A_Horse_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1675,-654.52C1675,-648.79 1675,-638 1675,-638 1675,-638 1667.6,-635.58 1657.95,-632.43"/>
+</g>
+<!-- E_Horse&#45;&gt;A_Horse_2 -->
+<g id="edge25" class="edge">
+<title>E_Horse&#45;&gt;A_Horse_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1687.6,-701.48C1687.6,-707.21 1687.6,-718 1687.6,-718 1687.6,-718 1679.46,-720.2 1668.59,-723.15"/>
+</g>
+<!-- E_Horse&#45;&gt;A_Horse_2 -->
+<!-- E_Horse&#45;&gt;A_Horse_3 -->
+<g id="edge26" class="edge">
+<title>E_Horse&#45;&gt;A_Horse_3</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1540.28,-701.43C1513.59,-709.94 1489.88,-717.5 1489.88,-717.5 1489.88,-717.5 1489.88,-758.5 1489.88,-758.5 1489.88,-758.5 1532.7,-771.46 1568,-782.14"/>
+</g>
+<!-- A_Horse_0&#45;&gt;A_Horse_1 -->
+<!-- A_Horse_1&#45;&gt;E_Horse -->
+<!-- A_Horse_2&#45;&gt;A_Horse_3 -->
+<!-- E_AuthenticationToken&#45;&gt;A_AuthenticationToken_0 -->
+<g id="edge31" class="edge">
+<title>E_AuthenticationToken&#45;&gt;A_AuthenticationToken_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M964.81,-912.5C947.34,-908.18 934.49,-905 934.49,-905 934.49,-905 904.49,-896.5 904.49,-896.5 904.49,-896.5 904.49,-855.5 904.49,-855.5 904.49,-855.5 934.49,-847 934.49,-847 934.49,-847 974.4,-837.76 1009.16,-829.71"/>
+</g>
+<!-- E_AuthenticationToken&#45;&gt;A_AuthenticationToken_1 -->
+<g id="edge32" class="edge">
+<title>E_AuthenticationToken&#45;&gt;A_AuthenticationToken_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1120.95,-912.52C1120.95,-906.79 1120.95,-896 1120.95,-896 1120.95,-896 1113.55,-893.58 1103.9,-890.43"/>
+</g>
+<!-- E_AuthenticationToken&#45;&gt;A_AuthenticationToken_2 -->
+<g id="edge33" class="edge">
+<title>E_AuthenticationToken&#45;&gt;A_AuthenticationToken_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1163.58,-959.48C1163.58,-965.21 1163.58,-976 1163.58,-976 1163.58,-976 1138.63,-980.81 1113.19,-985.71"/>
+</g>
+<!-- E_AuthenticationToken&#45;&gt;A_AuthenticationToken_2 -->
+<!-- A_AuthenticationToken_0&#45;&gt;A_AuthenticationToken_1 -->
+<!-- A_AuthenticationToken_1&#45;&gt;E_AuthenticationToken -->
+<!-- E_RefreshTokenSession&#45;&gt;A_RefreshTokenSession_0 -->
+<g id="edge37" class="edge">
+<title>E_RefreshTokenSession&#45;&gt;A_RefreshTokenSession_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M964.81,-396.5C947.34,-392.18 934.49,-389 934.49,-389 934.49,-389 904.49,-380.5 904.49,-380.5 904.49,-380.5 904.49,-339.5 904.49,-339.5 904.49,-339.5 934.49,-331 934.49,-331 934.49,-331 974.4,-321.76 1009.16,-313.71"/>
+</g>
+<!-- E_RefreshTokenSession&#45;&gt;A_RefreshTokenSession_1 -->
+<g id="edge38" class="edge">
+<title>E_RefreshTokenSession&#45;&gt;A_RefreshTokenSession_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1120.95,-396.52C1120.95,-390.79 1120.95,-380 1120.95,-380 1120.95,-380 1113.55,-377.58 1103.9,-374.43"/>
+</g>
+<!-- E_RefreshTokenSession&#45;&gt;A_RefreshTokenSession_2 -->
+<g id="edge39" class="edge">
+<title>E_RefreshTokenSession&#45;&gt;A_RefreshTokenSession_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1169.01,-443.48C1169.01,-449.21 1169.01,-460 1169.01,-460 1169.01,-460 1141.27,-465.08 1113.74,-470.12"/>
+</g>
+<!-- E_RefreshTokenSession&#45;&gt;A_RefreshTokenSession_2 -->
+<!-- E_RefreshTokenSession&#45;&gt;R109 -->
+<g id="edge49" class="edge">
+<title>E_RefreshTokenSession&#45;&gt;R109</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M1169.41,-413.81C1199.4,-413.5 1231.63,-413.58 1260.51,-414.04"/>
+<text xml:space="preserve" text-anchor="middle" x="1185.37" y="-418.52" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_RefreshTokenSession_0&#45;&gt;A_RefreshTokenSession_1 -->
+<!-- A_RefreshTokenSession_1&#45;&gt;E_RefreshTokenSession -->
+<!-- R5&#45;&gt;E_AuthenticationToken -->
+<g id="edge44" class="edge">
+<title>R5&#45;&gt;E_AuthenticationToken</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M814.46,-853.39C860.77,-872.88 934.87,-904.08 934.49,-905 934.73,-904.03 947.48,-907.21 964.81,-911.53"/>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M813.68,-855.23C859.99,-874.73 934.1,-905.92 934.49,-905 934.24,-905.97 946.99,-909.15 964.32,-913.47"/>
+<text xml:space="preserve" text-anchor="middle" x="951.19" y="-896.86" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R21&#45;&gt;E_Customer -->
+<g id="edge46" class="edge">
+<title>R21&#45;&gt;E_Customer</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M825.87,-636.38C869.77,-644.04 935.35,-655.47 985.77,-664.26"/>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M825.53,-638.35C869.42,-646.01 935.01,-657.44 985.43,-666.23"/>
+<text xml:space="preserve" text-anchor="middle" x="971.4" y="-650.59" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- R39&#45;&gt;E_Horse -->
+<g id="edge48" class="edge">
+<title>R39&#45;&gt;E_Horse</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M1396.56,-677C1435.45,-677 1493.46,-677 1539.6,-677"/>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M1396.56,-679C1435.45,-679 1493.46,-679 1539.6,-679"/>
+<text xml:space="preserve" text-anchor="middle" x="1523.71" y="-665.95" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R109&#45;&gt;E_RefreshTokenSession -->
+<g id="edge50" class="edge">
+<title>R109&#45;&gt;E_RefreshTokenSession</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M1260.51,-425.96C1231.63,-426.42 1199.4,-426.5 1169.41,-426.19"/>
+<text xml:space="preserve" text-anchor="middle" x="1185.22" y="-431.18" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R110&#45;&gt;E_RefreshTokenSession -->
+<g id="edge52" class="edge">
+<title>R110&#45;&gt;E_RefreshTokenSession</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M835.77,-457.07C868.73,-451.44 911.02,-444.22 949.88,-437.58"/>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M836.11,-459.04C869.07,-453.41 911.35,-446.19 950.21,-439.55"/>
+<text xml:space="preserve" text-anchor="middle" x="932.95" y="-429.31" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R121&#45;&gt;E_StaffProfile -->
+<g id="edge54" class="edge">
+<title>R121&#45;&gt;E_StaffProfile</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M799.91,-289.61C843.4,-258 933.9,-192.19 934.49,-193 934.24,-192.03 958.45,-185.99 985.5,-179.24"/>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M801.09,-291.23C844.57,-259.61 935.07,-193.81 934.49,-193 934.73,-193.97 958.94,-187.93 985.99,-181.18"/>
+<text xml:space="preserve" text-anchor="middle" x="968.28" y="-172.26" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- R152&#45;&gt;E_User -->
+<g id="edge56" class="edge">
+<title>R152&#45;&gt;E_User</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M380.6,-547C404.14,-547 430.76,-547 454.86,-547"/>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M380.6,-549C404.14,-549 430.76,-549 454.86,-549"/>
+<text xml:space="preserve" text-anchor="middle" x="438.96" y="-535.95" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- E_Role -->
+<g id="node1" class="node">
+<title>E_Role</title>
+<polygon fill="#555555" stroke="#353535" points="171.6,-571.04 24,-571.04 24,-524.96 171.6,-524.96 171.6,-571.04"/>
+<text xml:space="preserve" text-anchor="middle" x="97.8" y="-543.5" font-family="Arial" font-size="15.00" fill="white">ROLE</text>
+</g>
+<!-- A_Role_0 -->
+<g id="node2" class="node">
+<title>A_Role_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="97.8" cy="-488" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="79.46" y="-485.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">RoleID</text>
+</g>
+<!-- A_Role_1 -->
+<g id="node3" class="node">
+<title>A_Role_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="97.8" cy="-608" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="71.12" y="-603.2" font-family="Arial" font-size="12.00" fill="white">RoleCode</text>
+</g>
+<!-- E_User -->
+<g id="node4" class="node">
+<title>E_User</title>
+<polygon fill="#555555" stroke="#353535" points="602.93,-571.04 455.33,-571.04 455.33,-524.96 602.93,-524.96 602.93,-571.04"/>
+<text xml:space="preserve" text-anchor="middle" x="529.13" y="-543.5" font-family="Arial" font-size="15.00" fill="white">USER</text>
+</g>
+<!-- A_User_0 -->
+<g id="node5" class="node">
+<title>A_User_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="529.13" cy="-430" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="510.46" y="-427.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">UserID</text>
+</g>
+<!-- A_User_1 -->
+<g id="node6" class="node">
+<title>A_User_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="529.13" cy="-488" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="514.12" y="-483.2" font-family="Arial" font-size="12.00" fill="white">Email</text>
+</g>
+<!-- A_User_2 -->
+<g id="node7" class="node">
+<title>A_User_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="529.13" cy="-608" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="512.12" y="-603.2" font-family="Arial" font-size="12.00" fill="white">Status</text>
+</g>
+<!-- E_Customer -->
+<g id="node8" class="node">
+<title>E_Customer</title>
+<polygon fill="#555555" stroke="#353535" points="1133.55,-701.04 985.95,-701.04 985.95,-654.96 1133.55,-654.96 1133.55,-701.04"/>
+<text xml:space="preserve" text-anchor="middle" x="1059.75" y="-673.5" font-family="Arial" font-size="15.00" fill="white">CUSTOMER</text>
+</g>
+<!-- A_Customer_0 -->
+<g id="node9" class="node">
+<title>A_Customer_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1059.75" cy="-560" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1027.74" y="-557.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">CustomerID</text>
+</g>
+<!-- A_Customer_1 -->
+<g id="node10" class="node">
+<title>A_Customer_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1059.75" cy="-618" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1034.08" y="-613.2" font-family="Arial" font-size="12.00" fill="white">FullName</text>
+</g>
+<!-- A_Customer_2 -->
+<g id="node11" class="node">
+<title>A_Customer_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1059.75" cy="-738" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1042.4" y="-733.2" font-family="Arial" font-size="12.00" fill="white">Phone</text>
+</g>
+<!-- E_StaffProfile -->
+<g id="node12" class="node">
+<title>E_StaffProfile</title>
+<polygon fill="#555555" stroke="#353535" points="1133.55,-185.04 985.95,-185.04 985.95,-138.96 1133.55,-138.96 1133.55,-185.04"/>
+<text xml:space="preserve" text-anchor="middle" x="1059.75" y="-157.5" font-family="Arial" font-size="15.00" fill="white">STAFF PROFILE</text>
+</g>
+<!-- A_StaffProfile_0 -->
+<g id="node13" class="node">
+<title>A_StaffProfile_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1059.75" cy="-44" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1041.41" y="-41.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">StaffID</text>
+</g>
+<!-- A_StaffProfile_1 -->
+<g id="node14" class="node">
+<title>A_StaffProfile_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1059.75" cy="-102" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1034.08" y="-97.2" font-family="Arial" font-size="12.00" fill="white">FullName</text>
+</g>
+<!-- A_StaffProfile_2 -->
+<g id="node15" class="node">
+<title>A_StaffProfile_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1059.75" cy="-222" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1030.4" y="-217.2" font-family="Arial" font-size="12.00" fill="white">StaffStatus</text>
+</g>
+<!-- E_Horse -->
+<g id="node16" class="node">
+<title>E_Horse</title>
+<polygon fill="#555555" stroke="#353535" points="1687.6,-701.04 1540,-701.04 1540,-654.96 1687.6,-654.96 1687.6,-701.04"/>
+<text xml:space="preserve" text-anchor="middle" x="1613.8" y="-673.5" font-family="Arial" font-size="15.00" fill="white">HORSE</text>
+</g>
+<!-- A_Horse_0 -->
+<g id="node17" class="node">
+<title>A_Horse_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1613.8" cy="-560" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1591.79" y="-557.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">HorseID</text>
+</g>
+<!-- A_Horse_1 -->
+<g id="node18" class="node">
+<title>A_Horse_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1613.8" cy="-618" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1582.12" y="-613.2" font-family="Arial" font-size="12.00" fill="white">MicrochipID</text>
+</g>
+<!-- A_Horse_2 -->
+<g id="node19" class="node">
+<title>A_Horse_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1613.8" cy="-738" rx="77.92" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1568.78" y="-733.2" font-family="Arial" font-size="12.00" fill="white">PassportNumber</text>
+</g>
+<!-- A_Horse_3 -->
+<g id="node20" class="node">
+<title>A_Horse_3</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1613.8" cy="-796" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1597.79" y="-791.2" font-family="Arial" font-size="12.00" fill="white">Name</text>
+</g>
+<!-- E_AuthenticationToken -->
+<g id="node21" class="node">
+<title>E_AuthenticationToken</title>
+<polygon fill="#555555" stroke="#353535" points="1163.58,-959.04 955.92,-959.04 955.92,-912.96 1163.58,-912.96 1163.58,-959.04"/>
+<text xml:space="preserve" text-anchor="middle" x="1059.75" y="-931.5" font-family="Arial" font-size="15.00" fill="white">AUTHENTICATION TOKEN</text>
+</g>
+<!-- A_AuthenticationToken_0 -->
+<g id="node22" class="node">
+<title>A_AuthenticationToken_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1059.75" cy="-818" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1037.07" y="-815.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">TokenID</text>
+</g>
+<!-- A_AuthenticationToken_1 -->
+<g id="node23" class="node">
+<title>A_AuthenticationToken_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1059.75" cy="-876" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1029.07" y="-871.2" font-family="Arial" font-size="12.00" fill="white">TokenHash</text>
+</g>
+<!-- A_AuthenticationToken_2 -->
+<g id="node24" class="node">
+<title>A_AuthenticationToken_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1059.75" cy="-996" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1037.4" y="-991.2" font-family="Arial" font-size="12.00" fill="white">Purpose</text>
+</g>
+<!-- E_RefreshTokenSession -->
+<g id="node25" class="node">
+<title>E_RefreshTokenSession</title>
+<polygon fill="#555555" stroke="#353535" points="1169.01,-443.04 950.49,-443.04 950.49,-396.96 1169.01,-396.96 1169.01,-443.04"/>
+<text xml:space="preserve" text-anchor="middle" x="1059.75" y="-415.5" font-family="Arial" font-size="15.00" fill="white">REFRESH TOKEN SESSION</text>
+</g>
+<!-- A_RefreshTokenSession_0 -->
+<g id="node26" class="node">
+<title>A_RefreshTokenSession_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1059.75" cy="-302" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1037.07" y="-299.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">TokenID</text>
+</g>
+<!-- A_RefreshTokenSession_1 -->
+<g id="node27" class="node">
+<title>A_RefreshTokenSession_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1059.75" cy="-360" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1036.08" y="-355.2" font-family="Arial" font-size="12.00" fill="white">FamilyID</text>
+</g>
+<!-- A_RefreshTokenSession_2 -->
+<g id="node28" class="node">
+<title>A_RefreshTokenSession_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1059.75" cy="-480" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1029.07" y="-475.2" font-family="Arial" font-size="12.00" fill="white">TokenHash</text>
+</g>
+<!-- R5 -->
+<g id="node29" class="node">
+<title>R5</title>
+<polygon fill="#7a78a7" stroke="#585781" points="776.71,-863.12 678.93,-839 776.71,-814.88 874.49,-839 776.71,-863.12"/>
+<text xml:space="preserve" text-anchor="middle" x="776.71" y="-836" font-family="Arial" font-size="10.00" fill="white">BELONGS TO USER</text>
+</g>
+<!-- R21 -->
+<g id="node30" class="node">
+<title>R21</title>
+<polygon fill="#7a78a7" stroke="#585781" points="776.71,-653.12 703.8,-629 776.71,-604.88 849.61,-629 776.71,-653.12"/>
+<text xml:space="preserve" text-anchor="middle" x="776.71" y="-626" font-family="Arial" font-size="10.00" fill="white">HAS PROFILE</text>
+</g>
+<!-- R39 -->
+<g id="node31" class="node">
+<title>R39</title>
+<polygon fill="#7a78a7" stroke="#585781" points="1352.44,-702.12 1309.13,-678 1352.44,-653.88 1395.76,-678 1352.44,-702.12"/>
+<text xml:space="preserve" text-anchor="middle" x="1352.44" y="-675" font-family="Arial" font-size="10.00" fill="white">OWNS</text>
+</g>
+<!-- R109 -->
+<g id="node32" class="node">
+<title>R109</title>
+<polygon fill="#7a78a7" stroke="#585781" points="1352.44,-458.4 1245.01,-420 1352.44,-381.6 1459.88,-420 1352.44,-458.4"/>
+<text xml:space="preserve" text-anchor="middle" x="1352.44" y="-423" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="1352.44" y="-411" font-family="Arial" font-size="10.00" fill="white">Replaced By Token</text>
+</g>
+<!-- R110 -->
+<g id="node33" class="node">
+<title>R110</title>
+<polygon fill="#7a78a7" stroke="#585781" points="776.71,-492.12 678.93,-468 776.71,-443.88 874.49,-468 776.71,-492.12"/>
+<text xml:space="preserve" text-anchor="middle" x="776.71" y="-465" font-family="Arial" font-size="10.00" fill="white">BELONGS TO USER</text>
+</g>
+<!-- R121 -->
+<g id="node34" class="node">
+<title>R121</title>
+<polygon fill="#7a78a7" stroke="#585781" points="776.71,-331.12 703.8,-307 776.71,-282.88 849.61,-307 776.71,-331.12"/>
+<text xml:space="preserve" text-anchor="middle" x="776.71" y="-304" font-family="Arial" font-size="10.00" fill="white">HAS PROFILE</text>
+</g>
+<!-- R152 -->
+<g id="node35" class="node">
+<title>R152</title>
+<polygon fill="#7a78a7" stroke="#585781" points="313.46,-572.12 247.6,-548 313.46,-523.88 379.33,-548 313.46,-572.12"/>
+<text xml:space="preserve" text-anchor="middle" x="313.46" y="-545" font-family="Arial" font-size="10.00" fill="white">CLASSIFIES</text>
+</g>
+</g>
+</g><text x="879.5" y="1224" text-anchor="middle" font-family="Arial" font-size="11" fill="#64748b">EquiTransit_Demo · metadata only · 2026-10-23 · Layout: Graphviz dot</text></svg>

@@ -52,6 +52,17 @@ public class ApiExceptionHandler {
         return ResponseEntity.status(error.getStatus()).body(body);
     }
 
+    /** @param error oversized multipart request @return stable size error */
+    @ExceptionHandler(org.springframework.web.multipart
+            .MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, Object>> handleUploadSize(
+            org.springframework.web.multipart.MaxUploadSizeExceededException
+                    error) {
+        return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(
+                Map.of("code", "FILE_SIZE_INVALID", "message",
+                        "Uploads must not exceed 10 MiB."));
+    }
+
     /**
      * Returns a stable horse-domain code without SQL or owner details.
      * @param error the expected domain failure

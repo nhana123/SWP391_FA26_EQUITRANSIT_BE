@@ -108,8 +108,9 @@ public class PaymentIntegrationTest {
     @BeforeEach
     public void setup() throws Exception {
         try (var connection = dataSource.getConnection()) {
-            assertThat(connection.getCatalog()).isEqualTo(
-                    "EquiTransit_FigmaMigrationTest_20261013_143729");
+            assertThat(connection.getCatalog()).isIn(
+                    "EquiTransit_FigmaMigrationTest_20261013_143729",
+                    "EquiTransit_FigmaMigrationTest_BE01_20261023");
         }
         owner = account("CUSTOMER");
         other = account("CUSTOMER");
@@ -421,9 +422,13 @@ public class PaymentIntegrationTest {
     private void paymentFixture() throws Exception {
         acceptedQuote = issued();
         action(acceptedQuote, "ACCEPT", owner, 200);
-        long schedule = jdbc.queryForObject("SELECT ScheduleID FROM"
+        long schedule = get(base() + "/quotes/" + acceptedQuote, manager,
+                200).at("/paymentSchedule/0/scheduleId").asLong();
+
+        assertThat(schedule).isEqualTo(jdbc.queryForObject("SELECT ScheduleID"
+                + " FROM"
                 + " dbo.QuotePaymentSchedule WHERE QuoteID=?", Long.class,
-                acceptedQuote);
+                acceptedQuote));
         ObjectNode body = paymentBody();
 
         body.put("quoteId", acceptedQuote);
@@ -511,17 +516,38 @@ public class PaymentIntegrationTest {
         assertThat(ready().paidAmount()).isZero();
         assertThat(ready().departureReady()).isFalse();
         long bank = receive("260.00");
+        assertThat(jdbc.queryForObject("SELECT OrderStatus FROM"
+                + " dbo.TransportOrder WHERE OrderID=?", String.class,
+                order)).isEqualTo("APPROVED");
         var allocation = allocationBody(bank, "260.00");
         var first = post(pay() + "/allocations", manager, allocation, 200);
 
         assertThat(post(pay() + "/allocations", manager, allocation, 200))
                 .isEqualTo(first);
+        assertThat(jdbc.queryForObject("SELECT OrderStatus FROM"
+                + " dbo.TransportOrder WHERE OrderID=?", String.class,
+                order)).isEqualTo("IN_PREPARATION");
         assertThat(ready().paidAmount()).isEqualByComparingTo("260.00");
         assertThat(ready().settlementReady()).isTrue();
         assertThat(get(pay(), owner, 200).toString()).doesNotContain(
                 "Private test-only note", "RecipientAccount", "InternalNotes");
         post(pay() + "/allocations", manager,
                 allocationBody(bank, "0.01"), 409);
+    }
+
+    /** Allocation cannot regress a confirmed operational order.
+     * @throws Exception if API calls fail */
+    @Test
+    public void allocationPreservesConfirmedOrderStatus() throws Exception {
+        paymentFixture();
+        jdbc.update("UPDATE dbo.TransportOrder SET OrderStatus='CONFIRMED'"
+                + " WHERE OrderID=?", order);
+        long bank = receive("260.00");
+        post(pay() + "/allocations", manager,
+                allocationBody(bank, "260.00"), 200);
+        assertThat(jdbc.queryForObject("SELECT OrderStatus FROM"
+                + " dbo.TransportOrder WHERE OrderID=?", String.class,
+                order)).isEqualTo("CONFIRMED");
     }
 
     /** @throws Exception if negative-case fixtures fail */

@@ -101,8 +101,9 @@ public class QuotationIntegrationTest {
     @BeforeEach
     public void setup() throws Exception {
         try (var connection = dataSource.getConnection()) {
-            assertThat(connection.getCatalog()).isEqualTo(
-                    "EquiTransit_FigmaMigrationTest_20261013_143729");
+            assertThat(connection.getCatalog()).isIn(
+                    "EquiTransit_FigmaMigrationTest_20261013_143729",
+                    "EquiTransit_FigmaMigrationTest_BE01_20261023");
         }
         owner = account("CUSTOMER");
         other = account("CUSTOMER");
@@ -234,6 +235,21 @@ public class QuotationIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM dbo.TransportPlan"
                 + " WHERE OrderID=? AND DepartureAuthorizedAt IS NOT NULL",
                 Integer.class, order)).isZero();
+    }
+
+    /** Preparation and approval accept the paid preparation state.
+     * @throws Exception if API calls fail */
+    @Test
+    public void preparationStateAllowsQuotationButKeepsCommitmentProtected()
+            throws Exception {
+        jdbc.update("UPDATE dbo.TransportOrder SET"
+                + " OrderStatus='IN_PREPARATION' WHERE OrderID=?", order);
+        long id = post(base() + "/quotes", coordinator, prepare(), 200)
+                .at("/quote/quoteId").asLong();
+        action(id, "APPROVE", manager, 200);
+        action(id, "ISSUE", manager, 200);
+        action(id, "ACCEPT", owner, 200);
+        post(base() + "/quotes", manager, prepare(), 409);
     }
 
     /**

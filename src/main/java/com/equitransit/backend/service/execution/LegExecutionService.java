@@ -117,6 +117,9 @@ public class LegExecutionService {
                                 ? null : id(r, "SupersedesLogID"),
                         Boolean.TRUE.equals(r.get("IsCustomerVisible"))))
                 .toList();
+        var receivers = data.rows("receiver", a);
+        var receiver = receivers.isEmpty() ? Map.<String, Object>of()
+                : receivers.getFirst();
         var last = at(data.rows("milestoneLast", a).getFirst(), "LastUpdate");
         var careLast = at(data.rows("welfareLast", a).getFirst(), "LastUpdate");
 
@@ -129,7 +132,8 @@ public class LegExecutionService {
                 data.number("legCount", a),
                 data.number("milestoneCount", a),
                 data.number("welfareCount", a), last, legs, milestones,
-                welfare);
+                welfare, text(receiver, "ReceiverName"),
+                text(receiver, "ReceiverAuthority"));
     }
 
     /** @param order parent @param leg target @param body evidence @return
@@ -296,6 +300,11 @@ public class LegExecutionService {
             LegExecutionPolicy.require(
                     "IN_TRANSIT".equals(row.get("LegStatus")),
                     "LEG_NOT_IN_TRANSIT");
+            var departure = at(row, "ActualDeparture");
+            LegExecutionPolicy.require(departure == null
+                    || request.occurredAt() == null
+                    || !request.occurredAt().isBefore(departure),
+                    "HANDOVER_TIME_BEFORE_DEPARTURE");
             fact(row, a, request.occurredAt(), request.sourceCode(),
                     request.sourceReference(), now);
         }
@@ -403,7 +412,7 @@ public class LegExecutionService {
 
     private static OffsetDateTime at(Map<String, Object> row, String key) {
         return row.get(key) == null ? null
-                : ((Timestamp) row.get(key)).toInstant()
+                : ((Timestamp) row.get(key)).toLocalDateTime()
                         .atOffset(ZoneOffset.UTC);
     }
 

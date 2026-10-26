@@ -3,7 +3,7 @@
  * Author: EquiTransit development team
  * Date: 2026-10-18
  * Copyright: EquiTransit project contributors.
- * Purpose: Entity mapping for dbo.ActualCost (internal supplier expenses).
+ * Purpose: JDBC model for dbo.ActualCost (internal supplier expenses).
  */
 package com.equitransit.backend.entity.handover;
 
@@ -26,7 +26,7 @@ public class ActualCost {
     private Long recordedBy;
     private String evidenceFileKey;
 
-    /** Default constructor. */
+    /** Default constructor for JDBC row mapping. */
     public ActualCost() { }
 
     /** @return primary key */

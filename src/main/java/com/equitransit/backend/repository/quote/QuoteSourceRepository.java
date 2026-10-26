@@ -36,7 +36,8 @@ public class QuoteSourceRepository {
     }
 
     /**
-     * Reads explicit published sources; missing/inactive sources stay absent.
+     * Reads requested sources and the current plan's retail airfare estimate.
+     * Missing, expired and superseded sources stay absent.
      * @param revision exact order revision
      * @param tariffs bounded selected tariff keys
      * @param offers bounded selected supplier keys
@@ -50,6 +51,7 @@ public class QuoteSourceRepository {
                         : tariffs)
                 .addValue("offers", offers.isEmpty() ? List.of(-1L) : offers)
                 .addValue("now", now.toLocalDateTime());
+        String planned = planAirfare();
         String sql = "SELECT TariffID AS SourceID,0 AS IsOffer,ServiceCode,"
                 + "UnitCode,CostGroup,UnitPrice AS RetailRate,"
                 + "CAST(NULL AS DECIMAL(18,4)) AS Quantity,"
@@ -63,11 +65,13 @@ public class QuoteSourceRepository {
                 + "CAST(NULL AS VARCHAR(50)),RetailUnitPrice,Quantity,"
                 + "ValidUntil,IncludedCharges,IncludesStall,CAST(NULL AS INT)"
                 + " FROM dbo.SupplierOffer WITH (HOLDLOCK)"
-                + " WHERE OfferID IN (:offers) AND RevisionID=:revision"
+                + " WHERE (OfferID IN (:offers) OR (" + planned + "))"
+                + " AND RevisionID=:revision"
                 + " AND Status IN ('RECEIVED','SELECTED')"
                 + " AND Currency='USD' AND ValidUntil>:now"
                 + " AND RetailUnitPrice IS NOT NULL"
-                + " AND LEN(LTRIM(RTRIM(EvidenceFileKey)))>0"
+                + " AND (LEN(LTRIM(RTRIM(EvidenceFileKey)))>0"
+                + " OR (" + planned + "))"
                 + " AND RecordedBy IS NOT NULL AND RecordedAt<=:now";
 
         return jdbc.query(sql, args, (row, index) -> {
@@ -84,5 +88,19 @@ public class QuoteSourceRepository {
                     row.getBoolean("IncludesStall"),
                     row.getObject("VersionNo", Integer.class));
         });
+    }
+
+    /** @return exact current-plan provenance for server-recorded estimates */
+    static String planAirfare() {
+        return "ServiceCode='AIRFARE' AND Status='SELECTED'"
+                + " AND ProviderName='Plan airfare estimate'"
+                + " AND EvidenceFileKey IS NULL AND EXISTS (SELECT 1"
+                + " FROM dbo.TransportOrder o JOIN dbo.TransportPlan p"
+                + " ON p.PlanID=o.CurrentPlanID AND p.OrderID=o.OrderID"
+                + " WHERE p.RevisionID=:revision AND p.PlanStatus IN"
+                + " ('DRAFT','PROPOSED','PLANNED','CONFIRMED')"
+                + " AND SupplierOffer.RevisionID=p.RevisionID"
+                + " AND SupplierOffer.RecordedBy=p.CreatedBy"
+                + " AND OfferReference=CONCAT('PLAN-AIRFARE:',p.PlanID))";
     }
 }

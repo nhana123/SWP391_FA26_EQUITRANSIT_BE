@@ -44,7 +44,7 @@ public record QuoteResponse(
         @Schema(example = "[]")
         List<QuoteLine> items,
         @Schema(example = "[]")
-        List<QuoteSchedule> paymentSchedule,
+        List<QuoteScheduleView> paymentSchedule,
         @Schema(example = "[]")
         List<String> blockers) {
 }

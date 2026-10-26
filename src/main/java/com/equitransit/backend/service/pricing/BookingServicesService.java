@@ -189,6 +189,19 @@ public class BookingServicesService {
                 order.currentRevisionId(),
                         now, horizon),
                 bundle, now, request);
+        var airfare = assessments.airfare(id, order.currentRevisionId(), now);
+        if (airfare.isPresent()) {
+            String amount = airfare.get().setScale(2,
+                    RoundingMode.HALF_UP).toPlainString();
+            rows = rows.stream().map(row -> "AIRFARE".equals(row.code())
+                    && "AIRFARE_PENDING".equals(row.pricingStatus())
+                    ? new ServiceChargeResponse(row.code(), row.uiSection(),
+                            row.costGroup(), row.label(), row.mandatory(),
+                            row.selected(), "SHIPMENT", "1", amount, amount,
+                            "ESTIMATED", null, null,
+                            "Sum of current plan AIR leg estimates",
+                            List.of()) : row).toList();
+        }
         var commercial = assessments.commercialQuote(id,
                 order.currentRevisionId(), now);
 

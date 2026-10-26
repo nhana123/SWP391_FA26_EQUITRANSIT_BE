@@ -50,6 +50,7 @@ import com.equitransit.backend.service.horse.HorseService;
 import com.equitransit.backend.service.pricing.ServicePreferencePolicy;
 import com.equitransit.backend.service.activity.AuditWriter;
 import com.equitransit.backend.repository.activity.ActivityRepository;
+import com.equitransit.backend.service.RouteTemplateService;
 
 
 /** A submitted revision is never updated or deleted by this service. */
@@ -69,6 +70,7 @@ public class TransportOrderService {
     private final ServicePreferencePolicy selections;
     private final AuditWriter activity;
     private final ActivityRepository events;
+    private RouteTemplateService routes;
 
     /**
      * Creates the customer request lifecycle facade.
@@ -103,6 +105,13 @@ public class TransportOrderService {
         this.activity = activity;
         this.events = events;
     }
+
+    /** @param routes server-side route resolution at the revision boundary */
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configureRoutes(RouteTemplateService routes) {
+        this.routes = routes;
+    }
+
 
     /**
      * Creates a partial draft with no fake submitted timestamp or snapshot.
@@ -349,7 +358,8 @@ public class TransportOrderService {
         number = orders.nextRevision(order.orderId());
         snapshot = new OrderSnapshot(1, operation, type, hash,
                 order.recordVersion(), order.orderId(), number, at,
-                draft, horse, services);
+                draft, horse, services, routes == null ? null
+                        : routes.resolveOrder(draft));
         commitments.invalidatePreparation(order.orderId());
         revision = orders.insertRevision(order.orderId(), number,
                 json.write(snapshot), reason, at);

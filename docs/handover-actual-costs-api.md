@@ -3,7 +3,7 @@
 ## Overview
 Feature 14 (FR-14 / Flow F14: Trip Handover, Actual Costs & Operational Completion) thuộc phạm vi sở hữu của **BE2**, là điểm kết thúc của chuỗi cung ứng dịch vụ vận tải quốc tế EquiTransit:
 1. **Phân cấp loại hình bàn giao (Multimodal Handover Lifecycle):** Phân biệt minh bạch giữa **Bàn giao trung gian** (`INTERMEDIATE_CARRIER`, `INTERMEDIATE_AIRPORT`, `INTERMEDIATE_QUARANTINE`) và **Bàn giao đích cuối cùng** (`FINAL_RECEIVER`).
-2. **Cơ chế hoàn tất từng chặng (Leg Completion & Next Leg Activation):** Bàn giao trung gian chỉ hoàn tất chặng tương ứng (`TripLeg.LegStatus = COMPLETED`) và kích hoạt chặng kế tiếp (`READY`), giữ nguyên kế hoạch (`ACTIVE`) và đơn hàng (`IN_TRANSIT`).
+2. **Cơ chế hoàn tất từng chặng (Leg Completion & Next Leg Activation):** Bàn giao trung gian chỉ hoàn tất chặng tương ứng (`TripLeg.LegStatus = COMPLETED`) và kích hoạt chặng kế tiếp (`CONFIRMED`), giữ nguyên kế hoạch (`ACTIVE`) và đơn hàng (`IN_TRANSIT`).
 3. **Cổng kiểm soát giao hàng cuối cùng (Final Delivery Gates):**
    - **Cổng giải phóng kiểm dịch (Quarantine Release Gate):** Bắt buộc chặng kiểm dịch F08 đã đạt chứng nhận giải phóng (`QUARANTINE_RELEASE = PASS`). Nếu chưa đạt, chặn bàn giao với mã lỗi `409 Conflict: QUARANTINE_RELEASE_REQUIRED`.
    - **Đối soát người nhận ủy quyền (Consignee Identity & Proxy Gate):** Người nhận thực tế phải trùng khớp với `TransportOrder.ReceiverName` hoặc có tư cách ủy quyền hợp lệ (`RECEIVER_IDENTITY_MISMATCH`).

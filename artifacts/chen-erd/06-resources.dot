@@ -1,0 +1,114 @@
+digraph G {
+graph [rankdir=LR, bgcolor="white", nodesep=0.24, ranksep=1.05, splines=polyline, overlap=false, outputorder=edgesfirst, pad=0.3];
+node [fontname="Arial", fontsize=15, margin="0.14,0.10", style=filled];
+edge [fontname="Arial", fontsize=12, color="#728095", penwidth=1.2, dir=none, labeldistance=1.8, labelangle=28];
+subgraph "cluster_Supplier" { style=invis; margin=16;
+"E_Supplier" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="SUPPLIER",width=2.05,height=0.64];
+"A_Supplier_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>SupplierID</U>>,width=1.7,height=0.47];
+"E_Supplier" -> "A_Supplier_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Supplier_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Name>,width=1.7,height=0.47];
+"E_Supplier" -> "A_Supplier_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_Supplier_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ContactName>,width=1.7,height=0.47];
+"E_Supplier" -> "A_Supplier_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_Supplier_0";"A_Supplier_1";"E_Supplier";"A_Supplier_2";}
+"A_Supplier_0" -> "A_Supplier_1" [style=invis,weight=70];
+"A_Supplier_1" -> "E_Supplier" [style=invis,weight=70];
+"E_Supplier" -> "A_Supplier_2" [style=invis,weight=70];
+}
+subgraph "cluster_FleetVehicle" { style=invis; margin=16;
+"E_FleetVehicle" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="FLEET VEHICLE",width=2.05,height=0.64];
+"A_FleetVehicle_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>VehicleID</U>>,width=1.7,height=0.47];
+"E_FleetVehicle" -> "A_FleetVehicle_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_FleetVehicle_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<PlateNumber>,width=1.7,height=0.47];
+"E_FleetVehicle" -> "A_FleetVehicle_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_FleetVehicle_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<HorseCapacity>,width=1.7,height=0.47];
+"E_FleetVehicle" -> "A_FleetVehicle_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_FleetVehicle_0";"A_FleetVehicle_1";"E_FleetVehicle";"A_FleetVehicle_2";}
+"A_FleetVehicle_0" -> "A_FleetVehicle_1" [style=invis,weight=70];
+"A_FleetVehicle_1" -> "E_FleetVehicle" [style=invis,weight=70];
+"E_FleetVehicle" -> "A_FleetVehicle_2" [style=invis,weight=70];
+}
+subgraph "cluster_StallEquipment" { style=invis; margin=16;
+"E_StallEquipment" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="STALL EQUIPMENT",width=2.05,height=0.64];
+"A_StallEquipment_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>StallID</U>>,width=1.7,height=0.47];
+"E_StallEquipment" -> "A_StallEquipment_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StallEquipment_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<StallCode>,width=1.7,height=0.47];
+"E_StallEquipment" -> "A_StallEquipment_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StallEquipment_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<CapacitySlots>,width=1.7,height=0.47];
+"E_StallEquipment" -> "A_StallEquipment_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_StallEquipment_0";"A_StallEquipment_1";"E_StallEquipment";"A_StallEquipment_2";}
+"A_StallEquipment_0" -> "A_StallEquipment_1" [style=invis,weight=70];
+"A_StallEquipment_1" -> "E_StallEquipment" [style=invis,weight=70];
+"E_StallEquipment" -> "A_StallEquipment_2" [style=invis,weight=70];
+}
+subgraph "cluster_StallFitPolicy" { style=invis; margin=16;
+"E_StallFitPolicy" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="STALL FIT POLICY",width=2.05,height=0.64];
+"A_StallFitPolicy_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>PolicyID</U>>,width=1.7,height=0.47];
+"E_StallFitPolicy" -> "A_StallFitPolicy_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StallFitPolicy_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<PolicyCode>,width=1.7,height=0.47];
+"E_StallFitPolicy" -> "A_StallFitPolicy_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StallFitPolicy_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<VersionNo>,width=1.7,height=0.47];
+"E_StallFitPolicy" -> "A_StallFitPolicy_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_StallFitPolicy_0";"A_StallFitPolicy_1";"E_StallFitPolicy";"A_StallFitPolicy_2";}
+"A_StallFitPolicy_0" -> "A_StallFitPolicy_1" [style=invis,weight=70];
+"A_StallFitPolicy_1" -> "E_StallFitPolicy" [style=invis,weight=70];
+"E_StallFitPolicy" -> "A_StallFitPolicy_2" [style=invis,weight=70];
+}
+subgraph "cluster_ResourceOperation" { style=invis; margin=16;
+"E_ResourceOperation" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="RESOURCE OPERATION",width=2.05,height=0.64];
+"A_ResourceOperation_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>UserID</U>>,width=1.7,height=0.47];
+"E_ResourceOperation" -> "A_ResourceOperation_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ResourceOperation_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<RequestHash>,width=1.7,height=0.47];
+"E_ResourceOperation" -> "A_ResourceOperation_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_ResourceOperation_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<ReceiptJSON>,width=1.7,height=0.47];
+"E_ResourceOperation" -> "A_ResourceOperation_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_ResourceOperation_0";"A_ResourceOperation_1";"E_ResourceOperation";"A_ResourceOperation_2";}
+"A_ResourceOperation_0" -> "A_ResourceOperation_1" [style=invis,weight=70];
+"A_ResourceOperation_1" -> "E_ResourceOperation" [style=invis,weight=70];
+"E_ResourceOperation" -> "A_ResourceOperation_2" [style=invis,weight=70];
+}
+subgraph "cluster_User" { style=invis; margin=16;
+"E_User" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="USER",width=2.05,height=0.64];
+"A_User_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>UserID</U>>,width=1.7,height=0.47];
+"E_User" -> "A_User_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_User_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Email>,width=1.7,height=0.47];
+"E_User" -> "A_User_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_User_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<Status>,width=1.7,height=0.47];
+"E_User" -> "A_User_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_User_0";"A_User_1";"E_User";"A_User_2";}
+"A_User_0" -> "A_User_1" [style=invis,weight=70];
+"A_User_1" -> "E_User" [style=invis,weight=70];
+"E_User" -> "A_User_2" [style=invis,weight=70];
+}
+subgraph "cluster_StaffProfile" { style=invis; margin=16;
+"E_StaffProfile" [shape=box,fillcolor="#555555",color="#353535",fontcolor="white",label="STAFF PROFILE",width=2.05,height=0.64];
+"A_StaffProfile_0" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<<U>StaffID</U>>,width=1.7,height=0.47];
+"E_StaffProfile" -> "A_StaffProfile_0" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StaffProfile_1" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<FullName>,width=1.7,height=0.47];
+"E_StaffProfile" -> "A_StaffProfile_1" [constraint=false,color="#a5b1c4",penwidth=0.85];
+"A_StaffProfile_2" [shape=ellipse,fillcolor="#124f80",color="#103f65",fontcolor="white",fontsize=12,label=<StaffStatus>,width=1.7,height=0.47];
+"E_StaffProfile" -> "A_StaffProfile_2" [constraint=false,color="#a5b1c4",penwidth=0.85];
+{rank=same;"A_StaffProfile_0";"A_StaffProfile_1";"E_StaffProfile";"A_StaffProfile_2";}
+"A_StaffProfile_0" -> "A_StaffProfile_1" [style=invis,weight=70];
+"A_StaffProfile_1" -> "E_StaffProfile" [style=invis,weight=70];
+"E_StaffProfile" -> "A_StaffProfile_2" [style=invis,weight=70];
+}
+"R33" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nOwner Supplier",width=1.12,height=0.67];
+"E_Supplier" -> "R33" [taillabel="1",weight=2];
+"R33" -> "E_FleetVehicle" [headlabel="N",color="#728095",weight=2];
+"R114" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="BELONGS TO USER",width=1.12,height=0.67];
+"E_User" -> "R114" [taillabel="1",weight=2];
+"R114" -> "E_ResourceOperation" [headlabel="N",color="#728095:#728095",weight=2];
+"R125" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nOwner Supplier",width=1.12,height=0.67];
+"E_Supplier" -> "R125" [taillabel="1",weight=2];
+"R125" -> "E_StallEquipment" [headlabel="N",color="#728095",weight=2];
+"R126" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nCarrier Supplier",width=1.12,height=0.67];
+"E_Supplier" -> "R126" [taillabel="1",weight=2];
+"R126" -> "E_StallFitPolicy" [headlabel="N",color="#728095",weight=2];
+"R127" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nReviewed By",width=1.12,height=0.67];
+"E_StaffProfile" -> "R127" [taillabel="1",weight=2];
+"R127" -> "E_StallFitPolicy" [headlabel="N",color="#728095",weight=2];
+"R128" [shape=diamond,fillcolor="#7a78a7",color="#585781",fontcolor="white",fontsize=10,label="REFERENCES\nStall",width=1.12,height=0.67];
+"E_StallEquipment" -> "R128" [taillabel="1",weight=2];
+"R128" -> "E_StallFitPolicy" [headlabel="N",color="#728095",weight=2];
+}

@@ -300,7 +300,7 @@ public class OpenApiTest {
                 checked++;
             }
         }
-        org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(16);
+        org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(17);
     }
 
     /** @throws Exception if any F10 operation admits an anonymous caller */
@@ -333,7 +333,7 @@ public class OpenApiTest {
                 checked++;
             }
         }
-        org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(10);
+        org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(14);
     }
 
     /** @throws Exception if any F11 operation admits an anonymous caller */
@@ -440,6 +440,7 @@ public class OpenApiTest {
         for (var entry : api.path("paths").properties()) {
             String path = entry.getKey();
             if (!path.contains("/handovers")
+                    && !path.contains("/handover-files")
                     && !path.contains("/actual-costs")
                     && !path.contains("/profitability")
                     && !path.contains("/intermediate-handover")
@@ -449,7 +450,9 @@ public class OpenApiTest {
             String route = path.replace("{orderId}", "101")
                     .replace("{legId}", "401")
                     .replace("{handoverId}", "701")
-                    .replace("{planId}", "311");
+                    .replace("{planId}", "311")
+                    .replace("{fileKey}",
+                            "84032724-eac7-45df-8d04-e54f092279d0");
 
             for (var operation : entry.getValue().properties()) {
                 mvc.perform(org.springframework.test.web.servlet.request.
@@ -463,7 +466,7 @@ public class OpenApiTest {
                 checked++;
             }
         }
-        org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(13);
+        org.assertj.core.api.Assertions.assertThat(checked).isEqualTo(16);
     }
 }
 

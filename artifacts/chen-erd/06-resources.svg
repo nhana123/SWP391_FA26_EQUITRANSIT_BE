@@ -1,0 +1,435 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1298" height="1275" viewBox="0 0 1298 1275"><rect width="100%" height="100%" fill="white"/><g font-family="Arial" text-anchor="middle"><text x="649" y="30" font-size="24" font-weight="bold" fill="#263445">Suppliers, fleet and stall resources</text><text x="649" y="53" font-size="12" fill="#64748b">EquiTransit_Demo · 7 entities · 6 relationships · selected attributes; complete dictionary in the atlas</text><text x="649" y="77" font-size="11" fill="#64748b">Rectangle: entity · Diamond: relationship · Ellipse: attribute · Underlined: primary key</text><text x="649" y="97" font-size="11" fill="#64748b">1/N = maximum cardinality · Double line = mandatory child participation · No arrows / no crow's feet</text></g><g transform="translate(0,115)">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(21.6 1103.6)">
+<title>G</title>
+<polygon fill="white" stroke="none" points="-21.6,21.6 -21.6,-1103.6 1276.68,-1103.6 1276.68,21.6 -21.6,21.6"/>
+<g id="clust1" class="cluster">
+<title>cluster_Supplier</title>
+</g>
+<g id="clust3" class="cluster">
+<title>cluster_FleetVehicle</title>
+</g>
+<g id="clust5" class="cluster">
+<title>cluster_StallEquipment</title>
+</g>
+<g id="clust7" class="cluster">
+<title>cluster_StallFitPolicy</title>
+</g>
+<g id="clust9" class="cluster">
+<title>cluster_ResourceOperation</title>
+</g>
+<g id="clust11" class="cluster">
+<title>cluster_User</title>
+</g>
+<g id="clust13" class="cluster">
+<title>cluster_StaffProfile</title>
+</g>
+<!-- E_Supplier&#45;&gt;A_Supplier_0 -->
+<g id="edge1" class="edge">
+<title>E_Supplier&#45;&gt;A_Supplier_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M53.83,-439.14C25.57,-430.4 0,-422.5 0,-422.5 0,-422.5 0,-381.5 0,-381.5 0,-381.5 44.76,-368.37 81.3,-357.64"/>
+</g>
+<!-- E_Supplier&#45;&gt;A_Supplier_1 -->
+<g id="edge2" class="edge">
+<title>E_Supplier&#45;&gt;A_Supplier_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M189,-438.52C189,-432.79 189,-422 189,-422 189,-422 181.6,-419.58 171.95,-416.43"/>
+</g>
+<!-- E_Supplier&#45;&gt;A_Supplier_2 -->
+<g id="edge3" class="edge">
+<title>E_Supplier&#45;&gt;A_Supplier_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M201.6,-485.48C201.6,-491.21 201.6,-502 201.6,-502 201.6,-502 191,-504.87 177.84,-508.44"/>
+</g>
+<!-- E_Supplier&#45;&gt;A_Supplier_2 -->
+<!-- E_Supplier&#45;&gt;R33 -->
+<g id="edge43" class="edge">
+<title>E_Supplier&#45;&gt;R33</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M196.1,-485.5C208.49,-489.82 217.6,-493 217.6,-493 217.6,-493 300.81,-569.96 345.99,-611.74"/>
+<text xml:space="preserve" text-anchor="middle" x="208.32" y="-495.11" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- E_Supplier&#45;&gt;R125 -->
+<g id="edge47" class="edge">
+<title>E_Supplier&#45;&gt;R125</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M201.82,-462C227.97,-462 257.76,-462 285.13,-462"/>
+<text xml:space="preserve" text-anchor="middle" x="217.71" y="-466.85" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- E_Supplier&#45;&gt;R126 -->
+<g id="edge49" class="edge">
+<title>E_Supplier&#45;&gt;R126</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M196.1,-438.5C208.49,-434.18 217.6,-431 217.6,-431 217.6,-431 533.16,-304 533.16,-304 533.16,-304 720.99,-293.59 832.14,-287.43"/>
+<text xml:space="preserve" text-anchor="middle" x="213.89" y="-437.64" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_Supplier_0&#45;&gt;A_Supplier_1 -->
+<!-- A_Supplier_1&#45;&gt;E_Supplier -->
+<!-- E_FleetVehicle&#45;&gt;A_FleetVehicle_0 -->
+<g id="edge7" class="edge">
+<title>E_FleetVehicle&#45;&gt;A_FleetVehicle_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M573.97,-700.02C551.75,-694.02 533.16,-689 533.16,-689 533.16,-689 503.16,-680.5 503.16,-680.5 503.16,-680.5 503.16,-639.5 503.16,-639.5 503.16,-639.5 533.16,-631 533.16,-631 533.16,-631 567.51,-622.33 598.63,-614.47"/>
+</g>
+<!-- E_FleetVehicle&#45;&gt;A_FleetVehicle_1 -->
+<g id="edge8" class="edge">
+<title>E_FleetVehicle&#45;&gt;A_FleetVehicle_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M711.78,-696.52C711.78,-690.79 711.78,-680 711.78,-680 711.78,-680 704.07,-677.58 694.01,-674.43"/>
+</g>
+<!-- E_FleetVehicle&#45;&gt;A_FleetVehicle_2 -->
+<g id="edge9" class="edge">
+<title>E_FleetVehicle&#45;&gt;A_FleetVehicle_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M721.8,-743.48C721.8,-749.21 721.8,-760 721.8,-760 721.8,-760 712.06,-762.64 699.66,-766"/>
+</g>
+<!-- E_FleetVehicle&#45;&gt;A_FleetVehicle_2 -->
+<!-- A_FleetVehicle_0&#45;&gt;A_FleetVehicle_1 -->
+<!-- A_FleetVehicle_1&#45;&gt;E_FleetVehicle -->
+<!-- E_StallEquipment&#45;&gt;A_StallEquipment_0 -->
+<g id="edge13" class="edge">
+<title>E_StallEquipment&#45;&gt;A_StallEquipment_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M567.93,-440.39C548.48,-435.14 533.16,-431 533.16,-431 533.16,-431 503.16,-422.5 503.16,-422.5 503.16,-422.5 503.16,-381.5 503.16,-381.5 503.16,-381.5 533.16,-373 533.16,-373 533.16,-373 567.51,-364.33 598.63,-356.47"/>
+</g>
+<!-- E_StallEquipment&#45;&gt;A_StallEquipment_1 -->
+<g id="edge14" class="edge">
+<title>E_StallEquipment&#45;&gt;A_StallEquipment_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M709.2,-438.52C709.2,-432.79 709.2,-422 709.2,-422 709.2,-422 701.8,-419.58 692.15,-416.43"/>
+</g>
+<!-- E_StallEquipment&#45;&gt;A_StallEquipment_2 -->
+<g id="edge15" class="edge">
+<title>E_StallEquipment&#45;&gt;A_StallEquipment_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M727.68,-485.48C727.68,-491.21 727.68,-502 727.68,-502 727.68,-502 715.03,-505.18 699.81,-509"/>
+</g>
+<!-- E_StallEquipment&#45;&gt;A_StallEquipment_2 -->
+<!-- E_StallEquipment&#45;&gt;R128 -->
+<g id="edge53" class="edge">
+<title>E_StallEquipment&#45;&gt;R128</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M727.92,-449.1C766.2,-442.84 811.61,-435.42 847.75,-429.51"/>
+<text xml:space="preserve" text-anchor="middle" x="744.97" y="-451.27" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_StallEquipment_0&#45;&gt;A_StallEquipment_1 -->
+<!-- A_StallEquipment_1&#45;&gt;E_StallEquipment -->
+<!-- E_StallFitPolicy&#45;&gt;A_StallFitPolicy_0 -->
+<g id="edge19" class="edge">
+<title>E_StallFitPolicy&#45;&gt;A_StallFitPolicy_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1082.81,-259.57C1056.55,-251.06 1033.21,-243.5 1033.21,-243.5 1033.21,-243.5 1033.21,-202.5 1033.21,-202.5 1033.21,-202.5 1075.07,-189.63 1109.74,-178.96"/>
+</g>
+<!-- E_StallFitPolicy&#45;&gt;A_StallFitPolicy_1 -->
+<g id="edge20" class="edge">
+<title>E_StallFitPolicy&#45;&gt;A_StallFitPolicy_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1216.34,-259.52C1216.34,-253.79 1216.34,-243 1216.34,-243 1216.34,-243 1208.95,-240.58 1199.3,-237.43"/>
+</g>
+<!-- E_StallFitPolicy&#45;&gt;A_StallFitPolicy_2 -->
+<g id="edge21" class="edge">
+<title>E_StallFitPolicy&#45;&gt;A_StallFitPolicy_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M1231.08,-306.48C1231.08,-312.21 1231.08,-323 1231.08,-323 1231.08,-323 1218.55,-326.3 1203.66,-330.22"/>
+</g>
+<!-- E_StallFitPolicy&#45;&gt;A_StallFitPolicy_2 -->
+<!-- A_StallFitPolicy_0&#45;&gt;A_StallFitPolicy_1 -->
+<!-- A_StallFitPolicy_1&#45;&gt;E_StallFitPolicy -->
+<!-- E_ResourceOperation&#45;&gt;A_ResourceOperation_0 -->
+<g id="edge25" class="edge">
+<title>E_ResourceOperation&#45;&gt;A_ResourceOperation_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M560.96,-954.5C544.94,-950.18 533.16,-947 533.16,-947 533.16,-947 503.16,-938.5 503.16,-938.5 503.16,-938.5 503.16,-897.5 503.16,-897.5 503.16,-897.5 533.16,-889 533.16,-889 533.16,-889 567.51,-880.33 598.63,-872.47"/>
+</g>
+<!-- E_ResourceOperation&#45;&gt;A_ResourceOperation_1 -->
+<g id="edge26" class="edge">
+<title>E_ResourceOperation&#45;&gt;A_ResourceOperation_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M713.67,-954.52C713.67,-948.79 713.67,-938 713.67,-938 713.67,-938 705.73,-935.58 695.38,-932.43"/>
+</g>
+<!-- E_ResourceOperation&#45;&gt;A_ResourceOperation_2 -->
+<g id="edge27" class="edge">
+<title>E_ResourceOperation&#45;&gt;A_ResourceOperation_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M746.84,-1001.48C746.84,-1007.21 746.84,-1018 746.84,-1018 746.84,-1018 726.02,-1022.21 703.49,-1026.77"/>
+</g>
+<!-- E_ResourceOperation&#45;&gt;A_ResourceOperation_2 -->
+<!-- A_ResourceOperation_0&#45;&gt;A_ResourceOperation_1 -->
+<!-- A_ResourceOperation_1&#45;&gt;E_ResourceOperation -->
+<!-- E_User&#45;&gt;A_User_0 -->
+<g id="edge31" class="edge">
+<title>E_User&#45;&gt;A_User_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M53.83,-955.14C25.57,-946.4 0,-938.5 0,-938.5 0,-938.5 0,-897.5 0,-897.5 0,-897.5 44.76,-884.37 81.3,-873.64"/>
+</g>
+<!-- E_User&#45;&gt;A_User_1 -->
+<g id="edge32" class="edge">
+<title>E_User&#45;&gt;A_User_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M189,-954.52C189,-948.79 189,-938 189,-938 189,-938 181.6,-935.58 171.95,-932.43"/>
+</g>
+<!-- E_User&#45;&gt;A_User_2 -->
+<g id="edge33" class="edge">
+<title>E_User&#45;&gt;A_User_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M201.6,-1001.48C201.6,-1007.21 201.6,-1018 201.6,-1018 201.6,-1018 189.88,-1021.18 175.79,-1025"/>
+</g>
+<!-- E_User&#45;&gt;A_User_2 -->
+<!-- E_User&#45;&gt;R114 -->
+<g id="edge45" class="edge">
+<title>E_User&#45;&gt;R114</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M201.82,-978C225,-978 251.04,-978 275.73,-978"/>
+<text xml:space="preserve" text-anchor="middle" x="217.71" y="-982.85" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_User_0&#45;&gt;A_User_1 -->
+<!-- A_User_1&#45;&gt;E_User -->
+<!-- E_StaffProfile&#45;&gt;A_StaffProfile_0 -->
+<g id="edge37" class="edge">
+<title>E_StaffProfile&#45;&gt;A_StaffProfile_0</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M573.97,-142.02C551.75,-136.02 533.16,-131 533.16,-131 533.16,-131 503.16,-122.5 503.16,-122.5 503.16,-122.5 503.16,-81.5 503.16,-81.5 503.16,-81.5 533.16,-73 533.16,-73 533.16,-73 567.51,-64.33 598.63,-56.47"/>
+</g>
+<!-- E_StaffProfile&#45;&gt;A_StaffProfile_1 -->
+<g id="edge38" class="edge">
+<title>E_StaffProfile&#45;&gt;A_StaffProfile_1</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M709.2,-138.52C709.2,-132.79 709.2,-122 709.2,-122 709.2,-122 701.8,-119.58 692.15,-116.43"/>
+</g>
+<!-- E_StaffProfile&#45;&gt;A_StaffProfile_2 -->
+<g id="edge39" class="edge">
+<title>E_StaffProfile&#45;&gt;A_StaffProfile_2</title>
+<path fill="none" stroke="#a5b1c4" stroke-width="0.85" d="M721.8,-185.48C721.8,-191.21 721.8,-202 721.8,-202 721.8,-202 710.09,-205.18 695.99,-209"/>
+</g>
+<!-- E_StaffProfile&#45;&gt;A_StaffProfile_2 -->
+<!-- E_StaffProfile&#45;&gt;R127 -->
+<g id="edge51" class="edge">
+<title>E_StaffProfile&#45;&gt;R127</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M722.27,-165.9C756.77,-167.74 797.98,-169.93 833.17,-171.8"/>
+<text xml:space="preserve" text-anchor="middle" x="737.69" y="-171.58" font-family="Arial" font-size="12.00">1</text>
+</g>
+<!-- A_StaffProfile_0&#45;&gt;A_StaffProfile_1 -->
+<!-- A_StaffProfile_1&#45;&gt;E_StaffProfile -->
+<!-- R33&#45;&gt;E_FleetVehicle -->
+<g id="edge44" class="edge">
+<title>R33&#45;&gt;E_FleetVehicle</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M427.28,-654.56C473.06,-669.45 533.16,-689 533.16,-689 533.16,-689 551.77,-694.07 573.94,-700.1"/>
+<text xml:space="preserve" text-anchor="middle" x="560.82" y="-684.17" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R114&#45;&gt;E_ResourceOperation -->
+<g id="edge46" class="edge">
+<title>R114&#45;&gt;E_ResourceOperation</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M475.23,-977C499.24,-977 524.9,-977 548.87,-977"/>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M475.23,-979C499.24,-979 524.9,-979 548.87,-979"/>
+<text xml:space="preserve" text-anchor="middle" x="532.98" y="-965.95" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R125&#45;&gt;E_StallEquipment -->
+<g id="edge48" class="edge">
+<title>R125&#45;&gt;E_StallEquipment</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M465.37,-462C498.49,-462 535.82,-462 567.99,-462"/>
+<text xml:space="preserve" text-anchor="middle" x="552.1" y="-449.95" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R126&#45;&gt;E_StallFitPolicy -->
+<g id="edge50" class="edge">
+<title>R126&#45;&gt;E_StallFitPolicy</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M1004.46,-283C1029.06,-283 1055.42,-283 1079.06,-283"/>
+<text xml:space="preserve" text-anchor="middle" x="1063.17" y="-270.95" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R127&#45;&gt;E_StallFitPolicy -->
+<g id="edge52" class="edge">
+<title>R127&#45;&gt;E_StallFitPolicy</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M954.79,-196.77C998.96,-219.27 1063.21,-252 1063.21,-252 1063.21,-252 1072.54,-255.18 1085.23,-259.5"/>
+<text xml:space="preserve" text-anchor="middle" x="1072.91" y="-242.78" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- R128&#45;&gt;E_StallFitPolicy -->
+<g id="edge54" class="edge">
+<title>R128&#45;&gt;E_StallFitPolicy</title>
+<path fill="none" stroke="#728095" stroke-width="1.2" d="M947.51,-395.44C991.49,-364.48 1063.21,-314 1063.21,-314 1063.21,-314 1072.54,-310.82 1085.23,-306.5"/>
+<text xml:space="preserve" text-anchor="middle" x="1067.46" y="-300.03" font-family="Arial" font-size="12.00">N</text>
+</g>
+<!-- E_Supplier -->
+<g id="node1" class="node">
+<title>E_Supplier</title>
+<polygon fill="#555555" stroke="#353535" points="201.6,-485.04 54,-485.04 54,-438.96 201.6,-438.96 201.6,-485.04"/>
+<text xml:space="preserve" text-anchor="middle" x="127.8" y="-457.5" font-family="Arial" font-size="15.00" fill="white">SUPPLIER</text>
+</g>
+<!-- A_Supplier_0 -->
+<g id="node2" class="node">
+<title>A_Supplier_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="127.8" cy="-344" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="99.79" y="-341.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">SupplierID</text>
+</g>
+<!-- A_Supplier_1 -->
+<g id="node3" class="node">
+<title>A_Supplier_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="127.8" cy="-402" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="111.8" y="-397.2" font-family="Arial" font-size="12.00" fill="white">Name</text>
+</g>
+<!-- A_Supplier_2 -->
+<g id="node4" class="node">
+<title>A_Supplier_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="127.8" cy="-522" rx="66.13" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="91.12" y="-517.2" font-family="Arial" font-size="12.00" fill="white">ContactName</text>
+</g>
+<!-- E_FleetVehicle -->
+<g id="node5" class="node">
+<title>E_FleetVehicle</title>
+<polygon fill="#555555" stroke="#353535" points="721.8,-743.04 574.2,-743.04 574.2,-696.96 721.8,-696.96 721.8,-743.04"/>
+<text xml:space="preserve" text-anchor="middle" x="648" y="-715.5" font-family="Arial" font-size="15.00" fill="white">FLEET VEHICLE</text>
+</g>
+<!-- A_FleetVehicle_0 -->
+<g id="node6" class="node">
+<title>A_FleetVehicle_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="648" cy="-602" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="622.32" y="-599.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">VehicleID</text>
+</g>
+<!-- A_FleetVehicle_1 -->
+<g id="node7" class="node">
+<title>A_FleetVehicle_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="648" cy="-660" rx="63.77" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="612.99" y="-655.2" font-family="Arial" font-size="12.00" fill="white">PlateNumber</text>
+</g>
+<!-- A_FleetVehicle_2 -->
+<g id="node8" class="node">
+<title>A_FleetVehicle_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="648" cy="-780" rx="69.9" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="608.65" y="-775.2" font-family="Arial" font-size="12.00" fill="white">HorseCapacity</text>
+</g>
+<!-- E_StallEquipment -->
+<g id="node9" class="node">
+<title>E_StallEquipment</title>
+<polygon fill="#555555" stroke="#353535" points="727.68,-485.04 568.32,-485.04 568.32,-438.96 727.68,-438.96 727.68,-485.04"/>
+<text xml:space="preserve" text-anchor="middle" x="648" y="-457.5" font-family="Arial" font-size="15.00" fill="white">STALL EQUIPMENT</text>
+</g>
+<!-- A_StallEquipment_0 -->
+<g id="node10" class="node">
+<title>A_StallEquipment_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="648" cy="-344" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="630.33" y="-341.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">StallID</text>
+</g>
+<!-- A_StallEquipment_1 -->
+<g id="node11" class="node">
+<title>A_StallEquipment_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="648" cy="-402" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="621.99" y="-397.2" font-family="Arial" font-size="12.00" fill="white">StallCode</text>
+</g>
+<!-- A_StallEquipment_2 -->
+<g id="node12" class="node">
+<title>A_StallEquipment_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="648" cy="-522" rx="66.13" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="611.32" y="-517.2" font-family="Arial" font-size="12.00" fill="white">CapacitySlots</text>
+</g>
+<!-- E_StallFitPolicy -->
+<g id="node13" class="node">
+<title>E_StallFitPolicy</title>
+<polygon fill="#555555" stroke="#353535" points="1231.08,-306.04 1079.21,-306.04 1079.21,-259.96 1231.08,-259.96 1231.08,-306.04"/>
+<text xml:space="preserve" text-anchor="middle" x="1155.14" y="-278.5" font-family="Arial" font-size="15.00" fill="white">STALL FIT POLICY</text>
+</g>
+<!-- A_StallFitPolicy_0 -->
+<g id="node14" class="node">
+<title>A_StallFitPolicy_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1155.14" cy="-165" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1133.14" y="-162.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">PolicyID</text>
+</g>
+<!-- A_StallFitPolicy_1 -->
+<g id="node15" class="node">
+<title>A_StallFitPolicy_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1155.14" cy="-223" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1124.8" y="-218.2" font-family="Arial" font-size="12.00" fill="white">PolicyCode</text>
+</g>
+<!-- A_StallFitPolicy_2 -->
+<g id="node16" class="node">
+<title>A_StallFitPolicy_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="1155.14" cy="-343" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="1127.13" y="-338.2" font-family="Arial" font-size="12.00" fill="white">VersionNo</text>
+</g>
+<!-- E_ResourceOperation -->
+<g id="node17" class="node">
+<title>E_ResourceOperation</title>
+<polygon fill="#555555" stroke="#353535" points="746.84,-1001.04 549.16,-1001.04 549.16,-954.96 746.84,-954.96 746.84,-1001.04"/>
+<text xml:space="preserve" text-anchor="middle" x="648" y="-973.5" font-family="Arial" font-size="15.00" fill="white">RESOURCE OPERATION</text>
+</g>
+<!-- A_ResourceOperation_0 -->
+<g id="node18" class="node">
+<title>A_ResourceOperation_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="648" cy="-860" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="629.33" y="-857.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">UserID</text>
+</g>
+<!-- A_ResourceOperation_1 -->
+<g id="node19" class="node">
+<title>A_ResourceOperation_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="648" cy="-918" rx="65.67" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="611.65" y="-913.2" font-family="Arial" font-size="12.00" fill="white">RequestHash</text>
+</g>
+<!-- A_ResourceOperation_2 -->
+<g id="node20" class="node">
+<title>A_ResourceOperation_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="648" cy="-1038" rx="65.66" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="611.66" y="-1033.2" font-family="Arial" font-size="12.00" fill="white">ReceiptJSON</text>
+</g>
+<!-- E_User -->
+<g id="node21" class="node">
+<title>E_User</title>
+<polygon fill="#555555" stroke="#353535" points="201.6,-1001.04 54,-1001.04 54,-954.96 201.6,-954.96 201.6,-1001.04"/>
+<text xml:space="preserve" text-anchor="middle" x="127.8" y="-973.5" font-family="Arial" font-size="15.00" fill="white">USER</text>
+</g>
+<!-- A_User_0 -->
+<g id="node22" class="node">
+<title>A_User_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="127.8" cy="-860" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="109.13" y="-857.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">UserID</text>
+</g>
+<!-- A_User_1 -->
+<g id="node23" class="node">
+<title>A_User_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="127.8" cy="-918" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="112.8" y="-913.2" font-family="Arial" font-size="12.00" fill="white">Email</text>
+</g>
+<!-- A_User_2 -->
+<g id="node24" class="node">
+<title>A_User_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="127.8" cy="-1038" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="110.79" y="-1033.2" font-family="Arial" font-size="12.00" fill="white">Status</text>
+</g>
+<!-- E_StaffProfile -->
+<g id="node25" class="node">
+<title>E_StaffProfile</title>
+<polygon fill="#555555" stroke="#353535" points="721.8,-185.04 574.2,-185.04 574.2,-138.96 721.8,-138.96 721.8,-185.04"/>
+<text xml:space="preserve" text-anchor="middle" x="648" y="-157.5" font-family="Arial" font-size="15.00" fill="white">STAFF PROFILE</text>
+</g>
+<!-- A_StaffProfile_0 -->
+<g id="node26" class="node">
+<title>A_StaffProfile_0</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="648" cy="-44" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="629.66" y="-41.4" font-family="Arial" text-decoration="underline" font-size="12.00" fill="white">StaffID</text>
+</g>
+<!-- A_StaffProfile_1 -->
+<g id="node27" class="node">
+<title>A_StaffProfile_1</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="648" cy="-102" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="622.33" y="-97.2" font-family="Arial" font-size="12.00" fill="white">FullName</text>
+</g>
+<!-- A_StaffProfile_2 -->
+<g id="node28" class="node">
+<title>A_StaffProfile_2</title>
+<ellipse fill="#124f80" stroke="#103f65" cx="648" cy="-222" rx="61.2" ry="20.36"/>
+<text xml:space="preserve" text-anchor="start" x="618.65" y="-217.2" font-family="Arial" font-size="12.00" fill="white">StaffStatus</text>
+</g>
+<!-- R33 -->
+<g id="node29" class="node">
+<title>R33</title>
+<polygon fill="#7a78a7" stroke="#585781" points="375.38,-676.4 286.3,-638 375.38,-599.6 464.46,-638 375.38,-676.4"/>
+<text xml:space="preserve" text-anchor="middle" x="375.38" y="-641" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="375.38" y="-629" font-family="Arial" font-size="10.00" fill="white">Owner Supplier</text>
+</g>
+<!-- R114 -->
+<g id="node30" class="node">
+<title>R114</title>
+<polygon fill="#7a78a7" stroke="#585781" points="375.38,-1002.12 277.6,-978 375.38,-953.88 473.16,-978 375.38,-1002.12"/>
+<text xml:space="preserve" text-anchor="middle" x="375.38" y="-975" font-family="Arial" font-size="10.00" fill="white">BELONGS TO USER</text>
+</g>
+<!-- R125 -->
+<g id="node31" class="node">
+<title>R125</title>
+<polygon fill="#7a78a7" stroke="#585781" points="375.38,-500.4 286.3,-462 375.38,-423.6 464.46,-462 375.38,-500.4"/>
+<text xml:space="preserve" text-anchor="middle" x="375.38" y="-465" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="375.38" y="-453" font-family="Arial" font-size="10.00" fill="white">Owner Supplier</text>
+</g>
+<!-- R126 -->
+<g id="node32" class="node">
+<title>R126</title>
+<polygon fill="#7a78a7" stroke="#585781" points="913.03,-321.4 822.84,-283 913.03,-244.6 1003.21,-283 913.03,-321.4"/>
+<text xml:space="preserve" text-anchor="middle" x="913.03" y="-286" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="913.03" y="-274" font-family="Arial" font-size="10.00" fill="white">Carrier Supplier</text>
+</g>
+<!-- R127 -->
+<g id="node33" class="node">
+<title>R127</title>
+<polygon fill="#7a78a7" stroke="#585781" points="913.03,-214.4 824.52,-176 913.03,-137.6 1001.53,-176 913.03,-214.4"/>
+<text xml:space="preserve" text-anchor="middle" x="913.03" y="-179" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="913.03" y="-167" font-family="Arial" font-size="10.00" fill="white">Reviewed By</text>
+</g>
+<!-- R128 -->
+<g id="node34" class="node">
+<title>R128</title>
+<polygon fill="#7a78a7" stroke="#585781" points="913.03,-457.4 824.52,-419 913.03,-380.6 1001.53,-419 913.03,-457.4"/>
+<text xml:space="preserve" text-anchor="middle" x="913.03" y="-422" font-family="Arial" font-size="10.00" fill="white">REFERENCES</text>
+<text xml:space="preserve" text-anchor="middle" x="913.03" y="-410" font-family="Arial" font-size="10.00" fill="white">Stall</text>
+</g>
+</g>
+</g><text x="649" y="1266" text-anchor="middle" font-family="Arial" font-size="11" fill="#64748b">EquiTransit_Demo · metadata only · 2026-10-23 · Layout: Graphviz dot</text></svg>

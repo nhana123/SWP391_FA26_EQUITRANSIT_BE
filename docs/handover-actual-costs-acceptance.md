@@ -4,7 +4,7 @@
 
 | Nghiệp Vụ Cốt Lõi | Cơ Chế Thực Thi | Bằng Chứng Tự Động |
 | :--- | :--- | :--- |
-| **1. Bàn giao trung gian (Intermediate Handover)** | Tài xế hoặc điều phối viên ghi nhận chuyển giao tại kho hàng/sân bay/kiểm dịch; chỉ hoàn tất chặng tương ứng (`COMPLETED`) và kích hoạt chặng tiếp theo (`READY`). Không được phép đóng kế hoạch hoặc đơn hàng (`IN_TRANSIT`). | `TripHandoverCompletionTest.driverCanRecordIntermediateHandoverOnAssignedLeg`, `TripHandoverCompletionTest.coordinatorCanRecordIntermediateHandover` |
+| **1. Bàn giao trung gian (Intermediate Handover)** | Tài xế hoặc điều phối viên ghi nhận chuyển giao tại kho hàng/sân bay/kiểm dịch; chỉ hoàn tất chặng tương ứng (`COMPLETED`) và kích hoạt chặng tiếp theo (`CONFIRMED`). Không được phép đóng kế hoạch hoặc đơn hàng (`IN_TRANSIT`). | `TripHandoverCompletionTest.driverCanRecordIntermediateHandoverOnAssignedLeg`, `TripHandoverCompletionTest.coordinatorCanRecordIntermediateHandover` |
 | **2. Bàn giao đích & Cổng giải phóng kiểm dịch (F08 Gate)** | Bàn giao đích cuối cùng (`FINAL_RECEIVER`) bắt buộc phải kiểm tra thông quan giải phóng kiểm dịch (`QUARANTINE_RELEASE = PASS`). Nếu chưa đạt kiểm dịch, chặn bàn giao với lỗi `409 Conflict: QUARANTINE_RELEASE_REQUIRED`. | `TripHandoverCompletionTest.finalDeliveryRejectsIfQuarantineReleaseNotPassed` |
 | **3. Cổng đối soát người nhận ủy quyền (Consignee Gate)** | Tên người nhận thực tế phải khớp với `ReceiverName` trên đơn hàng hoặc có chức vụ ủy quyền hợp lệ (`STABLE_MANAGER`, `TRAINER`, `VETERINARIAN`). Nếu sai người nhận và không có giấy ủy quyền, trả về `400 Bad Request: RECEIVER_IDENTITY_MISMATCH`. | `TripHandoverCompletionTest.finalDeliveryRejectsMismatchReceiverWithoutProxyAuthority`, `TripHandoverCompletionTest.finalDeliveryAllowedWhenProxyAuthorityRecognized` |
 | **4. Bằng chứng bàn giao bắt buộc (Artifacts Gate)** | Bàn giao đích bắt buộc phải có chữ ký điện tử (`SIGNATURE_REQUIRED`) và ảnh chụp xác nhận ngựa an toàn tại chuồng (`HANDOVER_PHOTO_REQUIRED`). | `TripHandoverCompletionTest.finalDeliveryRejectsMissingSignatureOrPhoto` |
@@ -22,7 +22,7 @@
 ### Kịch Bản 1: Bàn giao trung gian tại Cảng hàng không Charles de Gaulle (CDG)
 1. Tài xế phụ trách Chặng 1 (Đường bộ từ Normandy tới CDG) đưa ngựa tới trung tâm hàng hóa của Air France Cargo.
 2. Tài xế gọi `POST /api/driver/legs/{legId}/intermediate-handover` với `handoverType = INTERMEDIATE_AIRPORT`, `receivedBy = "Air France Cargo Handler - Robert"`, ghi nhận thể trạng ngựa `HorseCondition = NORMAL`.
-3. Hệ thống hoàn tất Chặng 1 (`LegStatus = COMPLETED`) và tự động kích hoạt Chặng 2 (Chặng bay CDG - JFK) sang trạng thái `READY`.
+3. Hệ thống hoàn tất Chặng 1 (`LegStatus = COMPLETED`) và tự động kích hoạt Chặng 2 (Chặng bay CDG - JFK) sang trạng thái `CONFIRMED`.
 4. Kế hoạch vận hành (`TransportPlan`) vẫn giữ nguyên trạng thái `ACTIVE`, và đơn hàng (`TransportOrder`) tiếp tục ở trạng thái `IN_TRANSIT`.
 
 ### Kịch Bản 2: Bàn giao đích cuối cùng bị chặn do chưa đạt giải phóng kiểm dịch (F08 Gate)

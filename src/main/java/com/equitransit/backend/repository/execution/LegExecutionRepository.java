@@ -139,12 +139,27 @@ public class LegExecutionRepository {
      */
     public Optional<TripAssignmentRow> findDriverAssignment(long legId,
             long staffId) {
+        return driverAssignment(legId, staffId, false);
+    }
+
+    /** F14 custody remains attributable after F12 ends the assignment.
+     * @param legId completed leg @param staffId trusted staff identity
+     * @return completed assignment, never cancelled or revoked assignments */
+    public Optional<TripAssignmentRow> findCompletedDriverAssignment(long legId,
+            long staffId) {
+        return driverAssignment(legId, staffId, true);
+    }
+
+    private Optional<TripAssignmentRow> driverAssignment(long legId,
+            long staffId, boolean completed) {
         String sql = "SELECT a.* FROM dbo.TripAssignment a "
                 + "JOIN dbo.StaffProfile sp ON sp.StaffID=a.StaffID "
                 + "JOIN dbo.[User] u ON u.UserID=sp.UserID "
                 + "WHERE a.LegID=:legId AND a.StaffID=:staffId "
-                + "AND a.RoleInTrip='DRIVER' AND a.Status IN "
-                + "('CONFIRMED','ASSIGNED','ACTIVE') AND u.Status='ACTIVE'";
+                + "AND a.RoleInTrip='DRIVER' AND "
+                + (completed ? "a.Status='COMPLETED'" : "a.Status IN "
+                    + "('CONFIRMED','ASSIGNED','ACTIVE')")
+                + " AND u.Status='ACTIVE'";
 
         var list = jdbc.query(sql, Map.of("legId", legId, "staffId", staffId),
                 this::mapAssignment);

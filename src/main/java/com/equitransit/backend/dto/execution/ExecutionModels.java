@@ -280,5 +280,12 @@ public final class ExecutionModels {
             @Schema(example = "[]")
             List<MilestoneView> milestones,
             @Schema(example = "[]")
-            List<WelfareView> welfareLogs) { }
+            List<WelfareView> welfareLogs,
+            @Schema(description = "Consignee the final handover must name, "
+                    + "as the customer entered it on the request.",
+                    example = "Alex Nguyen", nullable = true)
+            String receiverName,
+            @Schema(description = "Delegated receiving authority, if any.",
+                    example = "STABLE_MANAGER", nullable = true)
+            String receiverAuthority) { }
 }

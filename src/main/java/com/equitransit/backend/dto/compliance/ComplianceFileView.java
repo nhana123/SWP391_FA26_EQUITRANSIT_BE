@@ -23,5 +23,5 @@ public record ComplianceFileView(
         @Schema(example = "health-certificate.png")
         @NotBlank @Size(min = 1, max = 255) String fileName,
         @Schema(example = ComplianceExamples.PNG)
-        @NotBlank @Size(min = 1, max = 6990508) String contentBase64) {
+        @NotBlank @Size(min = 1, max = 13981016) String contentBase64) {
 }
