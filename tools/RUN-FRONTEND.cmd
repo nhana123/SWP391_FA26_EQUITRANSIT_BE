@@ -3,7 +3,11 @@ title EquiTransit Frontend
 set "SCRIPT_DIR=%~dp0"
 set "FE_DIR="
 
-if exist "%SCRIPT_DIR%FE\package.json" (
+if exist "%SCRIPT_DIR%..\..\Code Pull\FE\package.json" (
+    set "FE_DIR=%SCRIPT_DIR%..\..\Code Pull\FE"
+) else if exist "C:\Users\mayum\Desktop\Code Pull\FE\package.json" (
+    set "FE_DIR=C:\Users\mayum\Desktop\Code Pull\FE"
+) else if exist "%SCRIPT_DIR%FE\package.json" (
     set "FE_DIR=%SCRIPT_DIR%FE"
 ) else if exist "%SCRIPT_DIR%..\..\FE\package.json" (
     set "FE_DIR=%SCRIPT_DIR%..\..\FE"
