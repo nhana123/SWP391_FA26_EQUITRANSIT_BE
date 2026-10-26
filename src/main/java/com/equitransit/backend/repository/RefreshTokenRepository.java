@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 
 /** All writes participate in the caller's transaction. */
 @Repository
+@SuppressWarnings("null")
 public class RefreshTokenRepository {
     /** Live authentication state; credential hash is never a response. */
     public record Account(long id, String passwordHash, String role,
@@ -100,9 +101,10 @@ public class RefreshTokenRepository {
                 + "TokenHash,CredentialHash,IssuedAt,ExpiresAt) "
                 + "VALUES (?,?,?,?,?,?)", family.toString(), user, hash,
                 credential, now, expiry);
-        return jdbc.queryForObject("SELECT TokenID FROM "
+        Long id = jdbc.queryForObject("SELECT TokenID FROM "
                 + "dbo.RefreshTokenSession WHERE TokenHash=?", Long.class,
                 hash);
+        return id != null ? id : 0L;
     }
 
     /** @param id old key @param next replacement @param now UTC revocation */

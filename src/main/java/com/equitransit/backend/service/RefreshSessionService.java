@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /** Expected rejection commits any family revocation before returning 401. */
 @Service
+@SuppressWarnings("null")
 public class RefreshSessionService {
     /** Private transport to the controller; never serialized as a body. */
     public record Session(LoginResponse response, @JsonIgnore String raw) {
@@ -80,7 +81,8 @@ public class RefreshSessionService {
     public Session login(LoginRequest request) {
         requireReady();
         var account = repository.userId(request.getEmail().trim()
-                .toLowerCase(Locale.ROOT)).flatMap(repository::account)
+                .toLowerCase(Locale.ROOT))
+                .flatMap(id -> repository.account(id != null ? id : 0L))
                 .orElse(null);
         String hash = account == null ? dummy : account.passwordHash();
         boolean matches = request.getPassword().getBytes(

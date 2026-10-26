@@ -47,6 +47,7 @@ import com.equitransit.backend.service.pricing.StallFitEvaluator;
 /** F09 probe and F10 retained-lock facade; neither creates assignments. */
 @Service
 @PreAuthorize("hasAnyRole('MANAGER','COORDINATOR')")
+@SuppressWarnings("null")
 public class ResourceAvailabilityService {
 
     private final ResourceRepository resources;

@@ -157,6 +157,7 @@ public class AuthController {
                 .body(result.response());
     }
 
+    @SuppressWarnings("null")
     private String cookie(String raw, long seconds) {
         return ResponseCookie.from(cookieName, raw).httpOnly(true)
                 .secure(secure).sameSite("Strict").path("/api/auth")

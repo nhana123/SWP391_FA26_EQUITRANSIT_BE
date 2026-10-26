@@ -38,6 +38,7 @@ import static org.springframework.test.web.servlet.result.
 @AutoConfigureMockMvc(print = org.springframework.boot.test.autoconfigure
         .web.servlet.MockMvcPrint.NONE)
 @ActiveProfiles("test")
+@SuppressWarnings("null")
 public class RefreshRotationTest {
     @Autowired
     private MockMvc mvc;
