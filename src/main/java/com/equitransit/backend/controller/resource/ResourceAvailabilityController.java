@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 @SecurityRequirement(name = "bearerAuth")
 @Validated
 @Tag(name = "Resource availability and fit")
-@RequestMapping(value = "/api/resources",
+@RequestMapping(value = "/api/resources/{kind}",
         produces = MediaType.APPLICATION_JSON_VALUE)
 public class ResourceAvailabilityController {
 
@@ -50,7 +50,7 @@ public class ResourceAvailabilityController {
 
     /** @param kind physical type @param id resource ID @param request interval
      * @return observation only; F10 must recheck before writing assignment */
-    @PostMapping(value = "/{kind}/{id}/availability",
+    @PostMapping(value = "/{id}/availability",
             consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResourceAvailability inspect(
             @Parameter(example = "STALL") @PathVariable ResourceKind kind,
@@ -60,7 +60,7 @@ public class ResourceAvailabilityController {
     }
 
     /** Scoped, advisory catalogue options for a Coordinator combobox. */
-    @PostMapping(value = "/{kind}/candidates",
+    @PostMapping(value = "/candidates",
             consumes = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "Find resource options for an assigned case",
             description = "Active Manager or assigned Coordinator only. "

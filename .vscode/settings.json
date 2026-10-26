@@ -1,6 +1,6 @@
 {
   "java.configuration.updateBuildConfiguration": "automatic",
-  "java.compile.nullAnalysis.mode": "disabled",
+  "java.compile.nullAnalysis.mode": "automatic",
   "boot-java.properties-yaml.unknown-property.severity": "ignore",
   "spring-boot.ls.properties-yaml.unknown-property.severity": "ignore"
 }
