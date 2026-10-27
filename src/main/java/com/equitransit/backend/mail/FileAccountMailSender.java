@@ -49,6 +49,10 @@ public class FileAccountMailSender implements AccountMailSender {
             file = outbox.resolve(UUID.randomUUID() + ".txt");
             content = "To: " + event.getRecipient() + "\nSubject: "
                     + event.getSubject() + "\n\n" + event.getBody();
+            if (event.getHtmlBody() != null) {
+                content += "\n\n--- HTML VERSION ---\n"
+                        + event.getHtmlBody();
+            }
             Files.writeString(file, content, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE_NEW);
         } catch (IOException error) {

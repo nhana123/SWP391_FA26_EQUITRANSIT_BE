@@ -55,7 +55,7 @@ app:
     refresh-cookie-name: eq_refresh_token
     refresh-cookie-secure: ${EQ_REFRESH_COOKIE_SECURE:false}
   mail:
-    mode: smtp
+    mode: ${EQ_MAIL_MODE:file}
     from: ${EQ_MAIL_FROM:no-reply@example.invalid}
     outbox: .local/outbox
   frontend-url: ${EQ_FRONTEND_URL:http://localhost:5173}
