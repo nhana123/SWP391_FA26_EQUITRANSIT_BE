@@ -13,11 +13,16 @@ import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.AdditionalAnswers.delegatesTo;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /** Database budgets survive failed callers, instance replacement and races. */
@@ -72,14 +77,26 @@ public class AuthRequestLimiterTest {
     /** @throws Exception if concurrent creation loses counts */
     @Test
     public void simultaneousReservationsHaveOneWinner() throws Exception {
-        var limiter = limiter(start, 1);
+        var observedEmpty = new CountDownLatch(2);
+        var concurrent = mock(AuthRequestBudgetRepository.class,
+                delegatesTo(data));
+        doAnswer(call -> {
+            var found = data.locked(call.getArgument(0));
+            if (found.isEmpty()) {
+                observedEmpty.countDown();
+                assertThat(observedEmpty.await(5, TimeUnit.SECONDS)).isTrue();
+            }
+            return found;
+        }).when(concurrent).locked(anyString());
         var pool = Executors.newFixedThreadPool(2);
         var startGate = new CountDownLatch(1);
         try {
             Callable<Integer> request = () -> {
                 startGate.await(5, TimeUnit.SECONDS);
                 try {
-                    limiter.reserve("user@example.invalid", "LOGIN");
+                    new AuthRequestLimiter(concurrent, manager,
+                            Clock.fixed(start, ZoneOffset.UTC), 1, SECRET)
+                            .reserve("user@example.invalid", "LOGIN");
                     return 200;
                 } catch (AuthThrottleException rejected) {
                     return 429;
@@ -93,7 +110,27 @@ public class AuthRequestLimiterTest {
                     .containsExactlyInAnyOrder(200, 429);
         } finally {
             pool.shutdownNow();
+            assertThat(pool.awaitTermination(5, TimeUnit.SECONDS)).isTrue();
         }
+        assertThat(data.count()).isEqualTo(1);
+        assertThat(data.findAll().getFirst().requests).isEqualTo(1);
+    }
+
+    /** A new assigned ID must never merge over a committed budget. */
+    @Test
+    public void assignedIdInsertionCannotOverwriteExistingBudget() {
+        limiter(start, 1).reserve("user@example.invalid", "LOGIN");
+        var saved = data.findAll().getFirst();
+        assertThat(saved.isNew()).isFalse();
+        var duplicate = new AuthRequestBudget();
+        duplicate.key = saved.key;
+        duplicate.until = saved.until;
+        duplicate.requests = 0;
+        assertThat(duplicate.isNew()).isTrue();
+        assertThatThrownBy(() -> new TransactionTemplate(manager)
+                .executeWithoutResult(status -> data.saveAndFlush(duplicate)))
+                .isInstanceOf(DataIntegrityViolationException.class);
+        assertThat(data.findAll().getFirst().requests).isEqualTo(1);
     }
 
     private AuthRequestLimiter limiter(Instant time, int limit) {
