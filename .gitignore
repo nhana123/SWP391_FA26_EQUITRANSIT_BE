@@ -23,3 +23,7 @@ out/
 /tools/seed-demo-data.sql
 /tools/seed-demo-orders.ps1
 /tools/verify-demo-api.mjs
+
+# Machine-only launchers may contain local credentials.
+/tools/start-demo-backend.cmd
+/tools/start-demo-frontend.cmd

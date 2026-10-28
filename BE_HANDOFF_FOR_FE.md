@@ -315,3 +315,18 @@ See docs/BOOKING_FLOW_API.md for booking-flow-status, automatic ROAD deposits, A
 
 ### Manager approval precedes deposit
 SUBMITTED now returns AWAITING_MANAGER_APPROVAL with depositRequired=false. Fixed ROAD automation runs only after Manager APPROVED and team allocation, not on SUBMIT. See docs/BOOKING_FLOW_API.md.
+
+## Account OTP security contract
+
+See docs/AUTH_OTP_SECURITY.md. Six-digit verification/reset requests now require
+`email` alongside `token`. Link requests retain a strong 43-character token and
+can omit email. Reset still requires `password` and `confirmPassword`.
+OTP expires within 10 minutes with five failed attempts per account/purpose
+window. Resend does not reset the attempt budget. Responses do not disclose
+account existence or remaining attempts. Apply migration028 before deploying.
+
+## Complete account authentication flow
+See FE_AUTH_FLOW_IMPLEMENTATION_REQUEST.md for the FE task and docs/AUTH_FLOW_BACKEND.md for delivery, security, migration and operations.
+
+## Manager deposit request API
+See docs/MANAGER_DEPOSIT_API.md: POST /api/manager/transport-orders/{id}/request-deposit and depositRequested on owned order detail. SUBMITTED remains blocked from payment until Manager approval; customer quote acceptance remains required.

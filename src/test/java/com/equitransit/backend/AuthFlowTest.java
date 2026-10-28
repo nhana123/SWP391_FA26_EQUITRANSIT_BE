@@ -77,6 +77,9 @@ public class AuthFlowTest {
     private static final String PASSWORD = "ExamplePassword123!";
     private static final String NEW_PASSWORD = "ChangedPassword456!";
 
+    @Autowired
+    private com.equitransit.backend.mail.AccountMailRepository accountMail;
+
     private boolean isolatedDatabase;
 
     @Autowired
@@ -142,6 +145,7 @@ public class AuthFlowTest {
         }
         new org.springframework.jdbc.core.JdbcTemplate(dataSource)
                 .execute("DELETE FROM dbo.RefreshTokenSession");
+        accountMail.deleteAll();
         tokens.deleteAll();
         customers.deleteAll();
         users.deleteAll();
@@ -165,7 +169,9 @@ public class AuthFlowTest {
         assertThat(passwords.matches(PASSWORD, user.getPasswordHash()))
                 .isTrue();
         postJson("/api/auth/login", Map.of("email", EMAIL,
-                "password", PASSWORD)).andExpect(status().isUnauthorized());
+                "password", PASSWORD)).andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("code")
+                        .value("EMAIL_VERIFICATION_REQUIRED"));
         raw = latestToken();
         assertThat(tokens.findByTokenHash(TokenTools.hash(raw))).isPresent();
         assertThat(tokens.findAll().getFirst().getTokenHash())
@@ -189,9 +195,16 @@ public class AuthFlowTest {
     public void duplicateEmailDoesNotCreateAnotherCustomer() throws Exception {
         register(EMAIL, PASSWORD).andExpect(status().isCreated());
         register(EMAIL.toUpperCase(), PASSWORD)
-                .andExpect(status().isConflict());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code")
+                        .value("EMAIL_VERIFICATION_REQUIRED"));
         assertThat(users.count()).isEqualTo(1);
         assertThat(customers.count()).isEqualTo(1);
+        verify(latestToken()).andExpect(status().isOk());
+        register(EMAIL, PASSWORD).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code")
+                        .value("EMAIL_ALREADY_REGISTERED"));
+
     }
 
     /**
@@ -272,7 +285,8 @@ public class AuthFlowTest {
         postJson("/api/auth/reset-password", resetInput)
                 .andExpect(status().isBadRequest());
         postJson("/api/auth/login", Map.of("email", EMAIL,
-                "password", PASSWORD)).andExpect(status().isUnauthorized());
+                "password", PASSWORD)).andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("code").value("LOGIN_FAILED"));
         mvc.perform(get("/api/customers/me")
                 .header("Authorization", "Bearer " + oldAccess))
                 .andExpect(status().isUnauthorized());
@@ -542,6 +556,145 @@ public class AuthFlowTest {
 
         return mapper.readTree(result.getResponse().getContentAsString())
                 .get("accessToken").asText();
+    }
+
+    /** @throws Exception if activation mail still exposes OTP */
+    @Test
+    public void verificationEmailUsesOnlyStrongSingleUseLink()
+            throws Exception {
+        register(EMAIL, PASSWORD).andExpect(status().isCreated());
+        String link = latestToken();
+        assertThat(link).matches("[A-Za-z0-9_-]{43}");
+        var mail = events.stream(EmailEvent.class).reduce((x, y) -> y)
+                .orElseThrow();
+        assertThat(mail.getBody()).doesNotContain("OTP", "METHOD 2");
+        assertThat(mail.getHtmlBody()).contains("VERIFY NOW")
+                .doesNotContain("OTP", "6-digit");
+        var token = tokens.findByTokenHash(TokenTools.hash(link)).orElseThrow();
+        assertThat(token.getOtpHash()).isNull();
+        assertThat(mail.getExpiresAt()).isEqualTo(token.getExpiresAt());
+        postJson("/api/auth/verify-email", Map.of("token", "123456",
+                "email", EMAIL)).andExpect(status().isBadRequest());
+        verify(link).andExpect(status().isOk());
+        verify(link).andExpect(status().isBadRequest());
+    }
+
+    /** @throws Exception if OTP reset ignores email binding or reuse */
+    @Test
+    public void resetOtpRequiresOwnerEmailAndIsSingleUse() throws Exception {
+        register(EMAIL, PASSWORD).andExpect(status().isCreated());
+        verify(latestToken()).andExpect(status().isOk());
+        postJson("/api/auth/forgot-password", Map.of("email", EMAIL))
+                .andExpect(status().isAccepted());
+        String code = latestOtp();
+        String link = latestToken();
+        var input = Map.of("token", code, "password", NEW_PASSWORD,
+                "confirmPassword", NEW_PASSWORD);
+        postJson("/api/auth/reset-password", input)
+                .andExpect(status().isBadRequest());
+        postJson("/api/auth/reset-password", Map.of("token", code,
+                "email", "unknown@example.invalid", "password", NEW_PASSWORD,
+                "confirmPassword", NEW_PASSWORD))
+                .andExpect(status().isBadRequest());
+        var owned = Map.of("token", code, "email", EMAIL,
+                "password", NEW_PASSWORD, "confirmPassword", NEW_PASSWORD);
+        postJson("/api/auth/reset-password", owned)
+                .andExpect(status().isOk());
+        postJson("/api/auth/reset-password", owned)
+                .andExpect(status().isBadRequest());
+        postJson("/api/auth/reset-password", Map.of("token", link,
+                "password", PASSWORD, "confirmPassword", PASSWORD))
+                .andExpect(status().isBadRequest());
+        login(EMAIL, NEW_PASSWORD);
+    }
+
+    /** Failed HTTP transactions must retain the durable attempt count.
+     * @throws Exception if distributed guesses bypass the account gate */
+    @Test
+    public void fiveWrongOtpAttemptsRemainLockedAcrossRequests()
+            throws Exception {
+        register(EMAIL, PASSWORD).andExpect(status().isCreated());
+        verify(latestToken()).andExpect(status().isOk());
+        postJson("/api/auth/forgot-password", Map.of("email", EMAIL))
+                .andExpect(status().isAccepted());
+        String link = latestToken();
+        String code = latestOtp();
+        String wrong = code.equals("100000") ? "100001" : "100000";
+        long token = tokens.findByTokenHash(TokenTools.hash(link))
+                .orElseThrow().getTokenId();
+        for (int attempt = 1; attempt <= 5; attempt++) {
+            postJson("/api/auth/reset-password", Map.of("token", wrong,
+                    "email", EMAIL, "password", NEW_PASSWORD,
+                    "confirmPassword", NEW_PASSWORD))
+                    .andExpect(status().isBadRequest());
+            assertThat(tokens.findById(token).orElseThrow().getFailedAttempts())
+                    .isEqualTo(attempt);
+        }
+        postJson("/api/auth/forgot-password", Map.of("email", EMAIL))
+                .andExpect(status().isAccepted());
+        assertThat(latestToken()).isEqualTo(link);
+        postJson("/api/auth/reset-password", Map.of("token", code,
+                "email", EMAIL, "password", NEW_PASSWORD,
+                "confirmPassword", NEW_PASSWORD))
+                .andExpect(status().isBadRequest());
+        assertThat(passwords.matches(PASSWORD, users.findByEmailIgnoreCase(
+                EMAIL).orElseThrow().getPasswordHash())).isTrue();
+        // Lockout affects only guessed OTPs, not possession of the strong link.
+        postJson("/api/auth/reset-password", Map.of("token", link,
+                "password", NEW_PASSWORD, "confirmPassword", NEW_PASSWORD))
+                .andExpect(status().isOk());
+    }
+
+    /** @throws Exception if expired activation links are accepted */
+    @Test
+    public void expiredVerificationLinkCannotActivate() throws Exception {
+        register(EMAIL, PASSWORD).andExpect(status().isCreated());
+        String link = latestToken();
+        var token = tokens.findByTokenHash(TokenTools.hash(link)).orElseThrow();
+        token.setExpiresAt(LocalDateTime.now(ZoneOffset.UTC).minusMinutes(1));
+        tokens.saveAndFlush(token);
+        verify(link).andExpect(status().isBadRequest());
+        assertThat(users.findByEmailIgnoreCase(EMAIL).orElseThrow()
+                .getStatus()).isEqualTo("INACTIVE");
+    }
+
+    /** @throws Exception if concurrent OTP consumption succeeds twice */
+    @Test
+    public void concurrentResetOtpHasExactlyOneWinner() throws Exception {
+        register(EMAIL, PASSWORD).andExpect(status().isCreated());
+        verify(latestToken()).andExpect(status().isOk());
+        postJson("/api/auth/forgot-password", Map.of("email", EMAIL))
+                .andExpect(status().isAccepted());
+        var input = Map.of("token", latestOtp(), "email", EMAIL,
+                "password", NEW_PASSWORD, "confirmPassword", NEW_PASSWORD);
+        var results = race(() -> postJson("/api/auth/reset-password", input)
+                .andReturn().getResponse().getStatus());
+        assertThat(results).containsExactlyInAnyOrder(200, 400);
+    }
+
+    /** @throws Exception if resend leaves an old link usable */
+    @Test
+    public void resendReplacesVerificationLink() throws Exception {
+        register(EMAIL, PASSWORD).andExpect(status().isCreated());
+        String original = latestToken();
+        var old = tokens.findByTokenHash(TokenTools.hash(original))
+                .orElseThrow();
+        old.setCreatedAt(old.getCreatedAt().minusSeconds(61));
+        tokens.saveAndFlush(old);
+        postJson("/api/auth/resend-verification", Map.of("email", EMAIL))
+                .andExpect(status().isAccepted());
+        assertThat(latestToken()).isNotEqualTo(original);
+        verify(original).andExpect(status().isBadRequest());
+        verify(latestToken()).andExpect(status().isOk());
+    }
+
+    private String latestOtp() {
+        String body = events.stream(EmailEvent.class).reduce((a, b) -> b)
+                .orElseThrow().getBody();
+        var matcher = java.util.regex.Pattern.compile(
+                "(?m)^([0-9]{3}) ([0-9]{3})$").matcher(body);
+        assertThat(matcher.find()).isTrue();
+        return matcher.group(1) + matcher.group(2);
     }
 
     private String latestToken() {

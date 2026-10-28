@@ -279,6 +279,147 @@ public class BookingFlowSqlTest {
                 .isEqualTo("AWAITING_MANAGER_APPROVAL");
         assertThat(count("dbo.PaymentRequest", "QuoteID", quote)).isZero();
     }
+    /** @throws Exception if a submitted request opens payments prematurely */
+    @Test
+    public void managerDepositIsVisibleAndRetrySafeBeforeApproval()
+            throws Exception {
+        create(false, "ROAD");
+        var body = deposit("1000.00", "250.00");
+        String path = "/api/manager/transport-orders/" + order
+                + "/request-deposit";
+        var receipt = send("POST", path, token("MANAGER"), body, 200);
+        send("POST", path, token("MANAGER"), body, 200);
+        long id = receipt.path("depositRequested").path("quoteId").asLong();
+        assertThat(count("dbo.Quote", "RevisionID", revision)).isEqualTo(1);
+        assertThat(count("dbo.PaymentRequest", "QuoteID", id)).isZero();
+        var view = send("GET", base(), owner, null, 200)
+                .path("depositRequested");
+        assertThat(view.path("depositAmount").decimalValue())
+                .isEqualByComparingTo("250.00");
+        assertThat(view.path("note").asText()).isEqualTo("Deposit fixture");
+        assertThat(view.path("requestedAt").asText()).isNotBlank();
+        assertThat(view.path("paymentAvailable").asBoolean()).isFalse();
+        assertThat(view.path("isPaid").asBoolean()).isFalse();
+        send("GET", base(), customer(), null, 404);
+        assertThat(status(owner).path("blockReason").asText())
+                .isEqualTo("AWAITING_MANAGER_APPROVAL");
+        var accept = json.createObjectNode().put("action", "ACCEPT");
+        accept.set("command", command());
+        send("POST", base() + "/quotes/" + id + "/actions", owner,
+                accept, 409);
+        var changed = body.deepCopy().put("note", "Changed note");
+        send("POST", path, token("MANAGER"), changed, 409);
+    }
+
+    /** @throws Exception if custom deposits diverge from the real ledger */
+    @Test
+    public void managerDepositUsesAcceptanceAndReconciledAllocations()
+            throws Exception {
+        create(false, "ROAD");
+        send("POST", "/api/manager/transport-orders/" + order
+                + "/request-deposit", token("MANAGER"),
+                deposit("1000.00", "250.00"), 200);
+        approve();
+        var accept = json.createObjectNode().put("action", "ACCEPT");
+        accept.set("command", command());
+        send("POST", base() + "/quotes/" + quote() + "/actions", owner,
+                accept, 200);
+        var view = send("GET", base(), owner, null, 200)
+                .path("depositRequested");
+        assertThat(view.path("paymentAvailable").asBoolean()).isTrue();
+        assertThat(view.path("paymentRequestId").asLong()).isEqualTo(request());
+        var amount = new BigDecimal("250.00");
+        String proof = report(request(), amount);
+        assertThat(send("GET", base(), owner, null, 200)
+                .path("depositRequested").path("isPaid").asBoolean()).isFalse();
+        long bank = bank(amount);
+        allocate(bank, request(), amount);
+        assertThat(send("GET", base(), owner, null, 200)
+                .path("depositRequested").path("isPaid").asBoolean()).isTrue();
+        jdbc.update("UPDATE dbo.PaymentTransaction SET Status='REVERSED',"
+                + "ReversedAt=DATEADD(second,-1,SYSUTCDATETIME()),"
+                + "ReversedBy=?,ReversalReason='Fixture reversal',"
+                + "ReversalProofFileKey=? WHERE TransactionID=?",
+                staff("MANAGER"), proof, bank);
+        assertThat(send("GET", base(), owner, null, 200)
+                .path("depositRequested").path("isPaid").asBoolean()).isFalse();
+    }
+
+    /** @throws Exception if an automatic accepted contract gets duplicated */
+    @Test
+    public void managerDepositLinksExistingRoadObligation() throws Exception {
+        create(false, "ROAD");
+        approve();
+        send("POST", "/api/manager/transport-orders/" + order
+                + "/request-deposit", token("MANAGER"),
+                deposit("1.00", "0.30"), 409);
+        jdbc.update("UPDATE dbo.Quote SET CreatedAt="
+                + "DATEADD(day,-3,SYSUTCDATETIME()),IssuedAt="
+                + "DATEADD(day,-2,SYSUTCDATETIME()),AcceptedAt="
+                + "DATEADD(day,-2,SYSUTCDATETIME()),ValidUntil="
+                + "DATEADD(day,-1,SYSUTCDATETIME()) WHERE QuoteID=?", quote());
+        var flow = status(owner);
+        var body = deposit(flow.path("quoteTotal").asText(),
+                flow.path("depositAmount").asText());
+        var receipt = send("POST", "/api/manager/transport-orders/" + order
+                + "/request-deposit", token("MANAGER"), body, 200);
+        assertThat(receipt.path("depositRequested").path("paymentRequestId")
+                .asLong()).isEqualTo(request());
+        assertThat(count("dbo.PaymentRequest", "QuoteID", quote()))
+                .isEqualTo(1);
+        assertThat(count("dbo.Quote", "RevisionID", revision)).isEqualTo(1);
+    }
+
+    /** @throws Exception if invalid input or a non-Manager can issue money */
+    @Test
+    public void managerDepositRejectsBadInputAndOtherRoles() throws Exception {
+        create(false, "ROAD");
+        String path = "/api/manager/transport-orders/" + order
+                + "/request-deposit";
+        for (String role : List.of("CUSTOMER", "COORDINATOR", "SPECIALIST",
+                "DRIVER")) {
+            send("POST", path, token(role), deposit("1000", "300"), 403);
+        }
+        var body = deposit("1000", "300");
+        body.remove("totalAmount");
+        send("POST", path, token("MANAGER"), body, 400);
+        body = deposit("1000", "300").put("currency", "EUR");
+        send("POST", path, token("MANAGER"), body, 400);
+        send("POST", path, token("MANAGER"), deposit("1000", "1001"), 409);
+        send("POST", path, token("MANAGER"), deposit("1000", "0"), 400);
+        send("POST", path, token("MANAGER"), deposit("1000", "300")
+                .put("recordVersion", "0000000000000000"), 409);
+        assertThat(count("dbo.Quote", "RevisionID", revision)).isZero();
+    }
+
+    /** @throws Exception if an AIR request is mislabeled as road transport */
+    @Test
+    public void managerCanIssueAirDepositWithoutInventingCustomerAcceptance()
+            throws Exception {
+        create(false, "AIR");
+        approve();
+        var receipt = send("POST", "/api/manager/transport-orders/" + order
+                + "/request-deposit", token("MANAGER"),
+                deposit("1000", "1000"), 200);
+        long id = receipt.path("depositRequested").path("quoteId").asLong();
+        assertThat(jdbc.queryForObject("SELECT ServiceCode FROM dbo.QuoteItem "
+                + "WHERE QuoteID=?", String.class, id)).isEqualTo("AIRFARE");
+        assertThat(count("dbo.PaymentRequest", "QuoteID", id)).isZero();
+        assertThat(count("dbo.QuotePaymentSchedule", "QuoteID", id))
+                .isEqualTo(1);
+        var accept = json.createObjectNode().put("action", "ACCEPT");
+        accept.set("command", command());
+        send("POST", base() + "/quotes/" + id + "/actions", owner,
+                accept, 200);
+        assertThat(count("dbo.PaymentRequest", "QuoteID", id)).isEqualTo(1);
+    }
+
+    private ObjectNode deposit(String total, String due) {
+        return json.createObjectNode().put("totalAmount", total)
+                .put("depositAmount", due).put("note", "Deposit fixture")
+                .put("recordVersion", command().path("recordVersion").asText());
+    }
+
     private long issuedAirFixture() {
         OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC).withNano(0);
         var req = new QuotePrepareRequest(new QuoteCommand(

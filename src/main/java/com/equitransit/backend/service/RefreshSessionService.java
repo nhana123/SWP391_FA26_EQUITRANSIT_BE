@@ -14,6 +14,8 @@ import com.equitransit.backend.repository.RefreshTokenRepository;
 import com.equitransit.backend.repository.RefreshTokenRepository.Account;
 import com.equitransit.backend.security.JwtTokenService;
 import com.equitransit.backend.security.TokenTools;
+import com.equitransit.backend.security.AuthRequestLimiter;
+import com.equitransit.backend.repository.AuthenticationTokenRepository;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.Clock;
 import java.time.LocalDateTime;
@@ -58,13 +60,18 @@ public class RefreshSessionService {
     private final Clock clock;
     private final long ttl;
     private final String dummy;
+    private final AuthRequestLimiter limiter;
+    private final AuthenticationTokenRepository tokens;
 
     /** @param repository JDBC adapter @param passwords credential verifier
      * @param jwt access issuer @param clock UTC @param ttl refresh lifetime */
     public RefreshSessionService(RefreshTokenRepository repository,
             PasswordEncoder passwords, JwtTokenService jwt, Clock clock,
-            @Value("${app.jwt.refresh-ttl-seconds:28800}") long ttl) {
+            @Value("${app.jwt.refresh-ttl-seconds:28800}") long ttl,
+            AuthRequestLimiter limiter, AuthenticationTokenRepository tokens) {
         this.repository = repository;
+        this.limiter = limiter;
+        this.tokens = tokens;
         this.passwords = passwords;
         this.jwt = jwt;
         this.clock = clock;
@@ -78,6 +85,7 @@ public class RefreshSessionService {
     /** @param request credentials @return access body and private cookie */
     @Transactional(timeout = 15)
     public Session login(LoginRequest request) {
+        limiter.reserve(request.getEmail(), "LOGIN");
         requireReady();
         var account = repository.userId(request.getEmail().trim()
                 .toLowerCase(Locale.ROOT)).flatMap(repository::account)
@@ -86,6 +94,16 @@ public class RefreshSessionService {
         boolean matches = request.getPassword().getBytes(
                 java.nio.charset.StandardCharsets.UTF_8).length <= 72
                 && passwords.matches(request.getPassword(), hash);
+        if (matches && account != null && "INACTIVE".equals(account.status())
+                && "CUSTOMER".equals(account.role())
+                && tokens.existsByUserUserIdAndPurpose(account.id(),
+                        "VERIFY_EMAIL")
+                && !tokens.existsByUserUserIdAndPurposeAndUsedAtIsNotNull(
+                        account.id(), "VERIFY_EMAIL")) {
+            throw new OrderException(HttpStatus.UNAUTHORIZED,
+                    "EMAIL_VERIFICATION_REQUIRED",
+                    "Verify your email before signing in.");
+        }
         if (!matches || account == null || !active(account)) {
             throw new OrderException(HttpStatus.UNAUTHORIZED,
                     "LOGIN_FAILED", "Invalid credentials or account.");

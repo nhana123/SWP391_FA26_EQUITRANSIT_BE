@@ -8,43 +8,31 @@
 package com.equitransit.backend.mail;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 
-/** Delivers email only after the account transaction commits. */
+/** Queues account mail atomically before the account transaction commits. */
 @Component
 public class AccountEmailListener {
 
-    private static final Logger LOGGER =
-            LoggerFactory.getLogger(AccountEmailListener.class);
-
-    private final AccountMailSender sender;
+    private final AccountMailOutbox outbox;
 
     /**
      * Creates the delivery listener.
-     * @param sender the environment-specific sender
+     * @param outbox same-transaction durable account mail
      */
-    public AccountEmailListener(AccountMailSender sender) {
-        this.sender = sender;
+    public AccountEmailListener(AccountMailOutbox outbox) {
+        this.outbox = outbox;
     }
 
     /**
-     * Delivers committed account notifications asynchronously.
+     * Persists the request before commit; worker delivery is independent.
      * @param event the committed message
      */
-    @Async("emailTaskExecutor")
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void onEmail(EmailEvent event) {
-        try {
-            sender.send(event);
-        } catch (RuntimeException error) {
-            LOGGER.error("Account email delivery failed: {}",
-                    error.getMessage());
-        }
+        outbox.enqueue(event);
     }
 }

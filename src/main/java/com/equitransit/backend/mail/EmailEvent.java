@@ -7,6 +7,9 @@
  */
 package com.equitransit.backend.mail;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 
 
 
@@ -20,6 +23,53 @@ public class EmailEvent {
     private String body;
 
     private String htmlBody;
+
+    private UUID messageId = UUID.randomUUID();
+    private Long userId;
+    private String purpose;
+    private String challengeHash;
+    private LocalDateTime expiresAt;
+
+    /** @return durable message identity */
+    public UUID getMessageId() {
+        return messageId;
+    }
+    /** @param value durable message identity */
+    public void setMessageId(UUID value) {
+        messageId = value;
+    }
+    /** @return account identity, never exposed in public mail status */
+    public Long getUserId() {
+        return userId;
+    }
+    /** @param value account identity */
+    public void setUserId(Long value) {
+        userId = value;
+    }
+    /** @return notification purpose */
+    public String getPurpose() {
+        return purpose;
+    }
+    /** @param value notification purpose */
+    public void setPurpose(String value) {
+        purpose = value;
+    }
+    /** @return associated challenge hash, not the raw token */
+    public String getChallengeHash() {
+        return challengeHash;
+    }
+    /** @param value associated challenge hash */
+    public void setChallengeHash(String value) {
+        challengeHash = value;
+    }
+    /** @return latest useful delivery time */
+    public LocalDateTime getExpiresAt() {
+        return expiresAt;
+    }
+    /** @param value latest useful delivery time */
+    public void setExpiresAt(LocalDateTime value) {
+        expiresAt = value;
+    }
 
     /**
      * Returns recipient.

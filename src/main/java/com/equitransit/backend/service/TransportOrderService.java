@@ -66,6 +66,7 @@ public class TransportOrderService {
     private final AuditWriter activity;
     private final com.equitransit.backend.repository.ActivityRepository events;
     private RouteTemplateService routes;
+    private ManagerDepositService deposits;
 
     /**
      * Creates the customer request lifecycle facade.
@@ -99,6 +100,12 @@ public class TransportOrderService {
         this.selections = selections;
         this.activity = activity;
         this.events = events;
+    }
+
+    /** @param deposits customer-visible issuance projection */
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configureDeposits(ManagerDepositService deposits) {
+        this.deposits = deposits;
     }
 
     /** @param routes server-side route resolution at the revision boundary */
@@ -158,7 +165,7 @@ public class TransportOrderService {
      */
     @Transactional(readOnly = true)
     public OrderResponse get(@Positive long id) {
-        return response(owned(id, false));
+        return response(owned(id, false), true);
     }
 
     /**
@@ -440,11 +447,22 @@ public class TransportOrderService {
     }
 
     private OrderResponse response(TransportOrderRecord order) {
+        return response(order, false);
+    }
+
+    private OrderResponse response(TransportOrderRecord order,
+            boolean includeDeposit) {
         return new OrderResponse(order.orderId(), order.orderNumber(),
                 order.orderStatus(), order.currency(), order.recordVersion(),
                 order.currentRevisionId(), order.currentPlanId(),
                 order.createdAt(), order.updatedAt(),
-                json.readDraft(order.draftPayload()));
+                json.readDraft(order.draftPayload()),
+                !includeDeposit || deposits == null ? null
+                        : deposits.read(new com.equitransit.backend.entity
+                                .CaseOrder(order.orderId(), order.orderNumber(),
+                                        order.orderStatus(),
+                                        order.recordVersion(),
+                                        order.currentRevisionId())));
     }
 
     private OrderRevisionResponse revisionResponse(OrderRevisionRecord record) {

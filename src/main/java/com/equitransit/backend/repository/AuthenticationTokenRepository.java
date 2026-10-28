@@ -22,6 +22,12 @@ import com.equitransit.backend.entity.AuthenticationToken;
 public interface AuthenticationTokenRepository
         extends JpaRepository<AuthenticationToken, Long> {
 
+    /** @param user owner @param purpose flow @return latest locked challenge */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<AuthenticationToken>
+            findFirstByUserUserIdAndPurposeOrderByTokenIdDesc(
+                    Long user, String purpose);
+
     /**
      * Looks up a token by its hash.
      * @param hash the token hash

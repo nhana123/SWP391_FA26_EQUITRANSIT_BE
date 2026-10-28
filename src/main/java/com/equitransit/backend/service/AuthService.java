@@ -28,12 +28,14 @@ import com.equitransit.backend.entity.UserAccount;
 import com.equitransit.backend.entity.Customer;
 import com.equitransit.backend.entity.AuthenticationToken;
 import com.equitransit.backend.exception.ApiException;
+import com.equitransit.backend.exception.OtpRejectedException;
 import com.equitransit.backend.mail.EmailEvent;
 import com.equitransit.backend.repository.AccountRoleRepository;
 import com.equitransit.backend.repository.UserAccountRepository;
 import com.equitransit.backend.repository.CustomerRepository;
 import com.equitransit.backend.repository.AuthenticationTokenRepository;
 import com.equitransit.backend.security.TokenTools;
+import com.equitransit.backend.security.AuthRequestLimiter;
 
 
 /** Implements individual registration, verification and account recovery. */
@@ -44,6 +46,8 @@ public class AuthService {
     private static final String RESET_PASSWORD = "RESET_PASSWORD";
     private static final long VERIFY_HOURS = 24;
     private static final long RESET_MINUTES = 30;
+    private static final long OTP_MINUTES = 10;
+    private static final int OTP_ATTEMPTS = 5;
 
     private final AccountRoleRepository roles;
     private final UserAccountRepository users;
@@ -54,6 +58,8 @@ public class AuthService {
     private final ApplicationEventPublisher events;
     private final String frontend;
     private final RefreshSessionService refresh;
+    private final String otpSecret;
+    private final AuthRequestLimiter limiter;
 
     /**
      * Creates the authentication service.
@@ -72,7 +78,9 @@ public class AuthService {
             Clock clock,
             ApplicationEventPublisher events,
             @Value("${app.frontend-url}") String frontend,
-            RefreshSessionService refresh) {
+            RefreshSessionService refresh,
+            @Value("${app.auth.otp-secret:${app.jwt.secret}}")
+            String otpSecret, AuthRequestLimiter limiter) {
         this.roles = roles;
         this.users = users;
         this.customers = customers;
@@ -82,6 +90,8 @@ public class AuthService {
         this.events = events;
         this.frontend = frontend;
         this.refresh = refresh;
+        this.otpSecret = otpSecret;
+        this.limiter = limiter;
     }
 
     /**
@@ -91,13 +101,27 @@ public class AuthService {
     @Transactional
     public void register(RegisterRequest request) {
         String email = normalizeEmail(request.getEmail());
+        limiter.reserve(email, "REGISTER");
         AccountRole role;
         UserAccount user = new UserAccount();
         Customer customer = new Customer();
 
         checkPassword(request.getPassword(), request.getConfirmPassword());
-        if (users.findByEmailIgnoreCase(email).isPresent()) {
+        var existing = users.findByEmailIgnoreCase(email).orElse(null);
+        if (existing != null) {
+            if ("INACTIVE".equals(existing.getStatus())
+                    && "CUSTOMER".equals(existing.getRole().getRoleCode())
+                    && tokens.existsByUserUserIdAndPurpose(
+                            existing.getUserId(), VERIFY_EMAIL)
+                    && !tokens
+                            .existsByUserUserIdAndPurposeAndUsedAtIsNotNull(
+                                    existing.getUserId(), VERIFY_EMAIL)) {
+                throw new ApiException(HttpStatus.CONFLICT,
+                        "EMAIL_VERIFICATION_REQUIRED",
+                        "Your account is not activated. Verify your email.");
+            }
             throw new ApiException(HttpStatus.CONFLICT,
+                    "EMAIL_ALREADY_REGISTERED",
                     "Email is already registered. Sign in or reset password.");
         }
         role = roles.findByRoleCode("CUSTOMER").orElseThrow(() ->
@@ -130,9 +154,16 @@ public class AuthService {
      * Activates an inactive customer using a one-time token.
      * @param rawToken the submitted verification token
      */
-    @Transactional
+    @Transactional(noRollbackFor = OtpRejectedException.class)
     public void verify(String rawToken) {
-        AuthenticationToken token = lockValidToken(rawToken, VERIFY_EMAIL);
+        verify(rawToken, null);
+    }
+
+    /** @param rawToken bearer link or code @param email required for OTP */
+    @Transactional(noRollbackFor = OtpRejectedException.class)
+    public void verify(String rawToken, String email) {
+        AuthenticationToken token = lockValidToken(rawToken, VERIFY_EMAIL,
+                email);
         UserAccount user = token.getUser();
 
         if (!"INACTIVE".equals(user.getStatus())
@@ -151,6 +182,7 @@ public class AuthService {
      */
     @Transactional
     public void resendVerification(String email) {
+        limiter.reserve(email, "RECOVERY");
         Long found = users.findIdByEmail(
                 normalizeEmail(email)).orElse(null);
         UserAccount user;
@@ -175,6 +207,7 @@ public class AuthService {
      */
     @Transactional
     public void forgotPassword(String email) {
+        limiter.reserve(email, "RECOVERY");
         Long found = users.findIdByEmail(
                 normalizeEmail(email)).orElse(null);
         UserAccount user;
@@ -192,13 +225,14 @@ public class AuthService {
      * Resets a password and invalidates outstanding reset links.
      * @param request the validated reset input
      */
-    @Transactional
+    @Transactional(noRollbackFor = OtpRejectedException.class)
     public void resetPassword(ResetPasswordRequest request) {
         AuthenticationToken token;
         UserAccount user;
 
         checkPassword(request.getPassword(), request.getConfirmPassword());
-        token = lockValidToken(request.getToken(), RESET_PASSWORD);
+        token = lockValidToken(request.getToken(), RESET_PASSWORD,
+                request.getEmail());
         user = token.getUser();
         if (!"ACTIVE".equals(user.getStatus())) {
             throw invalidToken();
@@ -207,6 +241,7 @@ public class AuthService {
         token.setUsedAt(now());
         tokens.invalidate(user.getUserId(), RESET_PASSWORD);
         refresh.revokeUser(user.getUserId(), "PASSWORD_CHANGED");
+        passwordChangedMail(user);
     }
 
     /** @param user account key @param reason safe revocation code */
@@ -216,8 +251,15 @@ public class AuthService {
         refresh.revokeUser(user, reason);
     }
 
-    private AuthenticationToken lockValidToken(String raw, String purpose) {
+    private AuthenticationToken lockValidToken(String raw, String purpose,
+            String email) {
         String normalized = raw.trim().replace(" ", "");
+        if (normalized.matches("[0-9]{6}")) {
+            return lockOtp(normalized, purpose, email);
+        }
+        if (!normalized.matches("[A-Za-z0-9_-]{43}")) {
+            throw invalidToken();
+        }
         String hash = TokenTools.hash(normalized);
         Long userId = tokens.findOwnerByHash(hash)
                 .orElseThrow(this::invalidToken);
@@ -234,23 +276,75 @@ public class AuthService {
         return token;
     }
 
+    private AuthenticationToken lockOtp(String raw, String purpose,
+            String email) {
+        if (email == null || email.isBlank()) {
+            throw invalidToken();
+        }
+        Long owner = users.findIdByEmail(normalizeEmail(email))
+                .orElseThrow(this::invalidToken);
+        UserAccount user = users.findLockedById(owner)
+                .orElseThrow(this::invalidToken);
+        var token = tokens.findFirstByUserUserIdAndPurposeOrderByTokenIdDesc(
+                owner, purpose).orElseThrow(this::invalidToken);
+        if (token.getUsedAt() != null || token.getOtpHash() == null
+                || token.getOtpExpiresAt() == null
+                || !token.getOtpExpiresAt().isAfter(now())
+                || !token.getExpiresAt().isAfter(now())
+                || token.getFailedAttempts() >= OTP_ATTEMPTS) {
+            throw invalidToken();
+        }
+        String candidate = TokenTools.otpHash(normalizeEmail(user.getEmail()),
+                purpose, raw, otpSecret);
+        if (!TokenTools.equalHashes(token.getOtpHash(), candidate)) {
+            token.setFailedAttempts(token.getFailedAttempts() + 1);
+            throw new OtpRejectedException();
+        }
+        token.setUser(user);
+        return token;
+    }
+
     private void issueOneTimeToken(UserAccount user, String purpose) {
         boolean verification = VERIFY_EMAIL.equals(purpose);
-        String raw = generateOtp();
+        var previous = tokens.findFirstByUserUserIdAndPurposeOrderByTokenIdDesc(
+                user.getUserId(), purpose);
+        AuthenticationToken prior = previous.orElse(null);
+        boolean sameWindow = prior != null && prior.getUsedAt() == null
+                && prior.getOtpExpiresAt() != null
+                && prior.getOtpExpiresAt().isAfter(now());
+        if (prior != null && prior.getUsedAt() == null
+                && (prior.getCreatedAt().plusSeconds(60).isAfter(now())
+                        || sameWindow
+                                && prior.getFailedAttempts() >= OTP_ATTEMPTS)) {
+            return;
+        }
+        String raw = TokenTools.randomOtp();
+        String linkToken = TokenTools.randomToken();
         LocalDateTime created = now();
         AuthenticationToken token = new AuthenticationToken();
         EmailEvent event = new EmailEvent();
         String route = verification ? "/verify-email" : "/reset-password";
-        String link = frontend + route + "?token=" + raw;
+        String link = frontend + route + "?token=" + linkToken;
 
         tokens.invalidate(user.getUserId(), purpose);
         token.setUser(user);
-        token.setTokenHash(TokenTools.hash(raw));
+        token.setTokenHash(TokenTools.hash(linkToken));
+        token.setOtpHash(verification ? null : TokenTools.otpHash(
+                normalizeEmail(user.getEmail()), purpose, raw, otpSecret));
+        token.setOtpExpiresAt(verification ? null
+                : sameWindow ? prior.getOtpExpiresAt()
+                        : created.plusMinutes(OTP_MINUTES));
+        token.setFailedAttempts(sameWindow ? prior.getFailedAttempts() : 0);
         token.setPurpose(purpose);
         token.setCreatedAt(created);
         token.setExpiresAt(verification ? created.plusHours(VERIFY_HOURS)
                 : created.plusMinutes(RESET_MINUTES));
         tokens.saveAndFlush(token);
+        event.setUserId(user.getUserId());
+        event.setPurpose(purpose);
+        event.setChallengeHash(token.getTokenHash());
+        event.setExpiresAt(verification ? token.getExpiresAt()
+                : token.getOtpExpiresAt());
         event.setRecipient(user.getEmail());
         event.setSubject(verification ? "Verify your EquiTransit account"
                 : "Reset your EquiTransit password");
@@ -259,8 +353,28 @@ public class AuthService {
         events.publishEvent(event);
     }
 
+    private void passwordChangedMail(UserAccount user) {
+        var event = new EmailEvent();
+        event.setUserId(user.getUserId());
+        event.setPurpose("PASSWORD_CHANGED");
+        event.setExpiresAt(now().plusDays(1));
+        event.setRecipient(user.getEmail());
+        event.setSubject("Your EquiTransit password was changed");
+        event.setBody("Your password was changed and existing sessions were "
+                + "revoked. If this was not you, contact EquiTransit support "
+                + "immediately. Never share your password or recovery codes.");
+        events.publishEvent(event);
+    }
+
     private String buildEmailBody(
             String link, String raw, boolean verification) {
+        if (verification) {
+            return "EquiTransit Account Verification\n\n"
+                    + "Confirm your email to activate your account:\n"
+                    + link + "\n\nThis link expires in 24 hours and can "
+                    + "only be used once. If you did not register, "
+                    + "ignore this email.";
+        }
         String title = verification
                 ? "EquiTransit Account Verification"
                 : "EquiTransit Password Reset";
@@ -278,18 +392,34 @@ public class AuthService {
                 ? "METHOD 2 - ENTER OTP CODE ON THE WEBSITE:\n"
                         + "Enter this 6-digit code on the registration page:\n"
                 : "METHOD 2 - ENTER OTP CODE ON THE WEBSITE:\n"
-                        + "Enter this 6-digit code on the reset page:\n";
+                        + "Enter this 6-digit code together with your email:\n";
 
         return title + "\n\nHello,\n\n" + intro + "\n\n"
                 + m1 + link + "\n\n--- OR ---\n\n"
                 + m2 + formatOtp(raw) + "\n\n"
-                + "Note: This one-time code expires soon. "
+                + "Note: OTP expires in 10 minutes; maximum 5 failed attempts. "
                 + "Never share this code with anyone.\n\n"
                 + "(c) 2026 EquiTransit. All rights reserved.";
     }
 
     private String buildEmailHtml(
             String link, String raw, boolean verification) {
+        if (verification) {
+            return "<div style=\"font-family:Arial,sans-serif;"
+                    + "max-width:480px;margin:auto;padding:28px;"
+                    + "border:1px solid #dce5de;border-radius:12px;\">"
+                    + "<h2 style=\"color:#1e4a30\">EQUITRANSIT</h2>"
+                    + "<h3>Verify your email</h3>"
+                    + "<p>Confirm your email to activate your account.</p>"
+                    + "<p><a href=\"" + link
+                    + "\" style=\"display:inline-block;"
+                    + "padding:14px 28px;background:#1e4a30;color:#fff;"
+                    + "border-radius:8px;text-decoration:none;"
+                    + "font-weight:bold\">VERIFY NOW</a></p>"
+                    + "<p>This link expires in 24 hours and works once.</p>"
+                    + "<p>If you did not register, ignore this email.</p>"
+                    + "</div>";
+        }
         String title = verification
                 ? "Account Verification"
                 : "Password Reset Request";
@@ -334,7 +464,8 @@ public class AuthService {
                 + "<p style=\"font-size:12px;color:#64756d;margin:24px 0 0;"
                 + "border-top:1px solid #eaefe9;padding-top:14px;"
                 + "line-height:1.5;\">"
-                + "Note: This one-time code expires soon. Never share it with "
+                + "Note: OTP expires in 10 minutes; "
+                + "maximum 5 failed attempts. Never share it with "
                 + "anyone.<br>&copy; 2026 EquiTransit. All rights reserved.</p>"
                 + "</div>";
     }
@@ -344,17 +475,6 @@ public class AuthService {
             return raw.substring(0, 3) + " " + raw.substring(3);
         }
         return raw;
-    }
-
-    private String generateOtp() {
-        for (int i = 0; i < 5; i++) {
-            String candidate = TokenTools.randomOtp();
-            String hash = TokenTools.hash(candidate);
-            if (tokens.findByTokenHash(hash).isEmpty()) {
-                return candidate;
-            }
-        }
-        return TokenTools.randomOtp();
     }
 
     /**
@@ -397,6 +517,7 @@ public class AuthService {
 
     private ApiException invalidToken() {
         return new ApiException(HttpStatus.BAD_REQUEST,
+                "AUTH_CHALLENGE_INVALID",
                 "The link is invalid, expired or already used.");
     }
 }

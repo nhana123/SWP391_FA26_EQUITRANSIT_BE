@@ -129,6 +129,16 @@ public class ApiExceptionHandler {
      */
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<Map<String, Object>> handleApi(ApiException error) {
+        if (error instanceof AuthThrottleException throttle) {
+            return ResponseEntity.status(error.getStatus())
+                    .header("Retry-After", Long.toString(throttle.retryAfter()))
+                    .body(Map.of("code", error.getCode(),
+                            "message", error.getMessage()));
+        }
+        if (error.getCode() != null) {
+            return ResponseEntity.status(error.getStatus()).body(Map.of(
+                    "code", error.getCode(), "message", error.getMessage()));
+        }
         return response(error.getStatus(), error.getMessage());
     }
 

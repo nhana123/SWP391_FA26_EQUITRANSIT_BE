@@ -13,7 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -46,7 +45,7 @@ public class FileAccountMailSender implements AccountMailSender {
 
         try {
             Files.createDirectories(outbox);
-            file = outbox.resolve(UUID.randomUUID() + ".txt");
+            file = outbox.resolve(event.getMessageId() + ".txt");
             content = "To: " + event.getRecipient() + "\nSubject: "
                     + event.getSubject() + "\n\n" + event.getBody();
             if (event.getHtmlBody() != null) {
@@ -55,6 +54,9 @@ public class FileAccountMailSender implements AccountMailSender {
             }
             Files.writeString(file, content, StandardCharsets.UTF_8,
                     StandardOpenOption.CREATE_NEW);
+        } catch (java.nio.file.FileAlreadyExistsException existing) {
+            // Stable ID makes a retry after a lost acknowledgement idempotent.
+            return;
         } catch (IOException error) {
             throw new IllegalStateException("Local email delivery failed.",
                     error);

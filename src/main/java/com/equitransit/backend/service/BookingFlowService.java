@@ -143,6 +143,27 @@ public class BookingFlowService {
         }
         var record = quotes.find(order, quote).orElseThrow(this::missing);
         var rows = ledger.rows("schedule", Map.of("quote", quote));
+        if (data.managerDeposit(quote)) {
+            BigDecimal sum = BigDecimal.ZERO;
+            boolean valid = rows.size() == 1 || rows.size() == 2;
+            for (int i = 0; i < rows.size(); i++) {
+                var row = rows.get(i);
+                BigDecimal amount = (BigDecimal) row.get("AmountDue");
+                sum = sum.add(amount);
+                valid &= amount.signum() > 0 && row.get("DueAt") != null
+                        && "USD".equals(row.get("Currency"))
+                        && (i == 0 ? "DEPOSIT" : "BALANCE")
+                                .equals(row.get("PaymentStage"))
+                        && ((Number) row.get("SequenceNo")).intValue() == i + 1;
+            }
+            if (!valid || record.total() == null
+                    || sum.compareTo(record.total()) != 0) {
+                throw new OrderException(HttpStatus.CONFLICT,
+                        "QUOTE_DEPOSIT_SCHEDULE_INVALID",
+                        "Manager schedule must equal the quotation total.");
+            }
+            return;
+        }
         BigDecimal deposit = record.total() == null ? null
                 : policy.deposit(record.total());
         boolean valid = deposit != null && rows.size() == 2;
