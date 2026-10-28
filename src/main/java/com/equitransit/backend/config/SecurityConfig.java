@@ -129,6 +129,7 @@ public class SecurityConfig {
         cors.setAllowedMethods(List.of("GET", "POST", "PUT", "OPTIONS"));
         cors.setAllowedHeaders(List.of("Authorization", "Content-Type",
                 "X-Expected-Role"));
+        cors.setExposedHeaders(List.of("Retry-After"));
         cors.setAllowCredentials(true);
         source.registerCorsConfiguration("/api/**", cors);
         return source;

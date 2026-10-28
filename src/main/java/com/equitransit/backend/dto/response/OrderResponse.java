@@ -26,6 +26,7 @@ import com.equitransit.backend.dto.request.OrderDraftRequest;
  * @param currentPlanId the currentPlanId
  * @param createdAt the createdAt
  * @param updatedAt the updatedAt
+ * @param depositRequested current Manager request, or null
  * @param draft the draft
  */
 @Schema(example = ApiExamples.ORDER)
@@ -82,5 +83,13 @@ public record OrderResponse(
         OffsetDateTime updatedAt,
         @Schema(
                 example = ApiExamples.DRAFT)
-        OrderDraftRequest draft) {
+        OrderDraftRequest draft,
+        @Schema(nullable = true, example = "{\"totalAmount\":1000.00,"
+                + "\"depositAmount\":300.00,\"note\":null,"
+                + "\"requestedAt\":\"2026-10-27T11:00:00Z\","
+                + "\"isPaid\":false,\"currency\":\"USD\","
+                + "\"quoteId\":201,\"paymentRequestId\":null,"
+                + "\"paymentAvailable\":false}")
+        com.equitransit.backend.dto.payment.DepositRequested
+        depositRequested) {
 }

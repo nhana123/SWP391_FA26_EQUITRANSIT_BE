@@ -48,6 +48,46 @@ public class AuthenticationToken {
     @Column(name = "CreatedAt", nullable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "OtpHash", length = 64)
+    private String otpHash;
+
+    @Column(name = "OtpExpiresAt")
+    private LocalDateTime otpExpiresAt;
+
+    @Column(name = "FailedAttempts", nullable = false,
+            columnDefinition = "int default 0")
+    private int failedAttempts;
+
+    /** @return account-scoped OTP fingerprint */
+    public String getOtpHash() {
+        return otpHash;
+    }
+
+    /** @param value OTP fingerprint */
+    public void setOtpHash(String value) {
+        otpHash = value;
+    }
+
+    /** @return short OTP deadline, independent of the bearer link */
+    public LocalDateTime getOtpExpiresAt() {
+        return otpExpiresAt;
+    }
+
+    /** @param value short OTP deadline */
+    public void setOtpExpiresAt(LocalDateTime value) {
+        otpExpiresAt = value;
+    }
+
+    /** @return durable failed OTP count */
+    public int getFailedAttempts() {
+        return failedAttempts;
+    }
+
+    /** @param value durable failed OTP count */
+    public void setFailedAttempts(int value) {
+        failedAttempts = value;
+    }
+
     /**
      * Returns tokenId.
      * @return the tokenId

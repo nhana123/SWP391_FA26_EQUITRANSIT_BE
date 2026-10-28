@@ -66,6 +66,11 @@ public class CompanyHubSqlTest {
             assertThat(hubs.get(0).path("locationType").asText())
                     .isEqualTo("HUB");
         }
+        // Demo users can move their primary hub; isolate the reference point.
+        // This test's enclosing transaction rolls the fixture change back.
+        jdbc.update("UPDATE dbo.LocationCatalog SET Latitude=11.0067000,"
+                + "Longitude=106.5132000 WHERE CountryCode='VN' AND "
+                + "LocationType='HUB' AND IsActive=1 AND IsPrimaryHub=1");
         var vn = send("GET", "/api/lookups/hubs?country=VN", null, null, 200);
         assertThat(vn.get(0).path("latitude").decimalValue())
                 .isEqualByComparingTo("11.0067000");

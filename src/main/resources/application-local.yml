@@ -2,10 +2,10 @@ spring:
   datasource:
     url: ${EQ_DB_URL:jdbc:sqlserver://127.0.0.1:1433;databaseName=EquiTransit;encrypt=true;trustServerCertificate=true;integratedSecurity=true}
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: huytgse160995@fpt.edu.vn
-    password: "tsud gkai bsbe thoo"
+    host: ${EQ_MAIL_HOST:${EQ_SMTP_HOST:smtp.gmail.com}}
+    port: ${EQ_MAIL_PORT:${EQ_SMTP_PORT:587}}
+    username: ${EQ_MAIL_USERNAME:${EQ_SMTP_USERNAME:}}
+    password: ${EQ_MAIL_PASSWORD:${EQ_SMTP_PASSWORD:}}
     properties:
       "[mail.smtp.auth]": true
       "[mail.smtp.starttls.enable]": true
@@ -16,5 +16,5 @@ app:
   jwt:
     refresh-cookie-secure: ${EQ_REFRESH_COOKIE_SECURE:false}
   mail:
-    mode: smtp
-    from: huytgse160995@fpt.edu.vn
+    mode: ${EQ_MAIL_MODE:file}
+    from: ${EQ_MAIL_FROM:no-reply@equitransit.local}

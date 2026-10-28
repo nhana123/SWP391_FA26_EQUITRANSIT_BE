@@ -42,6 +42,16 @@ public class BookingFlowRepository {
                 quote);
     }
 
+    /** @param quote contract @return explicitly issued Manager schedule */
+    public boolean managerDeposit(long quote) {
+        return jdbc.queryForObject("SELECT COUNT(*) FROM dbo.Quote q WHERE "
+                + "q.QuoteID=? AND q.TermsVersion='MANAGER-DEPOSIT-V1' AND "
+                + "EXISTS(SELECT 1 FROM dbo.AuditEvent a WHERE "
+                + "a.EntityType='ORDER_DEPOSIT' AND JSON_VALUE("
+                + "a.ChangeSnapshot,'$.quoteId')=CONVERT(varchar(20),"
+                + "q.QuoteID))", Integer.class, quote) == 1;
+    }
+
     /** @param order scope @param revision current revision
      * @return whether this is the fixed-road automatic contract */
     public boolean autoRoad(long order, long revision) {

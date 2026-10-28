@@ -16,6 +16,9 @@ app:
   jwt:
     secret: dGVzdC1vbmx5LWtleS1mb3ItZXF1aXRyYW5zaXQtYXV0aC10ZXN0cw==
   mail:
+    worker-enabled: false
     mode: file
     outbox: target/test-outbox
   auth-rate-limit: 1000
+  auth:
+    request-limit: 1000

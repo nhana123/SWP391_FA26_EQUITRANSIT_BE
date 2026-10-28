@@ -171,7 +171,7 @@ public class AuthController {
     @PostMapping("/verify-email")
     @Operation(summary = "Verify email using a one-time token")
     public MessageResponse verify(@Valid @RequestBody TokenRequest request) {
-        auth.verify(request.getToken());
+        auth.verify(request.getToken(), request.getEmail());
         return message("Email verified. You can now sign in.");
     }
 

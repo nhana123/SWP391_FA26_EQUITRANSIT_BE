@@ -9,6 +9,7 @@ package com.equitransit.backend.dto.request;
 
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import com.equitransit.backend.dto.ValidationLimits;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -37,6 +38,21 @@ public class ResetPasswordRequest {
             accessMode = Schema.AccessMode.WRITE_ONLY,
             description = "Must match password.")
     private String confirmPassword;
+
+    @Email @Size(min = 1, max = ValidationLimits.EMAIL_MAX_LENGTH)
+    @Schema(description = "Required when token is a six-digit OTP.",
+            example = "customer@example.invalid")
+    private String email;
+
+    /** @return OTP owner email; optional for high-entropy email links */
+    public String getEmail() {
+        return email;
+    }
+
+    /** @param value OTP owner email */
+    public void setEmail(String value) {
+        email = value;
+    }
 
     /**
      * Returns token.

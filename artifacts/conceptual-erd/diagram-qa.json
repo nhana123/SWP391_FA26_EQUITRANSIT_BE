@@ -1,0 +1,8 @@
+{
+  "entities": 17,
+  "relationships": 17,
+  "attributes": 34,
+  "overlappingShapes": [],
+  "scope": "dbo core TransportOrder workflow; separate journey consolidated-booking schema excluded",
+  "source": "EquiTransit_Demo FK and unique-index metadata, 2026-10-27"
+}
